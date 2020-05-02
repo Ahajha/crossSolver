@@ -62,7 +62,7 @@ class CrossPuzzle
 	
 	unsigned int numrows, numcols;
 	
-	int** grid; // int[][]
+	std::vector<std::vector<int>> grid;
 	
 	RoworColumn* rows; // RoC []
 	RoworColumn* cols; // RoC []

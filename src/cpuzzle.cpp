@@ -473,10 +473,10 @@ std::ostream& operator<<(std::ostream& stream, const CrossPuzzle& CP)
 
 void CrossPuzzle::createGrid()
 {
-	grid = new int* [numrows];
+	grid.resize(numrows);
 	for (unsigned int i = 0; i < numrows; i++)
 	{
-		grid[i] = new int[numcols];
+		grid[i].resize(numcols);
 		for (unsigned int j = 0; j < numcols; j++)
 		{
 			grid[i][j] = -1;
@@ -615,8 +615,6 @@ CrossPuzzle& CrossPuzzle::operator=(const CrossPuzzle& CP)
 		cols = new RoworColumn[numcols];
 	}
 	
-	delete grid;
-	
 	createGrid();
 	
 	for (unsigned int i = 0; i < numrows; i++)
@@ -666,12 +664,6 @@ CrossPuzzle::~CrossPuzzle()
 	#ifdef CPUZZLE_DEBUG
 		std::cout << "Destructor (CrossPuzzle):" << std::endl << *this;
 	#endif
-	for (unsigned int i = 0; i < numrows; i++)
-	{
-		delete[] grid[i];
-	}
-	delete[] grid;
-	
 	delete[] rows;
 	
 	delete[] cols;
