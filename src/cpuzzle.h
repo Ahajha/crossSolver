@@ -87,6 +87,8 @@ class CrossPuzzle
 	CrossPuzzle& operator=(CrossPuzzle&& CP);
 	~CrossPuzzle();
 	
+	unsigned removeAndMark(RoworColumn rocs[], unsigned numrocs);
+	
 	bool isComplete() const;
 	void createBitmap(const char* fileName) const;
 	

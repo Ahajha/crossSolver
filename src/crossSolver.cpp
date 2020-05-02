@@ -48,45 +48,6 @@ char* getOutFileName(const char* inFileName)
 	return out;
 }
 
-/*-------------------------------------------------------------
-Calls removeIncompatible() and markConsistent(), in that order,
-on each RoworColumn in rocs. Returns number of changes made, or
-throws puzzle_error if any RoworColumn in rocs is unsolvable.
--------------------------------------------------------------*/
-
-unsigned removeAndMark(RoworColumn rocs[], unsigned numrocs)
-{
-	unsigned changesMade = 0;
-	for (unsigned i = 0; i < numrocs; i++)
-	{
-		if (!rocs[i].isComplete())
-		{
-			unsigned numremoved = rocs[i].removeIncompatible();
-			unsigned nummarked  = rocs[i].markConsistent();
-			
-			#ifdef CPUZZLE_DEBUG
-				if (numremoved || nummarked)
-				{
-					std::cout << i << ":" << std::endl;
-					if (numremoved)
-					{
-						std::cout << "Removed " << numremoved << " possibilities." << std::endl;
-					}
-					if (nummarked)
-					{
-						std::cout << "Marked " << nummarked << " cells." << std::endl;
-					}
-					std::cout << rocs[i];
-				}
-			#endif
-			
-			changesMade += (numremoved + nummarked);
-		}
-	}
-
-	return changesMade;
-}
-
 //CrossPuzzle* solve(CrossPuzzle* CP);
 
 /*
@@ -117,12 +78,12 @@ CrossPuzzle solve(CrossPuzzle& CP)
 		#ifdef CPUZZLE_DEBUG
 			std::cout << "Remove and mark on rows:" << std::endl;
 		#endif
-		rowChanges = removeAndMark(CP.rows, CP.numrows);
+		rowChanges = CP.removeAndMark(CP.rows, CP.numrows);
 		
 		#ifdef CPUZZLE_DEBUG
 			std::cout << "Remove and mark on columns:" << std::endl;
 		#endif
-		colChanges = removeAndMark(CP.cols, CP.numcols);
+		colChanges = CP.removeAndMark(CP.cols, CP.numcols);
 	}
 	while(!CP.isComplete() && (rowChanges || colChanges));
 	

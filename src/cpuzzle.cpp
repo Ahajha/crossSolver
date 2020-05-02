@@ -399,6 +399,45 @@ unsigned int RoworColumn::markConsistent()
 	return changesMade;
 }
 
+/*-------------------------------------------------------------
+Calls removeIncompatible() and markConsistent(), in that order,
+on each RoworColumn in rocs. Returns number of changes made, or
+throws puzzle_error if any RoworColumn in rocs is unsolvable.
+-------------------------------------------------------------*/
+
+unsigned CrossPuzzle::removeAndMark(RoworColumn rocs[], unsigned numrocs)
+{
+	unsigned changesMade = 0;
+	for (unsigned i = 0; i < numrocs; i++)
+	{
+		if (!rocs[i].isComplete())
+		{
+			unsigned numremoved = rocs[i].removeIncompatible();
+			unsigned nummarked  = rocs[i].markConsistent();
+			
+			#ifdef CPUZZLE_DEBUG
+				if (numremoved || nummarked)
+				{
+					std::cout << i << ":" << std::endl;
+					if (numremoved)
+					{
+						std::cout << "Removed " << numremoved << " possibilities." << std::endl;
+					}
+					if (nummarked)
+					{
+						std::cout << "Marked " << nummarked << " cells." << std::endl;
+					}
+					std::cout << rocs[i];
+				}
+			#endif
+			
+			changesMade += (numremoved + nummarked);
+		}
+	}
+
+	return changesMade;
+}
+
 /*--------------------------------------------------------------
 GetList returns a list containing one line of ints read from in.
 --------------------------------------------------------------*/
