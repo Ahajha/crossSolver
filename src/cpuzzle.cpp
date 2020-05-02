@@ -6,8 +6,8 @@
 #include <iostream>
 #include <fstream>
 #include <algorithm>
+#include <list>
 #include "cpuzzle.h"
-#include "../../../lib/linkedList.h"
 #include "bmpMaker.h"
 
 /*---------------------------------------------
@@ -18,7 +18,7 @@ and all possible start positions of the fill.
 struct RoworColumn::possibilityList
 {
 	unsigned fillLength;
-	LinkedList<unsigned> possiblePositions;
+	std::list<unsigned> possiblePositions;
 	
 	possibilityList() {}
 	
@@ -27,7 +27,7 @@ struct RoworColumn::possibilityList
 	{
 		for (unsigned i = start; i <= end; i++)
 		{
-			possiblePositions.insertBack(i);
+			possiblePositions.push_back(i);
 		}
 	}
 };
@@ -80,8 +80,14 @@ std::ostream& operator<<(std::ostream& stream, const RoworColumn& roc)
 		
 		for (unsigned i = 0; i < roc.numFills; i++)
 		{
-			stream << "Fill #" << i << ", length " << roc.fillPosses[i].fillLength << ": "
-				<< roc.fillPosses[i].possiblePositions << std::endl;
+			stream << "Fill #" << i << ", length " << roc.fillPosses[i].fillLength << ": ";
+			
+			for (auto x : roc.fillPosses[i].possiblePositions)
+			{
+				stream << x << ' ';
+			}
+			
+			stream << std::endl;
 		}
 	}
 	return (stream << std::endl);
@@ -92,12 +98,13 @@ Constructs a RoworColumn of length 'siz', referencing
 the items in grd, with a list of hints hintList.
 ----------------------------------------------------*/
 
-RoworColumn::RoworColumn(unsigned siz, int* grd[], const LinkedList<unsigned>& hintList)
-	: size(siz), numFills(hintList.getSize()), grid(grd),
+RoworColumn::RoworColumn(unsigned siz, int* grd[], const std::list<unsigned>& hintList)
+	: size(siz), numFills(hintList.size()), grid(grd),
 	  fillPosses(new possibilityList[numFills])
 {
 	#ifdef CPUZZLE_DEBUG
-		std::cout << hintList << std::endl;
+		for (unsigned i : hintList) std::cout << i << ' ';
+		std::cout << std::endl;
 	#endif
 	
 	if (numFills == 0)
@@ -111,15 +118,19 @@ RoworColumn::RoworColumn(unsigned siz, int* grd[], const LinkedList<unsigned>& h
 	else
 	{
 		complete = false;
-		unsigned extraSpace = size - (hintList.sum() + numFills - 1);
+		
+		unsigned sum = 0;
+		for (unsigned hint : hintList) sum += hint;
+		
+		unsigned extraSpace = size - (sum + numFills - 1);
 		
 		unsigned minPos = 0;
-		LinkedList<unsigned>::ConstIterator iter = hintList.iterator();
-		for (unsigned i = 0; i < numFills; i++)
+		unsigned i = 0;
+		for (unsigned temp : hintList)
 		{
-			unsigned temp = iter.next();
 			fillPosses[i] = possibilityList(temp, minPos, minPos + extraSpace);
 			minPos += temp + 1;
+			i++;
 		}
 	}
 }
@@ -187,9 +198,9 @@ RoworColumn& RoworColumn::operator=(RoworColumn&& rc)
 Throws a puzzle_error if LL is empty.
 -----------------------------------*/
 
-void RoworColumn::throwIfEmpty(const LinkedList<unsigned>& LL)
+void RoworColumn::throwIfEmpty(const std::list<unsigned>& LL)
 {
-	if (LL.isEmpty())
+	if (LL.empty())
 		throw CrossPuzzle::puzzle_error("Puzzle is unsolvable");
 }
 
@@ -216,21 +227,27 @@ unsigned RoworColumn::removeIncompatible()
 			// Remove due to empty spaces
 			for (unsigned j = 0; j < numFills; j++)
 			{
-				LinkedList<unsigned>::Iterator posses =
-					fillPosses[j].possiblePositions.iterator();
-					
 				unsigned length = fillPosses[j].fillLength;
 				
 				// If the empty space is within the fill,
 				// remove the possibility.
-				while (posses.hasNext())
+				
+				// Reference this list, for brevity
+				auto& positions = fillPosses[j].possiblePositions;
+				for (auto it = positions.begin(); it != positions.end();)
 				{
-					unsigned start = posses.next();
+					unsigned start = *it;
 					if ((start <= i) && (i < start + length))
 					{
-						posses.removePrevious();
-						throwIfEmpty(fillPosses[j].possiblePositions);
+						positions.erase(it++);
+						throwIfEmpty(positions);
 						changesMade++;
+					}
+					else
+					{
+						// This seems to segfault if I put this in the loop
+						// section, unsure why.
+						++it;
 					}
 				}
 			}
@@ -240,21 +257,25 @@ unsigned RoworColumn::removeIncompatible()
 			// Remove due to filled spaces
 			for (unsigned j = 0; j < numFills; j++)
 			{
-				LinkedList<unsigned>::Iterator posses =
-					fillPosses[j].possiblePositions.iterator();
-					
 				unsigned length = fillPosses[j].fillLength;
 				
 				// If the filled space is immediately before or after
 				// a possible fill, remove the possibility.
-				while (posses.hasNext())
+				
+				// Reference this list, for brevity
+				auto& positions = fillPosses[j].possiblePositions;
+				for (auto it = positions.begin(); it != positions.end();)
 				{
-					unsigned start = posses.next();
+					unsigned start = *it;
 					if (start == i + 1 || start + length == i)
 					{
-						posses.removePrevious();
-						throwIfEmpty(fillPosses[j].possiblePositions);
+						positions.erase(it++);
+						throwIfEmpty(positions);
 						changesMade++;
+					}
+					else
+					{
+						++it;
 					}
 				}
 			}
@@ -263,18 +284,18 @@ unsigned RoworColumn::removeIncompatible()
 			// change was made	
 			
 			// Filled space cannot be before the first fill
-			while (fillPosses[0].possiblePositions.peekBack() > i)
+			while (fillPosses[0].possiblePositions.back() > i)
 			{
-				fillPosses[0].possiblePositions.removeBack();
+				fillPosses[0].possiblePositions.pop_back();
 				throwIfEmpty(fillPosses[0].possiblePositions);
 				changesMade++;
 			}
 			
 			// ... or after the last fill.
 			unsigned len = fillPosses[numFills - 1].fillLength;
-			while (fillPosses[numFills - 1].possiblePositions.peekFront() + len < i)
+			while (fillPosses[numFills - 1].possiblePositions.front() + len < i)
 			{
-				fillPosses[numFills - 1].possiblePositions.remove();
+				fillPosses[numFills - 1].possiblePositions.pop_front();
 				throwIfEmpty(fillPosses[numFills - 1].possiblePositions);
 				changesMade++;
 			}
@@ -285,28 +306,28 @@ unsigned RoworColumn::removeIncompatible()
 				// If the first of the two fills cannot reach the filled
 				// space, the second cannot start after it.
 				
-				if (fillPosses[j - 1].possiblePositions.peekBack() + 
+				if (fillPosses[j - 1].possiblePositions.back() + 
 					fillPosses[j - 1].fillLength < i)
 				{
 					// Delete all possibilites that start after the filled
 					// space.
-					while (i < fillPosses[j].possiblePositions.peekBack())
+					while (i < fillPosses[j].possiblePositions.back())
 					{
-						fillPosses[j].possiblePositions.removeBack();
+						fillPosses[j].possiblePositions.pop_back();
 						throwIfEmpty(fillPosses[j].possiblePositions);
 						changesMade++;
 					}
 				}
 				// If the second cannot reach it, the first cannot end
 				// before it.
-				if (i < fillPosses[j].possiblePositions.peekFront())
+				if (i < fillPosses[j].possiblePositions.front())
 				{
 					// Delete all possibilites that end before the filled
 					// space.
-					while (fillPosses[j - 1].possiblePositions.peekFront()
+					while (fillPosses[j - 1].possiblePositions.front()
 						+ fillPosses[j - 1].fillLength < i)
 					{
-						fillPosses[j - 1].possiblePositions.remove();
+						fillPosses[j - 1].possiblePositions.pop_front();
 						throwIfEmpty(fillPosses[j - 1].possiblePositions);
 						changesMade++;
 					}
@@ -320,11 +341,11 @@ unsigned RoworColumn::removeIncompatible()
 	// Possible TODO: Combine this with last rule in markConsistent, or the rule above
 	for (unsigned i = 1; i < numFills; i++)
 	{
-		unsigned furthestback = fillPosses[i - 1].possiblePositions.peekFront() +
+		unsigned furthestback = fillPosses[i - 1].possiblePositions.front() +
 			fillPosses[i - 1].fillLength;
-		while (furthestback >= fillPosses[i].possiblePositions.peekFront())
+		while (furthestback >= fillPosses[i].possiblePositions.front())
 		{
-			fillPosses[i].possiblePositions.remove();
+			fillPosses[i].possiblePositions.pop_front();
 			throwIfEmpty(fillPosses[i].possiblePositions);
 			changesMade++;
 		}
@@ -332,11 +353,11 @@ unsigned RoworColumn::removeIncompatible()
 	
 	for (unsigned i = numFills - 1; i > 0; i--)
 	{
-		unsigned furthestforward = fillPosses[i].possiblePositions.peekBack();
+		unsigned furthestforward = fillPosses[i].possiblePositions.back();
 		unsigned length = fillPosses[i - 1].fillLength;
-		while (furthestforward <= fillPosses[i - 1].possiblePositions.peekBack() + length)
+		while (furthestforward <= fillPosses[i - 1].possiblePositions.back() + length)
 		{
-			fillPosses[i - 1].possiblePositions.removeBack();
+			fillPosses[i - 1].possiblePositions.pop_back();
 			throwIfEmpty(fillPosses[i - 1].possiblePositions);
 			changesMade++;
 		}
@@ -381,10 +402,10 @@ unsigned int RoworColumn::markConsistent()
 	{
 		// Mark every cell from the last possible start position of the fill
 		// to the first possible end position of the fill. This may not mark anything.
-		unsigned lastToMark = fillPosses[i].possiblePositions.peekFront() +
+		unsigned lastToMark = fillPosses[i].possiblePositions.front() +
 			fillPosses[i].fillLength;
 		
-		markInRange(fillPosses[i].possiblePositions.peekBack(), lastToMark, 1, changesMade);
+		markInRange(fillPosses[i].possiblePositions.back(), lastToMark, 1, changesMade);
 	}
 	
 	// Mark empty spaces
@@ -392,13 +413,13 @@ unsigned int RoworColumn::markConsistent()
 	// Mark every cell that is before all possible start positions of the first
 	// fill as empty.
 	
-	markInRange(0, fillPosses[0].possiblePositions.peekFront(), 0, changesMade);
+	markInRange(0, fillPosses[0].possiblePositions.front(), 0, changesMade);
 	
 	
 	// Mark every cell that is after all possible end positions of the last
 	// fill as empty.
 	
-	unsigned int lastoflast = fillPosses[numFills - 1].possiblePositions.peekBack()
+	unsigned int lastoflast = fillPosses[numFills - 1].possiblePositions.back()
 		+ fillPosses[numFills - 1].fillLength;
 	markInRange(lastoflast, size, 0, changesMade);
 	
@@ -407,9 +428,9 @@ unsigned int RoworColumn::markConsistent()
 	// of the second with empty space.
 	for (unsigned int i = 1; i < numFills; i++)
 	{
-		unsigned int lastoffirst = fillPosses[i - 1].possiblePositions.peekBack()
+		unsigned int lastoffirst = fillPosses[i - 1].possiblePositions.back()
 			+ fillPosses[i - 1].fillLength;
-		unsigned int firstoflast = fillPosses[i].possiblePositions.peekFront();
+		unsigned int firstoflast = fillPosses[i].possiblePositions.front();
 		
 		markInRange(lastoffirst, firstoflast, 0, changesMade);
 	}
@@ -421,21 +442,21 @@ unsigned int RoworColumn::markConsistent()
 GetList returns a list containing one line of ints read from in.
 --------------------------------------------------------------*/
 
-LinkedList<unsigned int> CrossPuzzle::getList(std::ifstream& in)
+std::list<unsigned int> CrossPuzzle::getList(std::ifstream& in)
 {
 	unsigned int temp;
-	LinkedList<unsigned int> L;
+	std::list<unsigned int> L;
 
 	// There will always be at least one number
 	in >> temp;
-	L.insert(temp);
+	L.push_front(temp);
 
 	for (int c = in.peek(); c != '\n' && !in.eof(); c = in.peek())
 	{
 		if ('0' <= c && c <= '9')
 		{
 			in >> temp;
-			L.insertBack(temp);
+			L.push_back(temp);
 		}
 		else
 		{
@@ -444,9 +465,9 @@ LinkedList<unsigned int> CrossPuzzle::getList(std::ifstream& in)
 	}
 	
 	// If the list is just 0, let it be an empty list
-	if (L.getSize() == 1 && L.peekFront() == 0)
+	if (L.size() == 1 && L.front() == 0)
 	{
-		L.remove();
+		L.pop_front();
 	}
 
 	return L;

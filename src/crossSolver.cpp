@@ -26,7 +26,6 @@ column k clues
 #include <iostream>
 #include <cstdlib>
 #include <cstring>
-#include "../../../lib/linkedList.h"
 #include "cpuzzle.h"
 
 char* parseArgs(int args, char* argv[])

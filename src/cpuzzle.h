@@ -8,9 +8,9 @@
 
 #include <iostream>
 #include <exception>
-#include "../../../lib/linkedList.h"
+#include <list>
 
-//#define CPUZZLE_DEBUG
+#define CPUZZLE_DEBUG
 
 class RoworColumn
 {
@@ -27,7 +27,7 @@ class RoworColumn
 	void markInRange(unsigned int start, unsigned int end,
 		int value, unsigned int& changesMade);
 	
-	static void throwIfEmpty(const LinkedList<unsigned int>& LL);
+	static void throwIfEmpty(const std::list<unsigned int>& LL);
 	void printgrid(std::ostream& stream) const;
 	
 	public:
@@ -37,7 +37,7 @@ class RoworColumn
 	
 	friend std::ostream& operator<<(std::ostream& stream, const RoworColumn& roc);
 	
-	RoworColumn(unsigned int siz, int** grd, const LinkedList<unsigned int>& hintList);
+	RoworColumn(unsigned int siz, int** grd, const std::list<unsigned int>& hintList);
 	RoworColumn(const RoworColumn& rc, int** grd);
 	RoworColumn& operator=(const RoworColumn& rc);
 	RoworColumn& operator=(RoworColumn&& rc);
@@ -52,7 +52,7 @@ class CrossPuzzle
 {
 	private:
 	
-	static LinkedList<unsigned int> getList(std::ifstream& in);
+	static std::list<unsigned int> getList(std::ifstream& in);
 	
 	void createGrid();
 	

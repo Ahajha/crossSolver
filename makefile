@@ -8,12 +8,10 @@ CFILES = src/bmpMaker.cpp\
 
 OFILES = $(patsubst src/%.cpp,obj/%.o,$(CFILES))
 
-EOFILES = ../../lib/linkedList.o
-
 all: bin/crossSolve
 
-bin/crossSolve: $(OFILES) $(EOFILES) $(TEMPLATE)
-	$(LINK) -o bin/crossSolve $(OFILES) $(EOFILES)
+bin/crossSolve: $(OFILES) $(TEMPLATE)
+	$(LINK) -o bin/crossSolve $(OFILES)
 
 obj/%.o: src/%.cpp
 	$(CC) $(CFLAGS) -c $< -o $@
