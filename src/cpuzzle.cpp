@@ -438,6 +438,96 @@ unsigned CrossPuzzle::removeAndMark(RoworColumn rocs[], unsigned numrocs)
 	return changesMade;
 }
 
+/*--------------------------------------
+Solves this, or throws a
+CrossPuzzle::puzzle_error if unsolvable.
+--------------------------------------*/
+
+void CrossPuzzle::solve()
+{
+	#ifdef CPUZZLE_DEBUG
+		std::cout << "Entering solve:" << std::endl << "Puzzle:" << std::endl << *this;
+	#endif
+	
+	int rowChanges, colChanges;
+	
+	do
+	{
+		#ifdef CPUZZLE_DEBUG
+			std::cout << "Remove and mark on rows:" << std::endl;
+		#endif
+		rowChanges = removeAndMark(rows, numrows);
+		
+		#ifdef CPUZZLE_DEBUG
+			std::cout << "Remove and mark on columns:" << std::endl;
+		#endif
+		colChanges = removeAndMark(cols, numcols);
+	}
+	while(!isComplete() && (rowChanges || colChanges));
+	
+	#ifdef CPUZZLE_DEBUG
+		std::cout << "Done with logical rules:" << std::endl;	
+	#endif
+	
+	if (isComplete())
+	{
+		#ifdef CPUZZLE_DEBUG
+			std::cout << "Puzzle complete:" << std::endl << CP;	
+		#endif
+		
+		return;
+	}
+	
+	#ifdef CPUZZLE_DEBUG
+		std::cout << "\nUsing brute force:\n" << std::endl;
+	#endif
+	
+	// find position to brute force
+	unsigned x = 0, y = 0;
+	while (grid[x][y] != -1)
+	{
+		y++;
+		if (y >= numcols)
+		{
+			y = 0;
+			x++;
+		}
+		// Not needed, but just to be sure for now:
+		if (x >= numrows)
+		{
+			std::cout << "Complete puzzle is showing incomplete. Error." << std::endl;
+			exit(1);
+		}
+	}
+	
+	// Guess 1 first, is significantly quicker on some puzzles.
+	for (int guess = 1; guess >= 0; guess--)
+	{
+		CrossPuzzle copy(*this);
+		
+		#ifdef CPUZZLE_DEBUG
+			std::cout << "Guessing " << guess << " at position ("
+				<< x << "," << y << ")" << std::endl;
+		#endif
+	
+		copy.grid[x][y] = guess;
+		
+		try
+		{
+			copy.solve();
+			std::swap(copy,*this);
+			return;
+		}
+		catch (CrossPuzzle::puzzle_error& e) {}
+	}
+	
+	#ifdef CPUZZLE_DEBUG
+		std::cout << "No solution." << std::endl;
+	#endif
+	
+	throw CrossPuzzle::puzzle_error("Unsolvable puzzle");
+}
+
 /*--------------------------------------------------------------
 GetList returns a list containing one line of ints read from in.
 --------------------------------------------------------------*/

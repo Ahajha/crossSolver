@@ -48,106 +48,6 @@ char* getOutFileName(const char* inFileName)
 	return out;
 }
 
-//CrossPuzzle* solve(CrossPuzzle* CP);
-
-/*
-Performs a brute-force solve on CP
-*/
-/*
-CrossPuzzle* bruteForceSolve(CrossPuzzle* CP)
-{
-
-}
-*/
-/*------------------------------------------------------
-Solve returns a solved puzzle based on CP, or throws a
-CrossPuzzle::puzzle_error if CP could not be solved.
-No guarantee if the returned puzzle is CP itself or not.
-------------------------------------------------------*/
-
-CrossPuzzle solve(CrossPuzzle& CP)
-{
-	#ifdef CPUZZLE_DEBUG
-		std::cout << "Entering solve:" << std::endl << "Puzzle:" << std::endl << CP;
-	#endif
-	
-	int rowChanges, colChanges;
-	
-	do
-	{
-		#ifdef CPUZZLE_DEBUG
-			std::cout << "Remove and mark on rows:" << std::endl;
-		#endif
-		rowChanges = CP.removeAndMark(CP.rows, CP.numrows);
-		
-		#ifdef CPUZZLE_DEBUG
-			std::cout << "Remove and mark on columns:" << std::endl;
-		#endif
-		colChanges = CP.removeAndMark(CP.cols, CP.numcols);
-	}
-	while(!CP.isComplete() && (rowChanges || colChanges));
-	
-	#ifdef CPUZZLE_DEBUG
-		std::cout << "Done with logical rules:" << std::endl;	
-	#endif
-	
-	if (CP.isComplete())
-	{
-		#ifdef CPUZZLE_DEBUG
-			std::cout << "Puzzle complete:" << std::endl << CP;	
-		#endif
-		
-		return CP;
-	}
-	
-	#ifdef CPUZZLE_DEBUG
-		std::cout << "\nUsing brute force:\n" << std::endl;
-	#endif
-	
-	// find position to brute force
-	unsigned x = 0, y = 0;
-	while (CP.grid[x][y] != -1)
-	{
-		y++;
-		if (y >= CP.numcols)
-		{
-			y = 0;
-			x++;
-		}
-		// Not needed, but just to be sure for now:
-		if (x >= CP.numrows)
-		{
-			std::cout << "Complete puzzle is showing incomplete. Error." << std::endl;
-			exit(1);
-		}
-	}
-	
-	// Guess 1 first, is significantly quicker on some puzzles.
-	for (int guess = 1; guess >= 0; guess--)
-	{
-		CrossPuzzle copy(CP);
-		
-		#ifdef CPUZZLE_DEBUG
-			std::cout << "Guessing " << guess << " at position ("
-				<< x << "," << y << ")" << std::endl;
-		#endif
-	
-		copy.grid[x][y] = guess;
-		
-		try
-		{
-			return solve(copy);
-		}
-		catch (CrossPuzzle::puzzle_error& e) {}
-	}
-	
-	#ifdef CPUZZLE_DEBUG
-		std::cout << "No solution." << std::endl;
-	#endif
-	
-	throw CrossPuzzle::puzzle_error("Unsolvable puzzle");
-}
-
 int main(int args, char* argv[])
 {
 	char* inFileName = parseArgs(args, argv);
@@ -156,7 +56,7 @@ int main(int args, char* argv[])
 	{
 		CrossPuzzle puzzle(inFileName);
 	
-		puzzle = solve(puzzle);
+		puzzle.solve();
 		
 		#ifdef DEBUG
 			std::cout << "\nFinal puzzle:" << std::endl << puzzle;
