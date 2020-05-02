@@ -92,7 +92,7 @@ the items in grd, with a list of hints hintList.
 
 RoworColumn::RoworColumn(unsigned siz, int* grd[], const std::list<unsigned>& hintList)
 	: size(siz), numFills(hintList.size()), grid(grd),
-	  fillPosses(new possibilityList[numFills])
+	  fillPosses(numFills)
 {
 	#ifdef CPUZZLE_DEBUG
 		for (unsigned i : hintList) std::cout << i << ' ';
@@ -133,7 +133,7 @@ Creates a copy of roc, which references grd.
 
 RoworColumn::RoworColumn(const RoworColumn& roc, int** grd)
 	: size(roc.size), numFills(roc.numFills), grid(grd), complete(roc.complete),
-	  fillPosses(new possibilityList[numFills])
+	  fillPosses(numFills)
 {
 	if (!isComplete())
 	{
@@ -142,36 +142,6 @@ RoworColumn::RoworColumn(const RoworColumn& roc, int** grd)
 			fillPosses[i] = possibilityList(roc.fillPosses[i]);
 		}
 	}
-}
-
-RoworColumn::RoworColumn() : fillPosses(NULL) {}
-
-/*--------------------
-Destroys a RoworColumn
---------------------*/
-
-RoworColumn::~RoworColumn()
-{
-	delete[] fillPosses;
-}
-
-RoworColumn& RoworColumn::operator=(const RoworColumn& rc)
-{
-	size = rc.size;
-	numFills = rc.numFills;
-	grid = rc.grid;
-	complete = rc.complete;
-	fillPosses = new possibilityList[numFills];
-	
-	if (!complete)
-	{
-		for (unsigned i = 0; i < numFills; i++)
-		{
-			fillPosses[i] = possibilityList(rc.fillPosses[i]);
-		}
-	}
-	
-	return *this;
 }
 
 RoworColumn& RoworColumn::operator=(RoworColumn&& rc)

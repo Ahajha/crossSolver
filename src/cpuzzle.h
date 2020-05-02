@@ -8,6 +8,7 @@
 
 #include <iostream>
 #include <exception>
+#include <vector>
 #include <list>
 
 //#define CPUZZLE_DEBUG
@@ -22,7 +23,7 @@ class RoworColumn
 	mutable bool complete;
 	
 	struct possibilityList;
-	possibilityList* fillPosses; // possList[]
+	std::vector<possibilityList> fillPosses;
 	
 	void markInRange(unsigned int start, unsigned int end,
 		int value, unsigned int& changesMade);
@@ -38,10 +39,10 @@ class RoworColumn
 	
 	RoworColumn(unsigned int siz, int** grd, const std::list<unsigned int>& hintList);
 	RoworColumn(const RoworColumn& rc, int** grd);
-	RoworColumn& operator=(const RoworColumn& rc);
+	RoworColumn& operator=(const RoworColumn& rc) = default;
 	RoworColumn& operator=(RoworColumn&& rc);
-	RoworColumn();
-	~RoworColumn();
+	RoworColumn() = default;
+	~RoworColumn() = default;
 	
 	unsigned int removeIncompatible();
 	unsigned int markConsistent();
