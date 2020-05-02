@@ -17,7 +17,6 @@ class RoworColumn
 {
 	private:
 	
-	unsigned size;
 	std::vector<int*> grid;
 	mutable bool complete;
 	
@@ -35,8 +34,7 @@ class RoworColumn
 	
 	friend std::ostream& operator<<(std::ostream& stream, const RoworColumn& roc);
 	
-	RoworColumn(unsigned siz, std::vector<int*> grd,
-		const std::list<unsigned>& hintList);
+	RoworColumn(std::vector<int*> grd, const std::list<unsigned>& hintList);
 	RoworColumn(const RoworColumn& rc, std::vector<int*> grd);
 	RoworColumn& operator=(const RoworColumn& rc) = default;
 	RoworColumn& operator=(RoworColumn&& rc);

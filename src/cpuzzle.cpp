@@ -35,7 +35,7 @@ bool RoworColumn::isComplete() const
 {
 	if (complete) return true;
 	
-	for (unsigned i = 0; i < size; i++)
+	for (unsigned i = 0; i < grid.size(); i++)
 	{
 		if (*grid[i] == -1)
 		{
@@ -47,7 +47,7 @@ bool RoworColumn::isComplete() const
 
 void RoworColumn::printgrid(std::ostream& stream) const
 {
-	for (unsigned i = 0; i < size; i++)
+	for (unsigned i = 0; i < grid.size(); i++)
 	{
 		if (*(grid[i]) == -1)
 			stream << "_ ";
@@ -89,8 +89,8 @@ Constructs a RoworColumn of length 'siz', referencing
 the items in grd, with a list of hints hintList.
 ----------------------------------------------------*/
 
-RoworColumn::RoworColumn(unsigned siz, std::vector<int*> grd, const std::list<unsigned>& hintList)
-	: size(siz), grid(grd)
+RoworColumn::RoworColumn(std::vector<int*> grd,
+	const std::list<unsigned>& hintList) : grid(grd)
 {
 	#ifdef CPUZZLE_DEBUG
 		for (unsigned i : hintList) std::cout << i << ' ';
@@ -100,7 +100,7 @@ RoworColumn::RoworColumn(unsigned siz, std::vector<int*> grd, const std::list<un
 	if (hintList.empty())
 	{
 		complete = true;
-		for (unsigned i = 0; i < size; i++)
+		for (unsigned i = 0; i < grid.size(); i++)
 		{
 			*(grid[i]) = 0;
 		}
@@ -114,7 +114,7 @@ RoworColumn::RoworColumn(unsigned siz, std::vector<int*> grd, const std::list<un
 		unsigned sum = 0;
 		for (unsigned hint : hintList) sum += hint;
 		
-		unsigned extraSpace = size - (sum + hintList.size() - 1);
+		unsigned extraSpace = grid.size() - (sum + hintList.size() - 1);
 		
 		unsigned minPos = 0;
 		for (unsigned hint : hintList)
@@ -130,8 +130,7 @@ Creates a copy of roc, which references grd.
 ------------------------------------------*/
 
 RoworColumn::RoworColumn(const RoworColumn& roc, std::vector<int*> grd)
-	: size(roc.size), grid(grd), complete(roc.complete),
-	  fillPosses(roc.fillPosses.size())
+	: grid(grd), complete(roc.complete), fillPosses(roc.fillPosses.size())
 {
 	if (!isComplete())
 	{
@@ -147,7 +146,6 @@ RoworColumn& RoworColumn::operator=(RoworColumn&& rc)
 	std::swap(grid,rc.grid);
 	std::swap(fillPosses,rc.fillPosses);
 	
-	size = rc.size;
 	complete = rc.complete;
 	
 	return *this;
@@ -179,7 +177,7 @@ unsigned RoworColumn::removeIncompatible()
 	unsigned changesMade = 0;
 
 	// Check each position for a space that has recently been marked
-	for (unsigned i = 0; i < size; i++)
+	for (unsigned i = 0; i < grid.size(); i++)
 	{
 		if (*grid[i] == 0)
 		{
@@ -380,7 +378,7 @@ unsigned RoworColumn::markConsistent()
 	
 	unsigned lastoflast = fillPosses.back().possiblePositions.back()
 		+ fillPosses.back().fillLength;
-	markInRange(lastoflast, size, 0, changesMade);
+	markInRange(lastoflast, grid.size(), 0, changesMade);
 	
 	// For each consecutive pair of fills, fill any gaps between
 	// the last possibility of the first and the first possibility
@@ -664,7 +662,7 @@ CrossPuzzle::CrossPuzzle(const char* infile)
 			std::cout << "    " << i << ": ";
 		#endif
 		
-		rows[i] = RoworColumn(numcols, createTempGridRow(i), getList(ifs));
+		rows[i] = RoworColumn(createTempGridRow(i), getList(ifs));
 	}
 	
 	#ifdef CPUZZLE_DEBUG
@@ -678,7 +676,7 @@ CrossPuzzle::CrossPuzzle(const char* infile)
 			std::cout << "    " << i << ": ";
 		#endif
 		
-		cols[i] = RoworColumn(numrows, createTempGridCol(i), getList(ifs));
+		cols[i] = RoworColumn(createTempGridCol(i), getList(ifs));
 	}
 
 	ifs.close();
