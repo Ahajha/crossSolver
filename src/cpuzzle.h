@@ -10,7 +10,7 @@
 #include <exception>
 #include <list>
 
-#define CPUZZLE_DEBUG
+//#define CPUZZLE_DEBUG
 
 class RoworColumn
 {
@@ -19,7 +19,7 @@ class RoworColumn
 	unsigned int size;
 	unsigned int numFills;
 	int** grid; // int* []
-	bool complete;
+	mutable bool complete;
 	
 	struct possibilityList;
 	possibilityList* fillPosses; // possList[]
@@ -32,8 +32,7 @@ class RoworColumn
 	
 	public:
 	
-	bool isComplete();
-	bool constIsComplete() const;
+	bool isComplete() const;
 	
 	friend std::ostream& operator<<(std::ostream& stream, const RoworColumn& roc);
 	

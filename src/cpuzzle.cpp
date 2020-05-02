@@ -32,17 +32,9 @@ struct RoworColumn::possibilityList
 	}
 };
 
-bool RoworColumn::isComplete()
+bool RoworColumn::isComplete() const
 {
-	return complete = constIsComplete();
-}
-
-bool RoworColumn::constIsComplete() const
-{
-	if (complete)
-	{
-		return true;
-	}
+	if (complete) return true;
 	
 	for (unsigned i = 0; i < size; i++)
 	{
@@ -51,7 +43,7 @@ bool RoworColumn::constIsComplete() const
 			return false;
 		}
 	}
-	return true;
+	return complete = true;
 }
 
 void RoworColumn::printgrid(std::ostream& stream) const
@@ -68,7 +60,7 @@ void RoworColumn::printgrid(std::ostream& stream) const
 
 std::ostream& operator<<(std::ostream& stream, const RoworColumn& roc)
 {
-	if(roc.constIsComplete())
+	if(roc.isComplete())
 	{
 		stream << "Complete. Grid:" << std::endl;
 		roc.printgrid(stream);
