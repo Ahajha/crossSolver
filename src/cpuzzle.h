@@ -58,14 +58,16 @@ class CrossPuzzle
 	std::vector<int*> createTempGridRow(unsigned i);
 	std::vector<int*> createTempGridCol(unsigned i);
 	
-	public:
-	
 	unsigned numrows, numcols;
 	
 	std::vector<std::vector<int>> grid;
 	
 	RoworColumn* rows; // RoC []
 	RoworColumn* cols; // RoC []
+	
+	unsigned removeAndMark(RoworColumn rocs[], unsigned numrocs);
+	
+	public:
 	
 	class puzzle_error : public std::exception
 	{
@@ -86,8 +88,6 @@ class CrossPuzzle
 	CrossPuzzle& operator=(const CrossPuzzle& CP);
 	CrossPuzzle& operator=(CrossPuzzle&& CP);
 	~CrossPuzzle();
-	
-	unsigned removeAndMark(RoworColumn rocs[], unsigned numrocs);
 	
 	void solve();
 	
