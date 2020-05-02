@@ -1,0 +1,97 @@
+// Author:        Alex Trotta
+// Start Date:    5/1/18
+// Last Modified: 12/20/18
+// File Name:     cpuzzle.h
+
+#ifndef CPUZZLE_H
+#define CPUZZLE_H
+
+#include <iostream>
+#include <exception>
+#include "../../../lib/linkedList.h"
+
+//#define CPUZZLE_DEBUG
+
+class RoworColumn
+{
+	private:
+	
+	unsigned int size;
+	unsigned int numFills;
+	int** grid; // int* []
+	bool complete;
+	
+	struct possibilityList;
+	possibilityList* fillPosses; // possList[]
+	
+	void markInRange(unsigned int start, unsigned int end,
+		int value, unsigned int& changesMade);
+	
+	static void throwIfEmpty(const LinkedList<unsigned int>& LL);
+	void printgrid(std::ostream& stream) const;
+	
+	public:
+	
+	bool isComplete();
+	bool constIsComplete() const;
+	
+	friend std::ostream& operator<<(std::ostream& stream, const RoworColumn& roc);
+	
+	RoworColumn(unsigned int siz, int** grd, const LinkedList<unsigned int>& hintList);
+	RoworColumn(const RoworColumn& rc, int** grd);
+	RoworColumn& operator=(const RoworColumn& rc);
+	RoworColumn& operator=(RoworColumn&& rc);
+	RoworColumn();
+	~RoworColumn();
+	
+	unsigned int removeIncompatible();
+	unsigned int markConsistent();
+};
+
+class CrossPuzzle
+{
+	private:
+	
+	static LinkedList<unsigned int> getList(std::ifstream& in);
+	
+	void createGrid();
+	
+	int** createTempGridRow(unsigned int i);
+	int** createTempGridCol(unsigned int i);
+	
+	public:
+	
+	unsigned int numrows, numcols;
+	
+	int** grid; // int[][]
+	
+	RoworColumn* rows; // RoC []
+	RoworColumn* cols; // RoC []
+	
+	class puzzle_error : public std::exception
+	{
+		const char* msg;
+		
+		public:
+		
+		virtual const char* what() const throw()
+		{
+			return msg;
+		}
+		
+		puzzle_error(const char* m) : msg(m) {}
+	};
+	
+	CrossPuzzle(const char* infile);
+	CrossPuzzle(const CrossPuzzle& CP);
+	CrossPuzzle& operator=(const CrossPuzzle& CP);
+	CrossPuzzle& operator=(CrossPuzzle&& CP);
+	~CrossPuzzle();
+	
+	bool isComplete() const;
+	void createBitmap(const char* fileName) const;
+	
+	friend std::ostream& operator<<(std::ostream& stream, const CrossPuzzle& CP);
+};
+
+#endif
