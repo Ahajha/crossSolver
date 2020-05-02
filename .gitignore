@@ -1,1 +1,2 @@
-bin/crossSolve obj/bmpMaker.o obj/cpuzzle.o obj/crossSolver.o obj/linkedList.o obj/trace.o
+bin/*
+obj/*
