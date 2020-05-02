@@ -22,7 +22,7 @@ struct RoworColumn::possibilityList
 	
 	possibilityList() {}
 	
-	possibilityList(const unsigned fl, const unsigned start, const unsigned end)
+	possibilityList(unsigned fl, unsigned start, unsigned end)
 		: fillLength(fl)
 	{
 		for (unsigned i = start; i <= end; i++)
@@ -354,7 +354,7 @@ Marks items in the grid that are consistent
 with all possibilites in a RoworColumn.
 -----------------------------------------*/
 
-unsigned int RoworColumn::markConsistent()
+unsigned RoworColumn::markConsistent()
 {
 	unsigned changesMade = 0;
 	
@@ -380,18 +380,18 @@ unsigned int RoworColumn::markConsistent()
 	// Mark every cell that is after all possible end positions of the last
 	// fill as empty.
 	
-	unsigned int lastoflast = fillPosses.back().possiblePositions.back()
+	unsigned lastoflast = fillPosses.back().possiblePositions.back()
 		+ fillPosses.back().fillLength;
 	markInRange(lastoflast, size, 0, changesMade);
 	
 	// For each consecutive pair of fills, fill any gaps between
 	// the last possibility of the first and the first possibility
 	// of the second with empty space.
-	for (unsigned int i = 1; i < fillPosses.size(); i++)
+	for (unsigned i = 1; i < fillPosses.size(); i++)
 	{
-		unsigned int lastoffirst = fillPosses[i - 1].possiblePositions.back()
+		unsigned lastoffirst = fillPosses[i - 1].possiblePositions.back()
 			+ fillPosses[i - 1].fillLength;
-		unsigned int firstoflast = fillPosses[i].possiblePositions.front();
+		unsigned firstoflast = fillPosses[i].possiblePositions.front();
 		
 		markInRange(lastoffirst, firstoflast, 0, changesMade);
 	}
@@ -532,10 +532,10 @@ void CrossPuzzle::solve()
 GetList returns a list containing one line of ints read from in.
 --------------------------------------------------------------*/
 
-std::list<unsigned int> CrossPuzzle::getList(std::ifstream& in)
+std::list<unsigned> CrossPuzzle::getList(std::ifstream& in)
 {
-	unsigned int temp;
-	std::list<unsigned int> L;
+	unsigned temp;
+	std::list<unsigned> L;
 
 	// There will always be at least one number
 	in >> temp;
@@ -570,19 +570,19 @@ std::ostream& operator<<(std::ostream& stream, const CrossPuzzle& CP)
 	
 	if (!CP.isComplete())
 	{
-		for (unsigned int i = 0; i < CP.numrows; i++)
+		for (unsigned i = 0; i < CP.numrows; i++)
 		{
 			stream << "Row " << i << ": " << CP.rows[i];
 		}
-		for (unsigned int i = 0; i < CP.numcols; i++)
+		for (unsigned i = 0; i < CP.numcols; i++)
 		{
 			stream << "Column " << i << ": " << CP.cols[i];
 		}
 	}
 	
-	for (unsigned int i = 0; i < CP.numrows; i++)
+	for (unsigned i = 0; i < CP.numrows; i++)
 	{
-		for (unsigned int j = 0; j < CP.numcols; j++)
+		for (unsigned j = 0; j < CP.numcols; j++)
 		{
 			if (CP.grid[i][j] == -1)
 			{
@@ -603,30 +603,30 @@ std::ostream& operator<<(std::ostream& stream, const CrossPuzzle& CP)
 void CrossPuzzle::createGrid()
 {
 	grid.resize(numrows);
-	for (unsigned int i = 0; i < numrows; i++)
+	for (unsigned i = 0; i < numrows; i++)
 	{
 		grid[i].resize(numcols);
-		for (unsigned int j = 0; j < numcols; j++)
+		for (unsigned j = 0; j < numcols; j++)
 		{
 			grid[i][j] = -1;
 		}
 	}
 }
 
-std::vector<int*> CrossPuzzle::createTempGridRow(unsigned int i)
+std::vector<int*> CrossPuzzle::createTempGridRow(unsigned i)
 {
 	std::vector<int*> tempgrid(numcols);
-	for (unsigned int j = 0; j < numcols; j++)
+	for (unsigned j = 0; j < numcols; j++)
 	{
 		tempgrid[j] = &(grid[i][j]);
 	}
 	return tempgrid;
 }
 
-std::vector<int*> CrossPuzzle::createTempGridCol(unsigned int i)
+std::vector<int*> CrossPuzzle::createTempGridCol(unsigned i)
 {
 	std::vector<int*> tempgrid(numrows);
-	for (unsigned int j = 0; j < numrows; j++)
+	for (unsigned j = 0; j < numrows; j++)
 	{
 		tempgrid[j] = &(grid[j][i]);
 	}
@@ -660,7 +660,7 @@ CrossPuzzle::CrossPuzzle(const char* infile)
 	#endif
 	
 	rows = new RoworColumn[numrows];
-	for (unsigned int i = 0; i < numrows; i++)
+	for (unsigned i = 0; i < numrows; i++)
 	{
 		#ifdef CPUZZLE_DEBUG
 			std::cout << "    " << i << ": ";
@@ -674,7 +674,7 @@ CrossPuzzle::CrossPuzzle(const char* infile)
 	#endif
 	
 	cols = new RoworColumn[numcols];
-	for (unsigned int i = 0; i < numcols; i++)
+	for (unsigned i = 0; i < numcols; i++)
 	{
 		#ifdef CPUZZLE_DEBUG
 			std::cout << "    " << i << ": ";
@@ -703,22 +703,22 @@ CrossPuzzle::CrossPuzzle(const CrossPuzzle& CP)
 	#endif
 	createGrid();
 	
-	for (unsigned int i = 0; i < numrows; i++)
+	for (unsigned i = 0; i < numrows; i++)
 	{
-		for (unsigned int j = 0; j < numcols; j++)
+		for (unsigned j = 0; j < numcols; j++)
 		{
 			grid[i][j] = CP.grid[i][j];
 		}
 	}
 	
 	rows = new RoworColumn[numrows];
-	for (unsigned int i = 0; i < numrows; i++)
+	for (unsigned i = 0; i < numrows; i++)
 	{
 		rows[i] = RoworColumn(CP.rows[i], createTempGridRow(i));
 	}
 	
 	cols = new RoworColumn[numcols];
-	for (unsigned int i = 0; i < numcols; i++)
+	for (unsigned i = 0; i < numcols; i++)
 	{
 		cols[i] = RoworColumn(CP.cols[i], createTempGridCol(i));
 	}
@@ -746,20 +746,20 @@ CrossPuzzle& CrossPuzzle::operator=(const CrossPuzzle& CP)
 	
 	createGrid();
 	
-	for (unsigned int i = 0; i < numrows; i++)
+	for (unsigned i = 0; i < numrows; i++)
 	{
-		for (unsigned int j = 0; j < numcols; j++)
+		for (unsigned j = 0; j < numcols; j++)
 		{
 			grid[i][j] = CP.grid[i][j];
 		}
 	}
 	
-	for (unsigned int i = 0; i < numrows; i++)
+	for (unsigned i = 0; i < numrows; i++)
 	{
 		rows[i] = RoworColumn(CP.rows[i], createTempGridRow(i));
 	}
 	
-	for (unsigned int i = 0; i < numcols; i++)
+	for (unsigned i = 0; i < numcols; i++)
 	{
 		cols[i] = RoworColumn(CP.cols[i], createTempGridCol(i));
 	}
@@ -802,7 +802,7 @@ bool CrossPuzzle::isComplete() const
 {
 	// Only need to check if rows or columns are complete,
 	// arbitrarily pick rows.
-	for (unsigned int i = 0; i < numrows; i++)
+	for (unsigned i = 0; i < numrows; i++)
 	{
 		if (!rows[i].isComplete())
 		{
@@ -816,12 +816,12 @@ void CrossPuzzle::createBitmap(const char* fileName) const
 {
 	BMP_24 soln(numrows, numcols);
 
-	for (unsigned int i = 0; i < numrows; i++)
+	for (unsigned i = 0; i < numrows; i++)
 	{
 		// The rows in a bitmap are flipped, so when writing,
 		// write to the opposite side.
-		unsigned int rowNum = numrows - 1 - i;
-		for (unsigned int j = 0; j < numcols; j++)
+		unsigned rowNum = numrows - 1 - i;
+		for (unsigned j = 0; j < numcols; j++)
 		{
 			if (grid[i][j] == 1)
 			{

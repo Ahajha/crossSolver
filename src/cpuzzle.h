@@ -17,17 +17,16 @@ class RoworColumn
 {
 	private:
 	
-	unsigned int size;
+	unsigned size;
 	std::vector<int*> grid;
 	mutable bool complete;
 	
 	struct possibilityList;
 	std::vector<possibilityList> fillPosses;
 	
-	void markInRange(unsigned int start, unsigned int end,
-		int value, unsigned int& changesMade);
+	void markInRange(unsigned start, unsigned end, int value, unsigned& changesMade);
 	
-	static void throwIfEmpty(const std::list<unsigned int>& LL);
+	static void throwIfEmpty(const std::list<unsigned>& LL);
 	void printgrid(std::ostream& stream) const;
 	
 	public:
@@ -36,32 +35,32 @@ class RoworColumn
 	
 	friend std::ostream& operator<<(std::ostream& stream, const RoworColumn& roc);
 	
-	RoworColumn(unsigned int siz, std::vector<int*> grd,
-		const std::list<unsigned int>& hintList);
+	RoworColumn(unsigned siz, std::vector<int*> grd,
+		const std::list<unsigned>& hintList);
 	RoworColumn(const RoworColumn& rc, std::vector<int*> grd);
 	RoworColumn& operator=(const RoworColumn& rc) = default;
 	RoworColumn& operator=(RoworColumn&& rc);
 	RoworColumn() = default;
 	~RoworColumn() = default;
 	
-	unsigned int removeIncompatible();
-	unsigned int markConsistent();
+	unsigned removeIncompatible();
+	unsigned markConsistent();
 };
 
 class CrossPuzzle
 {
 	private:
 	
-	static std::list<unsigned int> getList(std::ifstream& in);
+	static std::list<unsigned> getList(std::ifstream& in);
 	
 	void createGrid();
 	
-	std::vector<int*> createTempGridRow(unsigned int i);
-	std::vector<int*> createTempGridCol(unsigned int i);
+	std::vector<int*> createTempGridRow(unsigned i);
+	std::vector<int*> createTempGridCol(unsigned i);
 	
 	public:
 	
-	unsigned int numrows, numcols;
+	unsigned numrows, numcols;
 	
 	std::vector<std::vector<int>> grid;
 	
