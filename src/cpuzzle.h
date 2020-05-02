@@ -18,7 +18,6 @@ class RoworColumn
 	private:
 	
 	unsigned int size;
-	unsigned int numFills;
 	int** grid; // int* []
 	mutable bool complete;
 	

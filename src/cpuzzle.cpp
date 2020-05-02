@@ -70,7 +70,7 @@ std::ostream& operator<<(std::ostream& stream, const RoworColumn& roc)
 		stream << "Incomplete. Grid:" << std::endl;
 		roc.printgrid(stream);
 		
-		for (unsigned i = 0; i < roc.numFills; i++)
+		for (unsigned i = 0; i < roc.fillPosses.size(); i++)
 		{
 			stream << "Fill #" << i << ", length " << roc.fillPosses[i].fillLength << ": ";
 			
@@ -91,15 +91,15 @@ the items in grd, with a list of hints hintList.
 ----------------------------------------------------*/
 
 RoworColumn::RoworColumn(unsigned siz, int* grd[], const std::list<unsigned>& hintList)
-	: size(siz), numFills(hintList.size()), grid(grd),
-	  fillPosses(numFills)
+	: size(siz), grid(grd),
+	  fillPosses(hintList.size())
 {
 	#ifdef CPUZZLE_DEBUG
 		for (unsigned i : hintList) std::cout << i << ' ';
 		std::cout << std::endl;
 	#endif
 	
-	if (numFills == 0)
+	if (fillPosses.empty())
 	{
 		complete = true;
 		for (unsigned i = 0; i < size; i++)
@@ -114,7 +114,7 @@ RoworColumn::RoworColumn(unsigned siz, int* grd[], const std::list<unsigned>& hi
 		unsigned sum = 0;
 		for (unsigned hint : hintList) sum += hint;
 		
-		unsigned extraSpace = size - (sum + numFills - 1);
+		unsigned extraSpace = size - (sum + fillPosses.size() - 1);
 		
 		unsigned minPos = 0;
 		unsigned i = 0;
@@ -132,12 +132,12 @@ Creates a copy of roc, which references grd.
 ------------------------------------------*/
 
 RoworColumn::RoworColumn(const RoworColumn& roc, int** grd)
-	: size(roc.size), numFills(roc.numFills), grid(grd), complete(roc.complete),
-	  fillPosses(numFills)
+	: size(roc.size), grid(grd), complete(roc.complete),
+	  fillPosses(roc.fillPosses.size())
 {
 	if (!isComplete())
 	{
-		for (unsigned i = 0; i < numFills; i++)
+		for (unsigned i = 0; i < fillPosses.size(); i++)
 		{
 			fillPosses[i] = possibilityList(roc.fillPosses[i]);
 		}
@@ -150,7 +150,6 @@ RoworColumn& RoworColumn::operator=(RoworColumn&& rc)
 	std::swap(fillPosses,rc.fillPosses);
 	
 	size = rc.size;
-	numFills = rc.numFills;
 	complete = rc.complete;
 	
 	return *this;
@@ -187,7 +186,7 @@ unsigned RoworColumn::removeIncompatible()
 		if (*grid[i] == 0)
 		{
 			// Remove due to empty spaces
-			for (unsigned j = 0; j < numFills; j++)
+			for (unsigned j = 0; j < fillPosses.size(); j++)
 			{
 				unsigned length = fillPosses[j].fillLength;
 				
@@ -217,7 +216,7 @@ unsigned RoworColumn::removeIncompatible()
 		else if (*grid[i] == 1)
 		{
 			// Remove due to filled spaces
-			for (unsigned j = 0; j < numFills; j++)
+			for (unsigned j = 0; j < fillPosses.size(); j++)
 			{
 				unsigned length = fillPosses[j].fillLength;
 				
@@ -254,16 +253,16 @@ unsigned RoworColumn::removeIncompatible()
 			}
 			
 			// ... or after the last fill.
-			unsigned len = fillPosses[numFills - 1].fillLength;
-			while (fillPosses[numFills - 1].possiblePositions.front() + len < i)
+			unsigned len = fillPosses.back().fillLength;
+			while (fillPosses.back().possiblePositions.front() + len < i)
 			{
-				fillPosses[numFills - 1].possiblePositions.pop_front();
-				throwIfEmpty(fillPosses[numFills - 1].possiblePositions);
+				fillPosses.back().possiblePositions.pop_front();
+				throwIfEmpty(fillPosses.back().possiblePositions);
 				changesMade++;
 			}
 			
 			// Filled space cannot fall between two adjacent fills
-			for (unsigned j = 1; j < numFills; j++)
+			for (unsigned j = 1; j < fillPosses.size(); j++)
 			{
 				// If the first of the two fills cannot reach the filled
 				// space, the second cannot start after it.
@@ -301,7 +300,7 @@ unsigned RoworColumn::removeIncompatible()
 	// Push back/Push forward correcting
 	
 	// Possible TODO: Combine this with last rule in markConsistent, or the rule above
-	for (unsigned i = 1; i < numFills; i++)
+	for (unsigned i = 1; i < fillPosses.size(); i++)
 	{
 		unsigned furthestback = fillPosses[i - 1].possiblePositions.front() +
 			fillPosses[i - 1].fillLength;
@@ -313,7 +312,7 @@ unsigned RoworColumn::removeIncompatible()
 		}
 	}
 	
-	for (unsigned i = numFills - 1; i > 0; i--)
+	for (unsigned i = fillPosses.size() - 1; i > 0; i--)
 	{
 		unsigned furthestforward = fillPosses[i].possiblePositions.back();
 		unsigned length = fillPosses[i - 1].fillLength;
@@ -360,7 +359,7 @@ unsigned int RoworColumn::markConsistent()
 	unsigned changesMade = 0;
 	
 	// Mark filled spaces
-	for (unsigned i = 0; i < numFills; i++)
+	for (unsigned i = 0; i < fillPosses.size(); i++)
 	{
 		// Mark every cell from the last possible start position of the fill
 		// to the first possible end position of the fill. This may not mark anything.
@@ -381,14 +380,14 @@ unsigned int RoworColumn::markConsistent()
 	// Mark every cell that is after all possible end positions of the last
 	// fill as empty.
 	
-	unsigned int lastoflast = fillPosses[numFills - 1].possiblePositions.back()
-		+ fillPosses[numFills - 1].fillLength;
+	unsigned int lastoflast = fillPosses.back().possiblePositions.back()
+		+ fillPosses.back().fillLength;
 	markInRange(lastoflast, size, 0, changesMade);
 	
 	// For each consecutive pair of fills, fill any gaps between
 	// the last possibility of the first and the first possibility
 	// of the second with empty space.
-	for (unsigned int i = 1; i < numFills; i++)
+	for (unsigned int i = 1; i < fillPosses.size(); i++)
 	{
 		unsigned int lastoffirst = fillPosses[i - 1].possiblePositions.back()
 			+ fillPosses[i - 1].fillLength;
