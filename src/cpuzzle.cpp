@@ -90,15 +90,14 @@ the items in grd, with a list of hints hintList.
 ----------------------------------------------------*/
 
 RoworColumn::RoworColumn(unsigned siz, std::vector<int*> grd, const std::list<unsigned>& hintList)
-	: size(siz), grid(grd),
-	  fillPosses(hintList.size())
+	: size(siz), grid(grd)
 {
 	#ifdef CPUZZLE_DEBUG
 		for (unsigned i : hintList) std::cout << i << ' ';
 		std::cout << std::endl;
 	#endif
 	
-	if (fillPosses.empty())
+	if (hintList.empty())
 	{
 		complete = true;
 		for (unsigned i = 0; i < size; i++)
@@ -110,18 +109,18 @@ RoworColumn::RoworColumn(unsigned siz, std::vector<int*> grd, const std::list<un
 	{
 		complete = false;
 		
+		fillPosses.reserve(hintList.size());
+		
 		unsigned sum = 0;
 		for (unsigned hint : hintList) sum += hint;
 		
-		unsigned extraSpace = size - (sum + fillPosses.size() - 1);
+		unsigned extraSpace = size - (sum + hintList.size() - 1);
 		
 		unsigned minPos = 0;
-		unsigned i = 0;
-		for (unsigned temp : hintList)
+		for (unsigned hint : hintList)
 		{
-			fillPosses[i] = possibilityList(temp, minPos, minPos + extraSpace);
-			minPos += temp + 1;
-			i++;
+			fillPosses.emplace_back(hint, minPos, minPos + extraSpace);
+			minPos += hint + 1;
 		}
 	}
 }
