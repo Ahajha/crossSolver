@@ -18,7 +18,7 @@ class RoworColumn
 	private:
 	
 	unsigned int size;
-	int** grid; // int* []
+	std::vector<int*> grid;
 	mutable bool complete;
 	
 	struct possibilityList;
@@ -36,8 +36,9 @@ class RoworColumn
 	
 	friend std::ostream& operator<<(std::ostream& stream, const RoworColumn& roc);
 	
-	RoworColumn(unsigned int siz, int** grd, const std::list<unsigned int>& hintList);
-	RoworColumn(const RoworColumn& rc, int** grd);
+	RoworColumn(unsigned int siz, std::vector<int*> grd,
+		const std::list<unsigned int>& hintList);
+	RoworColumn(const RoworColumn& rc, std::vector<int*> grd);
 	RoworColumn& operator=(const RoworColumn& rc) = default;
 	RoworColumn& operator=(RoworColumn&& rc);
 	RoworColumn() = default;
@@ -55,8 +56,8 @@ class CrossPuzzle
 	
 	void createGrid();
 	
-	int** createTempGridRow(unsigned int i);
-	int** createTempGridCol(unsigned int i);
+	std::vector<int*> createTempGridRow(unsigned int i);
+	std::vector<int*> createTempGridCol(unsigned int i);
 	
 	public:
 	

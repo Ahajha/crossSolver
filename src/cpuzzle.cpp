@@ -90,7 +90,7 @@ Constructs a RoworColumn of length 'siz', referencing
 the items in grd, with a list of hints hintList.
 ----------------------------------------------------*/
 
-RoworColumn::RoworColumn(unsigned siz, int* grd[], const std::list<unsigned>& hintList)
+RoworColumn::RoworColumn(unsigned siz, std::vector<int*> grd, const std::list<unsigned>& hintList)
 	: size(siz), grid(grd),
 	  fillPosses(hintList.size())
 {
@@ -131,7 +131,7 @@ RoworColumn::RoworColumn(unsigned siz, int* grd[], const std::list<unsigned>& hi
 Creates a copy of roc, which references grd.
 ------------------------------------------*/
 
-RoworColumn::RoworColumn(const RoworColumn& roc, int** grd)
+RoworColumn::RoworColumn(const RoworColumn& roc, std::vector<int*> grd)
 	: size(roc.size), grid(grd), complete(roc.complete),
 	  fillPosses(roc.fillPosses.size())
 {
@@ -613,9 +613,9 @@ void CrossPuzzle::createGrid()
 	}
 }
 
-int** CrossPuzzle::createTempGridRow(unsigned int i)
+std::vector<int*> CrossPuzzle::createTempGridRow(unsigned int i)
 {
-	int** tempgrid = new int* [numcols];
+	std::vector<int*> tempgrid(numcols);
 	for (unsigned int j = 0; j < numcols; j++)
 	{
 		tempgrid[j] = &(grid[i][j]);
@@ -623,9 +623,9 @@ int** CrossPuzzle::createTempGridRow(unsigned int i)
 	return tempgrid;
 }
 
-int** CrossPuzzle::createTempGridCol(unsigned int i)
+std::vector<int*> CrossPuzzle::createTempGridCol(unsigned int i)
 {
-	int** tempgrid = new int* [numrows];
+	std::vector<int*> tempgrid(numrows);
 	for (unsigned int j = 0; j < numrows; j++)
 	{
 		tempgrid[j] = &(grid[j][i]);
