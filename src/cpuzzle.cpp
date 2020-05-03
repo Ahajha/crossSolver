@@ -631,7 +631,7 @@ CrossPuzzle::CrossPuzzle(const char* infile)
 		std::cout << "Rows: " << numrows << ", Cols: " << numcols << std::endl;
 	#endif
 	
-	// Create grid, fill with zeros
+	// Create grid, fill with -1s
 	grid.resize(numrows * numcols);
 	std::fill(grid.begin(), grid.end(), -1);
 	
