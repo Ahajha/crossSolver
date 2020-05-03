@@ -468,7 +468,7 @@ void CrossPuzzle::solve()
 	if (isComplete())
 	{
 		#ifdef CPUZZLE_DEBUG
-			std::cout << "Puzzle complete:" << std::endl << CP;	
+			std::cout << "Puzzle complete:" << std::endl << *this;	
 		#endif
 		
 		return;
@@ -489,7 +489,7 @@ void CrossPuzzle::solve()
 		
 		#ifdef CPUZZLE_DEBUG
 			std::cout << "Guessing " << guess << " at position "
-				<< pos << "(" << (pos/numros) << "," << (pos%numrows)
+				<< pos << "(" << (pos/numrows) << "," << (pos%numrows)
 				<< ")" << std::endl;
 		#endif
 	

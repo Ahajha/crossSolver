@@ -11,7 +11,7 @@
 #include <vector>
 #include <list>
 
-//#define CPUZZLE_DEBUG
+#define CPUZZLE_DEBUG
 
 class RoworColumn
 {
