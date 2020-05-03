@@ -11,8 +11,6 @@
 #include <vector>
 #include <list>
 
-#define CPUZZLE_DEBUG
-
 class RoworColumn
 {
 	private:
