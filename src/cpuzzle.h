@@ -51,14 +51,16 @@ class CrossPuzzle
 	
 	static std::list<unsigned> getList(std::ifstream& in);
 	
-	void createGrid();
-	
 	std::vector<int*> createTempGridRow(unsigned i);
 	std::vector<int*> createTempGridCol(unsigned i);
 	
 	unsigned numrows, numcols;
 	
-	std::vector<std::vector<int>> grid;
+	// Layout of indexes:
+	// Row 0: 0 -> (numcols-1)
+	// Row 1: numcols -> (2*numcols-1)
+	// ...
+	std::vector<int> grid;
 	
 	RoworColumn* rows; // RoC []
 	RoworColumn* cols; // RoC []

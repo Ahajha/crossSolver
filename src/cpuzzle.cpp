@@ -479,22 +479,8 @@ void CrossPuzzle::solve()
 	#endif
 	
 	// find position to brute force
-	unsigned x = 0, y = 0;
-	while (grid[x][y] != -1)
-	{
-		y++;
-		if (y >= numcols)
-		{
-			y = 0;
-			x++;
-		}
-		// Not needed, but just to be sure for now:
-		if (x >= numrows)
-		{
-			std::cout << "Complete puzzle is showing incomplete. Error." << std::endl;
-			exit(1);
-		}
-	}
+	unsigned pos = 0;
+	while (grid[pos] != -1) ++pos;
 	
 	// Guess 1 first, is significantly quicker on some puzzles.
 	for (int guess = 1; guess >= 0; guess--)
@@ -502,11 +488,12 @@ void CrossPuzzle::solve()
 		CrossPuzzle copy(*this);
 		
 		#ifdef CPUZZLE_DEBUG
-			std::cout << "Guessing " << guess << " at position ("
-				<< x << "," << y << ")" << std::endl;
+			std::cout << "Guessing " << guess << " at position "
+				<< pos << "(" << (pos/numros) << "," << (pos%numrows)
+				<< ")" << std::endl;
 		#endif
 	
-		copy.grid[x][y] = guess;
+		copy.grid[pos] = guess;
 		
 		try
 		{
@@ -576,18 +563,20 @@ std::ostream& operator<<(std::ostream& stream, const CrossPuzzle& CP)
 		}
 	}
 	
+	unsigned pos = 0;
 	for (unsigned i = 0; i < CP.numrows; i++)
 	{
 		for (unsigned j = 0; j < CP.numcols; j++)
 		{
-			if (CP.grid[i][j] == -1)
+			if (CP.grid[pos] == -1)
 			{
 				stream << "_ ";
 			}
 			else
 			{
-				stream << CP.grid[i][j] << " ";
+				stream << CP.grid[pos] << " ";
 			}
+			++pos;
 		}
 		stream << std::endl;
 	}
@@ -596,25 +585,15 @@ std::ostream& operator<<(std::ostream& stream, const CrossPuzzle& CP)
 	return stream;
 }
 
-void CrossPuzzle::createGrid()
-{
-	grid.resize(numrows);
-	for (unsigned i = 0; i < numrows; i++)
-	{
-		grid[i].resize(numcols);
-		for (unsigned j = 0; j < numcols; j++)
-		{
-			grid[i][j] = -1;
-		}
-	}
-}
-
 std::vector<int*> CrossPuzzle::createTempGridRow(unsigned i)
 {
 	std::vector<int*> tempgrid(numcols);
+	
+	unsigned pos = numcols * i;
 	for (unsigned j = 0; j < numcols; j++)
 	{
-		tempgrid[j] = &(grid[i][j]);
+		tempgrid[j] = &(grid[pos]);
+		++pos;
 	}
 	return tempgrid;
 }
@@ -622,9 +601,12 @@ std::vector<int*> CrossPuzzle::createTempGridRow(unsigned i)
 std::vector<int*> CrossPuzzle::createTempGridCol(unsigned i)
 {
 	std::vector<int*> tempgrid(numrows);
+	
+	unsigned pos = i;
 	for (unsigned j = 0; j < numrows; j++)
 	{
-		tempgrid[j] = &(grid[j][i]);
+		tempgrid[j] = &(grid[pos]);
+		pos += numcols;
 	}
 	return tempgrid;
 }
@@ -649,7 +631,9 @@ CrossPuzzle::CrossPuzzle(const char* infile)
 		std::cout << "Rows: " << numrows << ", Cols: " << numcols << std::endl;
 	#endif
 	
-	createGrid();
+	// Create grid, fill with zeros
+	grid.resize(numrows * numcols);
+	std::fill(grid.begin(), grid.end(), -1);
 	
 	#ifdef CPUZZLE_DEBUG
 		std::cout << "Row hintlists:" << std::endl;
@@ -795,6 +779,7 @@ void CrossPuzzle::createBitmap(const char* fileName) const
 {
 	BMP_24 soln(numrows, numcols);
 
+	unsigned pos = 0;
 	for (unsigned i = 0; i < numrows; i++)
 	{
 		// The rows in a bitmap are flipped, so when writing,
@@ -802,11 +787,13 @@ void CrossPuzzle::createBitmap(const char* fileName) const
 		unsigned rowNum = numrows - 1 - i;
 		for (unsigned j = 0; j < numcols; j++)
 		{
-			if (grid[i][j] == 1)
+			if (grid[pos] == 1)
 			{
 				soln.position(rowNum, j) = color_24::black;
 			}
 			// base color is white
+			
+			++pos;
 		}
 	}
 	soln.write(fileName);
