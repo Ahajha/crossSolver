@@ -692,20 +692,11 @@ Creates a copy of CP.
 -------------------*/
 
 CrossPuzzle::CrossPuzzle(const CrossPuzzle& CP)
-	: numrows(CP.numrows), numcols(CP.numcols)
+	: numrows(CP.numrows), numcols(CP.numcols), grid(CP.grid)
 {
 	#ifdef CPUZZLE_DEBUG
 		std::cout << "Copy constructor (CrossPuzzle)" << std::endl;
 	#endif
-	createGrid();
-	
-	for (unsigned i = 0; i < numrows; i++)
-	{
-		for (unsigned j = 0; j < numcols; j++)
-		{
-			grid[i][j] = CP.grid[i][j];
-		}
-	}
 	
 	rows = new RoworColumn[numrows];
 	for (unsigned i = 0; i < numrows; i++)
@@ -740,15 +731,7 @@ CrossPuzzle& CrossPuzzle::operator=(const CrossPuzzle& CP)
 		cols = new RoworColumn[numcols];
 	}
 	
-	createGrid();
-	
-	for (unsigned i = 0; i < numrows; i++)
-	{
-		for (unsigned j = 0; j < numcols; j++)
-		{
-			grid[i][j] = CP.grid[i][j];
-		}
-	}
+	grid = CP.grid;
 	
 	for (unsigned i = 0; i < numrows; i++)
 	{
