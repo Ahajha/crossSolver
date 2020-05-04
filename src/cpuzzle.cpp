@@ -759,7 +759,7 @@ bool CrossPuzzle::isComplete() const
 	return true;
 }
 
-void CrossPuzzle::createBitmap(const char* fileName) const
+BMP_24 CrossPuzzle::bitmap() const
 {
 	BMP_24 soln(numrows, numcols);
 
@@ -780,5 +780,5 @@ void CrossPuzzle::createBitmap(const char* fileName) const
 			++pos;
 		}
 	}
-	soln.write(fileName);
+	return soln;
 }

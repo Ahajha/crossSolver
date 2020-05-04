@@ -64,7 +64,8 @@ int main(int args, char* argv[])
 		
 		// Make .bmp file
 		const char* outFile = getOutFileName(inFileName);
-		puzzle.createBitmap(outFile);
+		puzzle.bitmap().write(outFile);
+		
 		std::cout << "Solution image written to file \""
 			<<  outFile << "\"." << std::endl;
 	}

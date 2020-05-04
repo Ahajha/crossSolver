@@ -10,6 +10,7 @@
 #include <exception>
 #include <vector>
 #include <list>
+#include "bmpMaker.h"
 
 class RoworColumn
 {
@@ -90,7 +91,7 @@ class CrossPuzzle
 	void solve();
 	
 	bool isComplete() const;
-	void createBitmap(const char* fileName) const;
+	BMP_24 bitmap() const;
 	
 	friend std::ostream& operator<<(std::ostream& stream, const CrossPuzzle& CP);
 };
