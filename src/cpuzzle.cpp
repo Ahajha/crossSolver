@@ -581,28 +581,16 @@ std::ostream& operator<<(std::ostream& stream, const CrossPuzzle& CP)
 	return stream;
 }
 
-std::vector<int*> CrossPuzzle::createTempGridRow(unsigned i)
+std::vector<int*> CrossPuzzle::createGridReferenceLine(unsigned i,
+	unsigned start, unsigned increment)
 {
 	std::vector<int*> tempgrid(numcols);
 	
-	unsigned pos = numcols * i;
+	unsigned pos = start;
 	for (unsigned j = 0; j < numcols; j++)
 	{
 		tempgrid[j] = &(grid[pos]);
-		++pos;
-	}
-	return tempgrid;
-}
-
-std::vector<int*> CrossPuzzle::createTempGridCol(unsigned i)
-{
-	std::vector<int*> tempgrid(numrows);
-	
-	unsigned pos = i;
-	for (unsigned j = 0; j < numrows; j++)
-	{
-		tempgrid[j] = &(grid[pos]);
-		pos += numcols;
+		pos += increment;
 	}
 	return tempgrid;
 }
@@ -642,7 +630,7 @@ CrossPuzzle::CrossPuzzle(const char* infile)
 			std::cout << "    " << i << ": ";
 		#endif
 		
-		rows[i] = RoworColumn(createTempGridRow(i), getList(ifs));
+		rows[i] = RoworColumn(createGridReferenceLine(i,numcols * i,1), getList(ifs));
 	}
 	
 	#ifdef CPUZZLE_DEBUG
@@ -656,7 +644,7 @@ CrossPuzzle::CrossPuzzle(const char* infile)
 			std::cout << "    " << i << ": ";
 		#endif
 		
-		cols[i] = RoworColumn(createTempGridCol(i), getList(ifs));
+		cols[i] = RoworColumn(createGridReferenceLine(i,i,numcols), getList(ifs));
 	}
 
 	ifs.close();

@@ -49,8 +49,8 @@ class CrossPuzzle
 	
 	static std::list<unsigned> getList(std::ifstream& in);
 	
-	std::vector<int*> createTempGridRow(unsigned i);
-	std::vector<int*> createTempGridCol(unsigned i);
+	std::vector<int*> createGridReferenceLine(unsigned i,
+		unsigned start, unsigned increment);
 	
 	unsigned numrows, numcols;
 	
