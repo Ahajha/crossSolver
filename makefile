@@ -32,14 +32,14 @@ bin/crossSolve: $(OFILES)
 bin/crossSolveDebug: obj/bmpMaker.o obj/crossSolver.o obj/cpuzzleDebug.o
 	$(LINK) -o bin/crossSolveDebug obj/bmpMaker.o obj/crossSolver.o obj/cpuzzleDebug.o
 
-obj/cpuzzleDebug: src/cpuzzle.h src/cpuzzle.cpp
+obj/cpuzzleDebug.o: src/cpuzzle.h src/cpuzzle.cpp
 	$(CC) $(CFLAGS) -D CPUZZLE_DEBUG -c src/cpuzzle.cpp -o obj/cpuzzleDebug.o
 
 obj/%.o: src/%.cpp
 	$(CC) $(CFLAGS) -c $< -o $@
       
 clean: 
-	rm -f $(OFILES) bin/crossSolve
+	rm -f bin/* obj/*
 
 puzzles: bin/crossSolve
 	$(foreach puzzle_file, $(wildcard Puzzles/puzzle*.txt),\
