@@ -19,8 +19,6 @@ struct RoworColumn::possibilityList
 	unsigned fillLength;
 	std::list<unsigned> possiblePositions;
 	
-	possibilityList() {}
-	
 	possibilityList(unsigned fl, unsigned start, unsigned end)
 		: fillLength(fl)
 	{
@@ -130,14 +128,12 @@ Creates a copy of roc, which references grd.
 ------------------------------------------*/
 
 RoworColumn::RoworColumn(const RoworColumn& roc, std::vector<int*> grd)
-	: grid(grd), complete(roc.complete), fillPosses(roc.fillPosses.size())
+	: grid(grd), complete(roc.complete)
 {
+	// Avoid needless copying, to be removed later
 	if (!isComplete())
 	{
-		for (unsigned i = 0; i < fillPosses.size(); i++)
-		{
-			fillPosses[i] = possibilityList(roc.fillPosses[i]);
-		}
+		fillPosses = roc.fillPosses;
 	}
 }
 
