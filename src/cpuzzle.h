@@ -49,7 +49,7 @@ class CrossPuzzle
 	
 	static std::list<unsigned> getList(std::ifstream& in);
 	
-	std::vector<int*> createGridReferenceLine(unsigned i,
+	std::vector<int*> createGridReferenceLine(unsigned size,
 		unsigned start, unsigned increment);
 	
 	unsigned numrows, numcols;

@@ -581,13 +581,13 @@ std::ostream& operator<<(std::ostream& stream, const CrossPuzzle& CP)
 	return stream;
 }
 
-std::vector<int*> CrossPuzzle::createGridReferenceLine(unsigned i,
+std::vector<int*> CrossPuzzle::createGridReferenceLine(unsigned size,
 	unsigned start, unsigned increment)
 {
-	std::vector<int*> tempgrid(numcols);
+	std::vector<int*> tempgrid(size);
 	
 	unsigned pos = start;
-	for (unsigned j = 0; j < numcols; j++)
+	for (unsigned j = 0; j < size; j++)
 	{
 		tempgrid[j] = &(grid[pos]);
 		pos += increment;
@@ -630,7 +630,7 @@ CrossPuzzle::CrossPuzzle(const char* infile)
 			std::cout << "    " << i << ": ";
 		#endif
 		
-		rows[i] = RoworColumn(createGridReferenceLine(i,numcols * i,1), getList(ifs));
+		rows[i] = RoworColumn(createGridReferenceLine(numcols,numcols * i,1), getList(ifs));
 	}
 	
 	#ifdef CPUZZLE_DEBUG
@@ -644,7 +644,7 @@ CrossPuzzle::CrossPuzzle(const char* infile)
 			std::cout << "    " << i << ": ";
 		#endif
 		
-		cols[i] = RoworColumn(createGridReferenceLine(i,i,numcols), getList(ifs));
+		cols[i] = RoworColumn(createGridReferenceLine(numrows,i,numcols), getList(ifs));
 	}
 
 	ifs.close();
@@ -669,13 +669,13 @@ CrossPuzzle::CrossPuzzle(const CrossPuzzle& CP)
 	rows = new RoworColumn[numrows];
 	for (unsigned i = 0; i < numrows; i++)
 	{
-		rows[i] = RoworColumn(CP.rows[i], createTempGridRow(i));
+		rows[i] = RoworColumn(CP.rows[i], createGridReferenceLine(numcols,numcols * i,1));
 	}
 	
 	cols = new RoworColumn[numcols];
 	for (unsigned i = 0; i < numcols; i++)
 	{
-		cols[i] = RoworColumn(CP.cols[i], createTempGridCol(i));
+		cols[i] = RoworColumn(CP.cols[i], createGridReferenceLine(numrows,i,numcols));
 	}
 }
 
@@ -703,12 +703,12 @@ CrossPuzzle& CrossPuzzle::operator=(const CrossPuzzle& CP)
 	
 	for (unsigned i = 0; i < numrows; i++)
 	{
-		rows[i] = RoworColumn(CP.rows[i], createTempGridRow(i));
+		rows[i] = RoworColumn(CP.rows[i], createGridReferenceLine(numcols,numcols * i,1));
 	}
 	
 	for (unsigned i = 0; i < numcols; i++)
 	{
-		cols[i] = RoworColumn(CP.cols[i], createTempGridCol(i));
+		cols[i] = RoworColumn(CP.cols[i], createGridReferenceLine(numrows,i,numcols));
 	}
 	
 	return *this;
