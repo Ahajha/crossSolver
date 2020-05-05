@@ -40,10 +40,6 @@ struct RoworColumn
 	};
 	std::vector<possibilityList> fillPosses;
 	
-	//void printgrid(std::ostream& stream) const;
-	
-	//friend std::ostream& operator<<(std::ostream& stream, const RoworColumn& roc);
-	
 	RoworColumn(CrossPuzzle& CP, std::vector<unsigned> grd,
 		const std::list<unsigned>& hintList);
 	// For the time being, not having a custom copy constructor is
@@ -71,6 +67,8 @@ class CrossPuzzle
 	
 	std::vector<RoworColumn> rows;
 	std::vector<RoworColumn> cols;
+	
+	void printRoC(std::ostream& stream, const RoworColumn& roc) const;
 	
 	static void throwIfEmpty(const std::list<unsigned>& LL);
 	void markInRange(std::vector<unsigned> gridReferences, unsigned start,

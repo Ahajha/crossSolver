@@ -22,31 +22,29 @@ bool CrossPuzzle::isComplete(const RoworColumn& roc) const
 	}
 	return roc.complete = true;
 }
-/*
-void RoworColumn::printgrid(std::ostream& stream) const
-{
-	for (unsigned i = 0; i < grid.size(); i++)
-	{
-		if (*(grid[i]) == -1)
-			stream << "_ ";
-		else
-			stream << *(grid[i]) << " ";
-	}
-	stream << std::endl;
-}
 
-std::ostream& operator<<(std::ostream& stream, const RoworColumn& roc)
+void CrossPuzzle::printRoC(std::ostream& stream, const RoworColumn& roc) const
 {
-	if(roc.isComplete())
+	if(isComplete(roc))
 	{
 		stream << "Complete. Grid:" << std::endl;
-		roc.printgrid(stream);
 	}
 	else
 	{
 		stream << "Incomplete. Grid:" << std::endl;
-		roc.printgrid(stream);
-		
+	}
+	
+	for (unsigned i = 0; i < roc.grid.size(); i++)
+	{
+		if (grid[roc.grid[i]] == -1)
+			stream << "_ ";
+		else
+			stream << grid[roc.grid[i]] << " ";
+	}
+	stream << std::endl;
+	
+	if (!isComplete(roc))
+	{	
 		for (unsigned i = 0; i < roc.fillPosses.size(); i++)
 		{
 			stream << "Fill #" << i << ", length " << roc.fillPosses[i].fillLength << ": ";
@@ -59,9 +57,9 @@ std::ostream& operator<<(std::ostream& stream, const RoworColumn& roc)
 			stream << std::endl;
 		}
 	}
-	return (stream << std::endl);
+	stream << std::endl;
 }
-*/
+
 /*----------------------------------------------------
 Constructs a RoworColumn of length 'siz', referencing
 the items in grd, with a list of hints hintList.
@@ -377,7 +375,7 @@ unsigned CrossPuzzle::removeAndMark(std::vector<RoworColumn>& rocs)
 					{
 						std::cout << "Marked " << nummarked << " cells." << std::endl;
 					}
-					std::cout << rocs[i];
+					printRoC(std::cout,rocs[i]);
 				}
 			#endif
 			
@@ -504,19 +502,21 @@ std::ostream& operator<<(std::ostream& stream, const CrossPuzzle& CP)
 {
 	stream << "===========================================================" << std::endl;
 	stream << "Rows: " << CP.numrows << ", Columns: " << CP.numcols << std::endl << std::endl;
-	/*
+	
 	if (!CP.isComplete())
 	{
 		for (unsigned i = 0; i < CP.numrows; i++)
 		{
-			stream << "Row " << i << ": " << CP.rows[i];
+			stream << "Row " << i << ": ";
+			CP.printRoC(stream,CP.rows[i]);
 		}
 		for (unsigned i = 0; i < CP.numcols; i++)
 		{
-			stream << "Column " << i << ": " << CP.cols[i];
+			stream << "Column " << i << ": ";
+			CP.printRoC(stream,CP.cols[i]);
 		}
 	}
-	*/
+	
 	unsigned pos = 0;
 	for (unsigned i = 0; i < CP.numrows; i++)
 	{
