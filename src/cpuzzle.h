@@ -28,11 +28,9 @@ struct RoworColumn
 	
 	RoworColumn(CrossPuzzle& CP, std::vector<unsigned> grd,
 		const std::list<unsigned>& hintList);
-	RoworColumn(const CrossPuzzle& CP, const RoworColumn& rc);
-	RoworColumn& operator=(const RoworColumn& rc) = default;
-	RoworColumn& operator=(RoworColumn&& rc);
+	// For the time being, not having a custom copy constructor is
+	// a slight efficiency issue, but that will be resolved soon.
 	RoworColumn() = default;
-	~RoworColumn() = default;
 };
 
 class CrossPuzzle

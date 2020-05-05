@@ -123,30 +123,6 @@ RoworColumn::RoworColumn(CrossPuzzle& CP, std::vector<unsigned> grd,
 	}
 }
 
-/*------------------------------------------
-Creates a copy of roc, which references grd.
-------------------------------------------*/
-
-RoworColumn::RoworColumn(const CrossPuzzle& CP, const RoworColumn& roc)
-	: grid(roc.grid), complete(roc.complete)
-{
-	// Avoid needless copying, to be removed later
-	if (!CP.isComplete(roc))
-	{
-		fillPosses = roc.fillPosses;
-	}
-}
-
-RoworColumn& RoworColumn::operator=(RoworColumn&& rc)
-{
-	std::swap(grid,rc.grid);
-	std::swap(fillPosses,rc.fillPosses);
-	
-	complete = rc.complete;
-	
-	return *this;
-}
-
 /*-----------------------------------
 Throws a puzzle_error if LL is empty.
 -----------------------------------*/
@@ -673,13 +649,13 @@ CrossPuzzle::CrossPuzzle(const CrossPuzzle& CP)
 	rows = new RoworColumn[numrows];
 	for (unsigned i = 0; i < numrows; i++)
 	{
-		rows[i] = RoworColumn(*this, CP.rows[i]);
+		rows[i] = RoworColumn(CP.rows[i]);
 	}
 	
 	cols = new RoworColumn[numcols];
 	for (unsigned i = 0; i < numcols; i++)
 	{
-		cols[i] = RoworColumn(*this, CP.cols[i]);
+		cols[i] = RoworColumn(CP.cols[i]);
 	}
 }
 
@@ -707,12 +683,12 @@ CrossPuzzle& CrossPuzzle::operator=(const CrossPuzzle& CP)
 	
 	for (unsigned i = 0; i < numrows; i++)
 	{
-		rows[i] = RoworColumn(*this, CP.rows[i]);
+		rows[i] = RoworColumn(CP.rows[i]);
 	}
 	
 	for (unsigned i = 0; i < numcols; i++)
 	{
-		cols[i] = RoworColumn(*this, CP.cols[i]);
+		cols[i] = RoworColumn(CP.cols[i]);
 	}
 	
 	return *this;
