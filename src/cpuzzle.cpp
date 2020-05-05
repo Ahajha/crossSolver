@@ -65,14 +65,9 @@ Constructs a RoworColumn of length 'siz', referencing
 the items in grd, with a list of hints hintList.
 ----------------------------------------------------*/
 
-RoworColumn::RoworColumn(CrossPuzzle& CP, std::vector<unsigned> grd,
+CrossPuzzle::RoworColumn::RoworColumn(CrossPuzzle& CP, std::vector<unsigned> grd,
 	const std::list<unsigned>& hintList) : grid(grd)
-{
-	#ifdef CPUZZLE_DEBUG
-		for (unsigned i : hintList) std::cout << i << ' ';
-		std::cout << std::endl;
-	#endif
-	
+{	
 	if (hintList.empty())
 	{
 		complete = true;
@@ -366,7 +361,7 @@ unsigned CrossPuzzle::removeAndMark(std::vector<RoworColumn>& rocs)
 			#ifdef CPUZZLE_DEBUG
 				if (numremoved || nummarked)
 				{
-					std::cout << i << ":" << std::endl;
+					std::cout << rocs[i].ID << ":" << std::endl;
 					if (numremoved)
 					{
 						std::cout << "Removed " << numremoved << " possibilities." << std::endl;
@@ -402,12 +397,12 @@ void CrossPuzzle::solve()
 	do
 	{
 		#ifdef CPUZZLE_DEBUG
-			std::cout << "Remove and mark on rows:" << std::endl;
+			std::cout << "Remove and mark:" << std::endl;
 		#endif
 		rowChanges = removeAndMark(rows);
 		
 		#ifdef CPUZZLE_DEBUG
-			std::cout << "Remove and mark on columns:" << std::endl;
+			std::cout << "Remove and mark:" << std::endl;
 		#endif
 		colChanges = removeAndMark(cols);
 	}
@@ -507,12 +502,12 @@ std::ostream& operator<<(std::ostream& stream, const CrossPuzzle& CP)
 	{
 		for (unsigned i = 0; i < CP.numrows; i++)
 		{
-			stream << "Row " << i << ": ";
+			stream << CP.rows[i].ID << ": ";
 			CP.printRoC(stream,CP.rows[i]);
 		}
 		for (unsigned i = 0; i < CP.numcols; i++)
 		{
-			stream << "Column " << i << ": ";
+			stream << CP.cols[i].ID << ": ";
 			CP.printRoC(stream,CP.cols[i]);
 		}
 	}
@@ -583,12 +578,20 @@ CrossPuzzle::CrossPuzzle(const char* infile) : rows(), cols()
 	
 	for (unsigned i = 0; i < numrows; i++)
 	{
+		auto hintList = getList(ifs);
+		
 		#ifdef CPUZZLE_DEBUG
 			std::cout << "    " << i << ": ";
+			for (unsigned hint : hintList) std::cout << hint << ' ';
+			std::cout << std::endl;
 		#endif
 		
 		rows.emplace_back(*this,
-			createGridReferenceLine(numcols,numcols * i,1), getList(ifs));
+			createGridReferenceLine(numcols,numcols * i,1), hintList);
+		
+		#ifdef CPUZZLE_DEBUG
+		rows.back().ID = std::string("Row ") + std::to_string(i);
+		#endif
 	}
 	
 	#ifdef CPUZZLE_DEBUG
@@ -597,12 +600,20 @@ CrossPuzzle::CrossPuzzle(const char* infile) : rows(), cols()
 	
 	for (unsigned i = 0; i < numcols; i++)
 	{
+		auto hintList = getList(ifs);
+		
 		#ifdef CPUZZLE_DEBUG
 			std::cout << "    " << i << ": ";
+			for (unsigned hint : hintList) std::cout << hint << ' ';
+			std::cout << std::endl;
 		#endif
 		
 		cols.emplace_back(*this,
-			createGridReferenceLine(numrows,i,numcols), getList(ifs));
+			createGridReferenceLine(numrows,i,numcols), hintList);
+		
+		#ifdef CPUZZLE_DEBUG
+		cols.back().ID = std::string("Column ") + std::to_string(i);
+		#endif
 	}
 
 	ifs.close();

@@ -10,47 +10,48 @@
 #include <exception>
 #include <vector>
 #include <list>
+#include <string>
 #include "bmpMaker.h"
-
-class CrossPuzzle;
-
-struct RoworColumn
-{
-	std::vector<unsigned> grid;
-	mutable bool complete;
-	
-	/*---------------------------------------------
-	A possibilityList contains the length of a fill
-	and all possible start positions of the fill.
-	---------------------------------------------*/
-	
-	struct possibilityList
-	{
-		unsigned fillLength;
-		std::list<unsigned> possiblePositions;
-		
-		possibilityList(unsigned fl, unsigned start, unsigned end)
-			: fillLength(fl)
-		{
-			for (unsigned i = start; i <= end; i++)
-			{
-				possiblePositions.push_back(i);
-			}
-		}
-	};
-	std::vector<possibilityList> fillPosses;
-	
-	RoworColumn(CrossPuzzle& CP, std::vector<unsigned> grd,
-		const std::list<unsigned>& hintList);
-	// For the time being, not having a custom copy constructor is
-	// a slight efficiency issue, but that will be resolved soon.
-};
 
 class CrossPuzzle
 {
 	private:
 	
-	friend class RoworColumn;
+	struct RoworColumn
+	{
+		std::vector<unsigned> grid;
+		mutable bool complete;
+		
+		/*---------------------------------------------
+		A possibilityList contains the length of a fill
+		and all possible start positions of the fill.
+		---------------------------------------------*/
+		
+		struct possibilityList
+		{
+			unsigned fillLength;
+			std::list<unsigned> possiblePositions;
+			
+			possibilityList(unsigned fl, unsigned start, unsigned end)
+				: fillLength(fl)
+			{
+				for (unsigned i = start; i <= end; i++)
+				{
+					possiblePositions.push_back(i);
+				}
+			}
+		};
+		std::vector<possibilityList> fillPosses;
+		
+		#ifdef CPUZZLE_DEBUG
+		std::string ID;
+		#endif
+		
+		RoworColumn(CrossPuzzle& CP, std::vector<unsigned> grd,
+			const std::list<unsigned>& hintList);
+		// For the time being, not having a custom copy constructor is
+		// a slight efficiency issue, but that will be resolved soon.
+	};
 	
 	static std::list<unsigned> getList(std::ifstream& in);
 	
