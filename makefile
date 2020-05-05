@@ -8,6 +8,8 @@ CFILES = src/bmpMaker.cpp\
 
 OFILES = $(patsubst src/%.cpp,obj/%.o,$(CFILES))
 
+DEBUG_OFILES = $(patsubst src/%.cpp,obj/%Debug.o,$(CFILES))
+
 $(shell mkdir -p bin obj)
 
 help:
@@ -29,11 +31,11 @@ debug: bin/crossSolveDebug
 bin/crossSolve: $(OFILES)
 	$(LINK) -o bin/crossSolve $(OFILES)
 
-bin/crossSolveDebug: obj/bmpMaker.o obj/crossSolver.o obj/cpuzzleDebug.o
-	$(LINK) -o bin/crossSolveDebug obj/bmpMaker.o obj/crossSolver.o obj/cpuzzleDebug.o
+bin/crossSolveDebug: $(DEBUG_OFILES)
+	$(LINK) -o bin/crossSolveDebug $(DEBUG_OFILES)
 
-obj/cpuzzleDebug.o: src/cpuzzle.h src/cpuzzle.cpp
-	$(CC) $(CFLAGS) -D CPUZZLE_DEBUG -c src/cpuzzle.cpp -o obj/cpuzzleDebug.o
+obj/%Debug.o: src/%.cpp
+	$(CC) $(CFLAGS) -D CPUZZLE_DEBUG -c $< -o $@
 
 obj/%.o: src/%.cpp
 	$(CC) $(CFLAGS) -c $< -o $@
