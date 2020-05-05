@@ -529,6 +529,35 @@ std::vector<unsigned> CrossPuzzle::createGridReferenceLine(unsigned size,
 	return tempgrid;
 }
 
+void CrossPuzzle::evaluateHintList(std::list<unsigned> hintList,
+#ifndef CPUZZLE_DEBUG
+	std::vector<unsigned> references)
+#else
+	std::vector<unsigned> references, std::string ID)
+#endif
+{
+	#ifdef CPUZZLE_DEBUG
+		std::cout << "    " << ID << ": ";
+		for (unsigned hint : hintList) std::cout << hint << ' ';
+		std::cout << std::endl;
+	#endif
+	
+	if (hintList.empty())
+	{
+		for (unsigned ref : references)
+		{
+			grid[ref] = 0;
+		}
+	}
+	else
+	{
+		lines.emplace_back(references, hintList);
+		#ifdef CPUZZLE_DEBUG
+		lines.back().ID = ID;
+		#endif
+	}
+}
+
 /*--------------------------------------------------------------------
 Creates a CrossPuzzle from information in an input file, named infile.
 --------------------------------------------------------------------*/
@@ -554,67 +583,33 @@ CrossPuzzle::CrossPuzzle(const char* infile) : lines()
 	std::fill(grid.begin(), grid.end(), -1);
 	
 	#ifdef CPUZZLE_DEBUG
-		std::cout << "Row hintlists:" << std::endl;
+		std::cout << "Hintlists:" << std::endl;
 	#endif
 	
 	for (unsigned i = 0; i < numrows; i++)
 	{
 		auto hintList = getList(ifs);
 		
-		#ifdef CPUZZLE_DEBUG
-			std::cout << "    " << i << ": ";
-			for (unsigned hint : hintList) std::cout << hint << ' ';
-			std::cout << std::endl;
-		#endif
-		
 		auto references = createGridReferenceLine(numcols,numcols * i,1);
 		
-		if (hintList.empty())
-		{
-			for (unsigned ref : references)
-			{
-				grid[ref] = 0;
-			}
-		}
-		else
-		{
-			lines.emplace_back(references, hintList);
-			#ifdef CPUZZLE_DEBUG
-			lines.back().ID = std::string("Row ") + std::to_string(i);
-			#endif
-		}
+		#ifndef CPUZZLE_DEBUG 
+		evaluateHintList(hintList, references);
+		#else
+		evaluateHintList(hintList, references, std::string("Row ") + std::to_string(i));
+		#endif
 	}
-	
-	#ifdef CPUZZLE_DEBUG
-		std::cout << "Column hintlists:" << std::endl;
-	#endif
 	
 	for (unsigned i = 0; i < numcols; i++)
 	{
 		auto hintList = getList(ifs);
 		
-		#ifdef CPUZZLE_DEBUG
-			std::cout << "    " << i << ": ";
-			for (unsigned hint : hintList) std::cout << hint << ' ';
-			std::cout << std::endl;
-		#endif
-		
 		auto references = createGridReferenceLine(numrows,i,numcols);
 		
-		if (hintList.empty())
-		{
-			for (unsigned ref : references)
-			{
-				grid[ref] = 0;
-			}
-		}
-		else
-		{
-			lines.emplace_back(references, hintList);
-			#ifdef CPUZZLE_DEBUG
-			lines.back().ID = std::string("Column ") + std::to_string(i);
-			#endif
-		}
+		#ifndef CPUZZLE_DEBUG 
+		evaluateHintList(hintList, references);
+		#else
+		evaluateHintList(hintList, references, std::string("Column ") + std::to_string(i));
+		#endif
 	}
 
 	ifs.close();

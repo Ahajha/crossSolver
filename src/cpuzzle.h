@@ -84,6 +84,14 @@ class CrossPuzzle
 	
 	unsigned removeAndMark();
 	
+	#ifndef CPUZZLE_DEBUG
+	void evaluateHintList(std::list<unsigned> hintList,
+		std::vector<unsigned> references);
+	#else
+	void evaluateHintList(std::list<unsigned> hintList,
+		std::vector<unsigned> references, std::string ID);
+	#endif
+	
 	public:
 	
 	class puzzle_error : public std::exception
