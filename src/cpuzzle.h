@@ -12,22 +12,15 @@
 #include <list>
 #include "bmpMaker.h"
 
-class RoworColumn
+struct RoworColumn
 {
-	private:
-	
 	std::vector<int*> grid;
 	mutable bool complete;
 	
 	struct possibilityList;
 	std::vector<possibilityList> fillPosses;
 	
-	void markInRange(unsigned start, unsigned end, int value, unsigned& changesMade);
-	
-	static void throwIfEmpty(const std::list<unsigned>& LL);
 	void printgrid(std::ostream& stream) const;
-	
-	public:
 	
 	bool isComplete() const;
 	
@@ -39,9 +32,6 @@ class RoworColumn
 	RoworColumn& operator=(RoworColumn&& rc);
 	RoworColumn() = default;
 	~RoworColumn() = default;
-	
-	unsigned removeIncompatible();
-	unsigned markConsistent();
 };
 
 class CrossPuzzle
@@ -63,6 +53,13 @@ class CrossPuzzle
 	
 	RoworColumn* rows; // RoC []
 	RoworColumn* cols; // RoC []
+	
+	static void throwIfEmpty(const std::list<unsigned>& LL);
+	void markInRange(std::vector<int*> gridReferences, unsigned start,
+		unsigned end, int value, unsigned& changesMade);
+	
+	unsigned removeIncompatible(RoworColumn& roc);
+	unsigned markConsistent(RoworColumn& roc);
 	
 	unsigned removeAndMark(RoworColumn rocs[], unsigned numrocs);
 	

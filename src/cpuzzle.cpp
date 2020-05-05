@@ -151,7 +151,7 @@ RoworColumn& RoworColumn::operator=(RoworColumn&& rc)
 Throws a puzzle_error if LL is empty.
 -----------------------------------*/
 
-void RoworColumn::throwIfEmpty(const std::list<unsigned>& LL)
+void CrossPuzzle::throwIfEmpty(const std::list<unsigned>& LL)
 {
 	if (LL.empty())
 		throw CrossPuzzle::puzzle_error("Puzzle is unsolvable");
@@ -168,25 +168,25 @@ otherwise returns the number of possibilites removed.
 // beginning). Need to double check, but it seems that all of the special
 // case rules would collapse into other rules.
 
-unsigned RoworColumn::removeIncompatible()
+unsigned CrossPuzzle::removeIncompatible(RoworColumn& roc)
 {
 	unsigned changesMade = 0;
 
 	// Check each position for a space that has recently been marked
-	for (unsigned i = 0; i < grid.size(); i++)
+	for (unsigned i = 0; i < roc.grid.size(); i++)
 	{
-		if (*grid[i] == 0)
+		if (*roc.grid[i] == 0)
 		{
 			// Remove due to empty spaces
-			for (unsigned j = 0; j < fillPosses.size(); j++)
+			for (unsigned j = 0; j < roc.fillPosses.size(); j++)
 			{
-				unsigned length = fillPosses[j].fillLength;
+				unsigned length = roc.fillPosses[j].fillLength;
 				
 				// If the empty space is within the fill,
 				// remove the possibility.
 				
 				// Reference this list, for brevity
-				auto& positions = fillPosses[j].possiblePositions;
+				auto& positions = roc.fillPosses[j].possiblePositions;
 				for (auto it = positions.begin(); it != positions.end();)
 				{
 					unsigned start = *it;
@@ -205,18 +205,18 @@ unsigned RoworColumn::removeIncompatible()
 				}
 			}
 		}
-		else if (*grid[i] == 1)
+		else if (*roc.grid[i] == 1)
 		{
 			// Remove due to filled spaces
-			for (unsigned j = 0; j < fillPosses.size(); j++)
+			for (unsigned j = 0; j < roc.fillPosses.size(); j++)
 			{
-				unsigned length = fillPosses[j].fillLength;
+				unsigned length = roc.fillPosses[j].fillLength;
 				
 				// If the filled space is immediately before or after
 				// a possible fill, remove the possibility.
 				
 				// Reference this list, for brevity
-				auto& positions = fillPosses[j].possiblePositions;
+				auto& positions = roc.fillPosses[j].possiblePositions;
 				for (auto it = positions.begin(); it != positions.end();)
 				{
 					unsigned start = *it;
@@ -237,51 +237,51 @@ unsigned RoworColumn::removeIncompatible()
 			// change was made	
 			
 			// Filled space cannot be before the first fill
-			while (fillPosses[0].possiblePositions.back() > i)
+			while (roc.fillPosses[0].possiblePositions.back() > i)
 			{
-				fillPosses[0].possiblePositions.pop_back();
-				throwIfEmpty(fillPosses[0].possiblePositions);
+				roc.fillPosses[0].possiblePositions.pop_back();
+				throwIfEmpty(roc.fillPosses[0].possiblePositions);
 				changesMade++;
 			}
 			
 			// ... or after the last fill.
-			unsigned len = fillPosses.back().fillLength;
-			while (fillPosses.back().possiblePositions.front() + len < i)
+			unsigned len = roc.fillPosses.back().fillLength;
+			while (roc.fillPosses.back().possiblePositions.front() + len < i)
 			{
-				fillPosses.back().possiblePositions.pop_front();
-				throwIfEmpty(fillPosses.back().possiblePositions);
+				roc.fillPosses.back().possiblePositions.pop_front();
+				throwIfEmpty(roc.fillPosses.back().possiblePositions);
 				changesMade++;
 			}
 			
 			// Filled space cannot fall between two adjacent fills
-			for (unsigned j = 1; j < fillPosses.size(); j++)
+			for (unsigned j = 1; j < roc.fillPosses.size(); j++)
 			{
 				// If the first of the two fills cannot reach the filled
 				// space, the second cannot start after it.
 				
-				if (fillPosses[j - 1].possiblePositions.back() + 
-					fillPosses[j - 1].fillLength < i)
+				if (roc.fillPosses[j - 1].possiblePositions.back() + 
+					roc.fillPosses[j - 1].fillLength < i)
 				{
 					// Delete all possibilites that start after the filled
 					// space.
-					while (i < fillPosses[j].possiblePositions.back())
+					while (i < roc.fillPosses[j].possiblePositions.back())
 					{
-						fillPosses[j].possiblePositions.pop_back();
-						throwIfEmpty(fillPosses[j].possiblePositions);
+						roc.fillPosses[j].possiblePositions.pop_back();
+						throwIfEmpty(roc.fillPosses[j].possiblePositions);
 						changesMade++;
 					}
 				}
 				// If the second cannot reach it, the first cannot end
 				// before it.
-				if (i < fillPosses[j].possiblePositions.front())
+				if (i < roc.fillPosses[j].possiblePositions.front())
 				{
 					// Delete all possibilites that end before the filled
 					// space.
-					while (fillPosses[j - 1].possiblePositions.front()
-						+ fillPosses[j - 1].fillLength < i)
+					while (roc.fillPosses[j - 1].possiblePositions.front()
+						+ roc.fillPosses[j - 1].fillLength < i)
 					{
-						fillPosses[j - 1].possiblePositions.pop_front();
-						throwIfEmpty(fillPosses[j - 1].possiblePositions);
+						roc.fillPosses[j - 1].possiblePositions.pop_front();
+						throwIfEmpty(roc.fillPosses[j - 1].possiblePositions);
 						changesMade++;
 					}
 				}
@@ -292,26 +292,26 @@ unsigned RoworColumn::removeIncompatible()
 	// Push back/Push forward correcting
 	
 	// Possible TODO: Combine this with last rule in markConsistent, or the rule above
-	for (unsigned i = 1; i < fillPosses.size(); i++)
+	for (unsigned i = 1; i < roc.fillPosses.size(); i++)
 	{
-		unsigned furthestback = fillPosses[i - 1].possiblePositions.front() +
-			fillPosses[i - 1].fillLength;
-		while (furthestback >= fillPosses[i].possiblePositions.front())
+		unsigned furthestback = roc.fillPosses[i - 1].possiblePositions.front() +
+			roc.fillPosses[i - 1].fillLength;
+		while (furthestback >= roc.fillPosses[i].possiblePositions.front())
 		{
-			fillPosses[i].possiblePositions.pop_front();
-			throwIfEmpty(fillPosses[i].possiblePositions);
+			roc.fillPosses[i].possiblePositions.pop_front();
+			throwIfEmpty(roc.fillPosses[i].possiblePositions);
 			changesMade++;
 		}
 	}
 	
-	for (unsigned i = fillPosses.size() - 1; i > 0; i--)
+	for (unsigned i = roc.fillPosses.size() - 1; i > 0; i--)
 	{
-		unsigned furthestforward = fillPosses[i].possiblePositions.back();
-		unsigned length = fillPosses[i - 1].fillLength;
-		while (furthestforward <= fillPosses[i - 1].possiblePositions.back() + length)
+		unsigned furthestforward = roc.fillPosses[i].possiblePositions.back();
+		unsigned length = roc.fillPosses[i - 1].fillLength;
+		while (furthestforward <= roc.fillPosses[i - 1].possiblePositions.back() + length)
 		{
-			fillPosses[i - 1].possiblePositions.pop_back();
-			throwIfEmpty(fillPosses[i - 1].possiblePositions);
+			roc.fillPosses[i - 1].possiblePositions.pop_back();
+			throwIfEmpty(roc.fillPosses[i - 1].possiblePositions);
 			changesMade++;
 		}
 	}
@@ -324,17 +324,17 @@ Marks each cell in grid starting at index start and stopping before
 index end to 'value', and increments changesMade for each change made.
 --------------------------------------------------------------------*/
 
-void RoworColumn::markInRange(unsigned start, unsigned end,
-	int value, unsigned& changesMade)
+void CrossPuzzle::markInRange(std::vector<int*> gridReferences,
+	unsigned start, unsigned end, int value, unsigned& changesMade)
 {
 	for (unsigned i = start; i < end; i++)
 	{
-		if (*(grid[i]) == -1)
+		if (*(gridReferences[i]) == -1)
 		{
-			*(grid[i]) = value;
+			*(gridReferences[i]) = value;
 			changesMade++;
 		}
-		else if (*(grid[i]) != value)
+		else if (*(gridReferences[i]) != value)
 		{
 			throw CrossPuzzle::puzzle_error("Puzzle is unsolvable");
 		}
@@ -346,19 +346,20 @@ Marks items in the grid that are consistent
 with all possibilites in a RoworColumn.
 -----------------------------------------*/
 
-unsigned RoworColumn::markConsistent()
+unsigned CrossPuzzle::markConsistent(RoworColumn& roc)
 {
 	unsigned changesMade = 0;
 	
 	// Mark filled spaces
-	for (unsigned i = 0; i < fillPosses.size(); i++)
+	for (unsigned i = 0; i < roc.fillPosses.size(); i++)
 	{
 		// Mark every cell from the last possible start position of the fill
 		// to the first possible end position of the fill. This may not mark anything.
-		unsigned lastToMark = fillPosses[i].possiblePositions.front() +
-			fillPosses[i].fillLength;
+		unsigned lastToMark = roc.fillPosses[i].possiblePositions.front() +
+			roc.fillPosses[i].fillLength;
 		
-		markInRange(fillPosses[i].possiblePositions.back(), lastToMark, 1, changesMade);
+		markInRange(roc.grid, roc.fillPosses[i].possiblePositions.back(),
+			lastToMark, 1, changesMade);
 	}
 	
 	// Mark empty spaces
@@ -366,26 +367,27 @@ unsigned RoworColumn::markConsistent()
 	// Mark every cell that is before all possible start positions of the first
 	// fill as empty.
 	
-	markInRange(0, fillPosses[0].possiblePositions.front(), 0, changesMade);
-	
-	
+	markInRange(roc.grid, 0, roc.fillPosses[0].possiblePositions.front(),
+		0, changesMade);
+		
 	// Mark every cell that is after all possible end positions of the last
 	// fill as empty.
 	
-	unsigned lastoflast = fillPosses.back().possiblePositions.back()
-		+ fillPosses.back().fillLength;
-	markInRange(lastoflast, grid.size(), 0, changesMade);
+	unsigned lastoflast = roc.fillPosses.back().possiblePositions.back()
+		+ roc.fillPosses.back().fillLength;
+	
+	markInRange(roc.grid, lastoflast, roc.grid.size(), 0, changesMade);
 	
 	// For each consecutive pair of fills, fill any gaps between
 	// the last possibility of the first and the first possibility
 	// of the second with empty space.
-	for (unsigned i = 1; i < fillPosses.size(); i++)
+	for (unsigned i = 1; i < roc.fillPosses.size(); i++)
 	{
-		unsigned lastoffirst = fillPosses[i - 1].possiblePositions.back()
-			+ fillPosses[i - 1].fillLength;
-		unsigned firstoflast = fillPosses[i].possiblePositions.front();
+		unsigned lastoffirst = roc.fillPosses[i - 1].possiblePositions.back()
+			+ roc.fillPosses[i - 1].fillLength;
+		unsigned firstoflast = roc.fillPosses[i].possiblePositions.front();
 		
-		markInRange(lastoffirst, firstoflast, 0, changesMade);
+		markInRange(roc.grid, lastoffirst, firstoflast, 0, changesMade);
 	}
 	
 	return changesMade;
@@ -404,8 +406,8 @@ unsigned CrossPuzzle::removeAndMark(RoworColumn rocs[], unsigned numrocs)
 	{
 		if (!rocs[i].isComplete())
 		{
-			unsigned numremoved = rocs[i].removeIncompatible();
-			unsigned nummarked  = rocs[i].markConsistent();
+			unsigned numremoved = removeIncompatible(rocs[i]);
+			unsigned nummarked  = markConsistent(rocs[i]);
 			
 			#ifdef CPUZZLE_DEBUG
 				if (numremoved || nummarked)
