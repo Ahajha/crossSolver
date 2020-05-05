@@ -67,34 +67,21 @@ Constructs a RoworColumn of length 'siz', referencing
 the items in grd, with a list of hints hintList.
 ----------------------------------------------------*/
 
-CrossPuzzle::RoworColumn::RoworColumn(CrossPuzzle& CP, std::vector<unsigned> grd,
-	const std::list<unsigned>& hintList) : grid(grd)
+CrossPuzzle::RoworColumn::RoworColumn(std::vector<unsigned> grd,
+	const std::list<unsigned>& hintList) : grid(grd), complete(false)
 {	
-	if (hintList.empty())
+	fillPosses.reserve(hintList.size());
+	
+	unsigned sum = 0;
+	for (unsigned hint : hintList) sum += hint;
+	
+	unsigned extraSpace = grid.size() - (sum + hintList.size() - 1);
+	
+	unsigned minPos = 0;
+	for (unsigned hint : hintList)
 	{
-		complete = true;
-		for (unsigned i = 0; i < grid.size(); i++)
-		{
-			CP.grid[grid[i]] = 0;
-		}
-	}
-	else
-	{
-		complete = false;
-		
-		fillPosses.reserve(hintList.size());
-		
-		unsigned sum = 0;
-		for (unsigned hint : hintList) sum += hint;
-		
-		unsigned extraSpace = grid.size() - (sum + hintList.size() - 1);
-		
-		unsigned minPos = 0;
-		for (unsigned hint : hintList)
-		{
-			fillPosses.emplace_back(hint, minPos, minPos + extraSpace);
-			minPos += hint + 1;
-		}
+		fillPosses.emplace_back(hint, minPos, minPos + extraSpace);
+		minPos += hint + 1;
 	}
 }
 
@@ -580,12 +567,22 @@ CrossPuzzle::CrossPuzzle(const char* infile) : lines()
 			std::cout << std::endl;
 		#endif
 		
-		lines.emplace_back(*this,
-			createGridReferenceLine(numcols,numcols * i,1), hintList);
+		auto references = createGridReferenceLine(numcols,numcols * i,1);
 		
-		#ifdef CPUZZLE_DEBUG
-		lines.back().ID = std::string("Row ") + std::to_string(i);
-		#endif
+		if (hintList.empty())
+		{
+			for (unsigned ref : references)
+			{
+				grid[ref] = 0;
+			}
+		}
+		else
+		{
+			lines.emplace_back(references, hintList);
+			#ifdef CPUZZLE_DEBUG
+			lines.back().ID = std::string("Row ") + std::to_string(i);
+			#endif
+		}
 	}
 	
 	#ifdef CPUZZLE_DEBUG
@@ -602,12 +599,22 @@ CrossPuzzle::CrossPuzzle(const char* infile) : lines()
 			std::cout << std::endl;
 		#endif
 		
-		lines.emplace_back(*this,
-			createGridReferenceLine(numrows,i,numcols), hintList);
+		auto references = createGridReferenceLine(numrows,i,numcols);
 		
-		#ifdef CPUZZLE_DEBUG
-		lines.back().ID = std::string("Column ") + std::to_string(i);
-		#endif
+		if (hintList.empty())
+		{
+			for (unsigned ref : references)
+			{
+				grid[ref] = 0;
+			}
+		}
+		else
+		{
+			lines.emplace_back(references, hintList);
+			#ifdef CPUZZLE_DEBUG
+			lines.back().ID = std::string("Column ") + std::to_string(i);
+			#endif
+		}
 	}
 
 	ifs.close();

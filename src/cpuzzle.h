@@ -47,7 +47,7 @@ class CrossPuzzle
 		std::string ID;
 		#endif
 		
-		RoworColumn(CrossPuzzle& CP, std::vector<unsigned> grd,
+		RoworColumn(std::vector<unsigned> grd,
 			const std::list<unsigned>& hintList);
 		// For the time being, not having a custom copy constructor is
 		// a slight efficiency issue, but that will be resolved soon.
