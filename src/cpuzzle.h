@@ -16,7 +16,7 @@ class CrossPuzzle;
 
 struct RoworColumn
 {
-	std::vector<int*> grid;
+	std::vector<unsigned> grid;
 	mutable bool complete;
 	
 	struct possibilityList;
@@ -26,8 +26,10 @@ struct RoworColumn
 	
 	//friend std::ostream& operator<<(std::ostream& stream, const RoworColumn& roc);
 	
-	RoworColumn(std::vector<int*> grd, const std::list<unsigned>& hintList);
-	RoworColumn(const CrossPuzzle& CP, const RoworColumn& rc, std::vector<int*> grd);
+	RoworColumn(CrossPuzzle& CP, std::vector<unsigned> grd,
+		const std::list<unsigned>& hintList);
+	RoworColumn(const CrossPuzzle& CP, const RoworColumn& rc,
+		std::vector<unsigned> grd);
 	RoworColumn& operator=(const RoworColumn& rc) = default;
 	RoworColumn& operator=(RoworColumn&& rc);
 	RoworColumn() = default;
@@ -42,7 +44,7 @@ class CrossPuzzle
 	
 	static std::list<unsigned> getList(std::ifstream& in);
 	
-	std::vector<int*> createGridReferenceLine(unsigned size,
+	std::vector<unsigned> createGridReferenceLine(unsigned size,
 		unsigned start, unsigned increment);
 	
 	unsigned numrows, numcols;
@@ -57,7 +59,7 @@ class CrossPuzzle
 	RoworColumn* cols; // RoC []
 	
 	static void throwIfEmpty(const std::list<unsigned>& LL);
-	void markInRange(std::vector<int*> gridReferences, unsigned start,
+	void markInRange(std::vector<unsigned> gridReferences, unsigned start,
 		unsigned end, int value, unsigned& changesMade);
 	
 	bool isComplete(const RoworColumn& roc) const;

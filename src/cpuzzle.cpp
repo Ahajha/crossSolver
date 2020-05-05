@@ -35,7 +35,7 @@ bool CrossPuzzle::isComplete(const RoworColumn& roc) const
 	
 	for (unsigned i = 0; i < roc.grid.size(); i++)
 	{
-		if (*roc.grid[i] == -1)
+		if (grid[roc.grid[i]] == -1)
 		{
 			return false;
 		}
@@ -87,7 +87,7 @@ Constructs a RoworColumn of length 'siz', referencing
 the items in grd, with a list of hints hintList.
 ----------------------------------------------------*/
 
-RoworColumn::RoworColumn(std::vector<int*> grd,
+RoworColumn::RoworColumn(CrossPuzzle& CP, std::vector<unsigned> grd,
 	const std::list<unsigned>& hintList) : grid(grd)
 {
 	#ifdef CPUZZLE_DEBUG
@@ -100,7 +100,7 @@ RoworColumn::RoworColumn(std::vector<int*> grd,
 		complete = true;
 		for (unsigned i = 0; i < grid.size(); i++)
 		{
-			*(grid[i]) = 0;
+			CP.grid[grid[i]] = 0;
 		}
 	}
 	else
@@ -128,7 +128,7 @@ Creates a copy of roc, which references grd.
 ------------------------------------------*/
 
 RoworColumn::RoworColumn(const CrossPuzzle& CP, const RoworColumn& roc,
-	std::vector<int*> grd)
+	std::vector<unsigned> grd)
 	: grid(grd), complete(roc.complete)
 {
 	// Avoid needless copying, to be removed later
@@ -176,7 +176,7 @@ unsigned CrossPuzzle::removeIncompatible(RoworColumn& roc)
 	// Check each position for a space that has recently been marked
 	for (unsigned i = 0; i < roc.grid.size(); i++)
 	{
-		if (*roc.grid[i] == 0)
+		if (grid[roc.grid[i]] == 0)
 		{
 			// Remove due to empty spaces
 			for (unsigned j = 0; j < roc.fillPosses.size(); j++)
@@ -206,7 +206,7 @@ unsigned CrossPuzzle::removeIncompatible(RoworColumn& roc)
 				}
 			}
 		}
-		else if (*roc.grid[i] == 1)
+		else if (grid[roc.grid[i]] == 1)
 		{
 			// Remove due to filled spaces
 			for (unsigned j = 0; j < roc.fillPosses.size(); j++)
@@ -325,17 +325,17 @@ Marks each cell in grid starting at index start and stopping before
 index end to 'value', and increments changesMade for each change made.
 --------------------------------------------------------------------*/
 
-void CrossPuzzle::markInRange(std::vector<int*> gridReferences,
+void CrossPuzzle::markInRange(std::vector<unsigned> gridReferences,
 	unsigned start, unsigned end, int value, unsigned& changesMade)
 {
 	for (unsigned i = start; i < end; i++)
 	{
-		if (*(gridReferences[i]) == -1)
+		if (grid[gridReferences[i]] == -1)
 		{
-			*(gridReferences[i]) = value;
+			grid[gridReferences[i]] = value;
 			changesMade++;
 		}
-		else if (*(gridReferences[i]) != value)
+		else if (grid[gridReferences[i]] != value)
 		{
 			throw CrossPuzzle::puzzle_error("Puzzle is unsolvable");
 		}
@@ -584,15 +584,15 @@ std::ostream& operator<<(std::ostream& stream, const CrossPuzzle& CP)
 	return stream;
 }
 
-std::vector<int*> CrossPuzzle::createGridReferenceLine(unsigned size,
+std::vector<unsigned> CrossPuzzle::createGridReferenceLine(unsigned size,
 	unsigned start, unsigned increment)
 {
-	std::vector<int*> tempgrid(size);
+	std::vector<unsigned> tempgrid(size);
 	
 	unsigned pos = start;
 	for (unsigned j = 0; j < size; j++)
 	{
-		tempgrid[j] = &(grid[pos]);
+		tempgrid[j] = pos;
 		pos += increment;
 	}
 	return tempgrid;
@@ -633,7 +633,8 @@ CrossPuzzle::CrossPuzzle(const char* infile)
 			std::cout << "    " << i << ": ";
 		#endif
 		
-		rows[i] = RoworColumn(createGridReferenceLine(numcols,numcols * i,1), getList(ifs));
+		rows[i] = RoworColumn(*this,
+			createGridReferenceLine(numcols,numcols * i,1), getList(ifs));
 	}
 	
 	#ifdef CPUZZLE_DEBUG
@@ -647,7 +648,8 @@ CrossPuzzle::CrossPuzzle(const char* infile)
 			std::cout << "    " << i << ": ";
 		#endif
 		
-		cols[i] = RoworColumn(createGridReferenceLine(numrows,i,numcols), getList(ifs));
+		cols[i] = RoworColumn(*this,
+			createGridReferenceLine(numrows,i,numcols), getList(ifs));
 	}
 
 	ifs.close();
