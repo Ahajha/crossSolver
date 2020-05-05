@@ -9,26 +9,6 @@
 #include "cpuzzle.h"
 #include "bmpMaker.h"
 
-/*---------------------------------------------
-A possibilityList contains the length of a fill
-and all possible start positions of the fill.
----------------------------------------------*/
-
-struct RoworColumn::possibilityList
-{
-	unsigned fillLength;
-	std::list<unsigned> possiblePositions;
-	
-	possibilityList(unsigned fl, unsigned start, unsigned end)
-		: fillLength(fl)
-	{
-		for (unsigned i = start; i <= end; i++)
-		{
-			possiblePositions.push_back(i);
-		}
-	}
-};
-
 bool CrossPuzzle::isComplete(const RoworColumn& roc) const
 {
 	if (roc.complete) return true;
@@ -375,10 +355,10 @@ on each RoworColumn in rocs. Returns number of changes made, or
 throws puzzle_error if any RoworColumn in rocs is unsolvable.
 -------------------------------------------------------------*/
 
-unsigned CrossPuzzle::removeAndMark(RoworColumn rocs[], unsigned numrocs)
+unsigned CrossPuzzle::removeAndMark(std::vector<RoworColumn>& rocs)
 {
 	unsigned changesMade = 0;
-	for (unsigned i = 0; i < numrocs; i++)
+	for (unsigned i = 0; i < rocs.size(); i++)
 	{
 		if (!isComplete(rocs[i]))
 		{
@@ -426,12 +406,12 @@ void CrossPuzzle::solve()
 		#ifdef CPUZZLE_DEBUG
 			std::cout << "Remove and mark on rows:" << std::endl;
 		#endif
-		rowChanges = removeAndMark(rows, numrows);
+		rowChanges = removeAndMark(rows);
 		
 		#ifdef CPUZZLE_DEBUG
 			std::cout << "Remove and mark on columns:" << std::endl;
 		#endif
-		colChanges = removeAndMark(cols, numcols);
+		colChanges = removeAndMark(cols);
 	}
 	while(!isComplete() && (rowChanges || colChanges));
 	
@@ -577,7 +557,7 @@ std::vector<unsigned> CrossPuzzle::createGridReferenceLine(unsigned size,
 Creates a CrossPuzzle from information in an input file, named infile.
 --------------------------------------------------------------------*/
 
-CrossPuzzle::CrossPuzzle(const char* infile)
+CrossPuzzle::CrossPuzzle(const char* infile) : rows(), cols()
 {
 	std::ifstream ifs(infile);
 	
@@ -601,14 +581,13 @@ CrossPuzzle::CrossPuzzle(const char* infile)
 		std::cout << "Row hintlists:" << std::endl;
 	#endif
 	
-	rows = new RoworColumn[numrows];
 	for (unsigned i = 0; i < numrows; i++)
 	{
 		#ifdef CPUZZLE_DEBUG
 			std::cout << "    " << i << ": ";
 		#endif
 		
-		rows[i] = RoworColumn(*this,
+		rows.emplace_back(*this,
 			createGridReferenceLine(numcols,numcols * i,1), getList(ifs));
 	}
 	
@@ -616,14 +595,13 @@ CrossPuzzle::CrossPuzzle(const char* infile)
 		std::cout << "Column hintlists:" << std::endl;
 	#endif
 	
-	cols = new RoworColumn[numcols];
 	for (unsigned i = 0; i < numcols; i++)
 	{
 		#ifdef CPUZZLE_DEBUG
 			std::cout << "    " << i << ": ";
 		#endif
 		
-		cols[i] = RoworColumn(*this,
+		cols.emplace_back(*this,
 			createGridReferenceLine(numrows,i,numcols), getList(ifs));
 	}
 
@@ -633,96 +611,6 @@ CrossPuzzle::CrossPuzzle(const char* infile)
 		std::cout << "Successfully read from file." << std::endl
 			<< std::endl << "Puzzle:" << std::endl << *this;
 	#endif
-}
-
-/*-------------------
-Creates a copy of CP.
--------------------*/
-
-CrossPuzzle::CrossPuzzle(const CrossPuzzle& CP)
-	: numrows(CP.numrows), numcols(CP.numcols), grid(CP.grid)
-{
-	#ifdef CPUZZLE_DEBUG
-		std::cout << "Copy constructor (CrossPuzzle)" << std::endl;
-	#endif
-	
-	rows = new RoworColumn[numrows];
-	for (unsigned i = 0; i < numrows; i++)
-	{
-		rows[i] = RoworColumn(CP.rows[i]);
-	}
-	
-	cols = new RoworColumn[numcols];
-	for (unsigned i = 0; i < numcols; i++)
-	{
-		cols[i] = RoworColumn(CP.cols[i]);
-	}
-}
-
-CrossPuzzle& CrossPuzzle::operator=(const CrossPuzzle& CP)
-{
-	#ifdef CPUZZLE_DEBUG
-		std::cout << "Copy assignment (CrossPuzzle)" << std::endl;
-	#endif
-	
-	if (numrows != CP.numrows)
-	{
-		delete rows;
-		numrows = CP.numrows;
-		rows = new RoworColumn[numrows];
-	}
-	
-	if (numcols != CP.numcols)
-	{
-		delete cols;
-		numcols = CP.numcols;
-		cols = new RoworColumn[numcols];
-	}
-	
-	grid = CP.grid;
-	
-	for (unsigned i = 0; i < numrows; i++)
-	{
-		rows[i] = RoworColumn(CP.rows[i]);
-	}
-	
-	for (unsigned i = 0; i < numcols; i++)
-	{
-		cols[i] = RoworColumn(CP.cols[i]);
-	}
-	
-	return *this;
-}
-
-CrossPuzzle& CrossPuzzle::operator=(CrossPuzzle&& CP)
-{
-	#ifdef CPUZZLE_DEBUG
-		std::cout << "Move assignment (CrossPuzzle)" << std::endl;
-	#endif
-	
-	std::swap(numrows,CP.numrows);
-	std::swap(rows,CP.rows);
-	
-	std::swap(numcols,CP.numcols);
-	std::swap(cols,CP.cols);
-	
-	std::swap(grid,CP.grid);
-	
-	return *this;
-}
-
-/*--------------------
-Destroys a CrossPuzzle
---------------------*/
-
-CrossPuzzle::~CrossPuzzle()
-{
-	#ifdef CPUZZLE_DEBUG
-		std::cout << "Destructor (CrossPuzzle):" << std::endl << *this;
-	#endif
-	delete[] rows;
-	
-	delete[] cols;
 }
 
 bool CrossPuzzle::isComplete() const

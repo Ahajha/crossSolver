@@ -19,7 +19,25 @@ struct RoworColumn
 	std::vector<unsigned> grid;
 	mutable bool complete;
 	
-	struct possibilityList;
+	/*---------------------------------------------
+	A possibilityList contains the length of a fill
+	and all possible start positions of the fill.
+	---------------------------------------------*/
+	
+	struct possibilityList
+	{
+		unsigned fillLength;
+		std::list<unsigned> possiblePositions;
+		
+		possibilityList(unsigned fl, unsigned start, unsigned end)
+			: fillLength(fl)
+		{
+			for (unsigned i = start; i <= end; i++)
+			{
+				possiblePositions.push_back(i);
+			}
+		}
+	};
 	std::vector<possibilityList> fillPosses;
 	
 	//void printgrid(std::ostream& stream) const;
@@ -52,8 +70,8 @@ class CrossPuzzle
 	// ...
 	std::vector<int> grid;
 	
-	RoworColumn* rows; // RoC []
-	RoworColumn* cols; // RoC []
+	std::vector<RoworColumn> rows;
+	std::vector<RoworColumn> cols;
 	
 	static void throwIfEmpty(const std::list<unsigned>& LL);
 	void markInRange(std::vector<unsigned> gridReferences, unsigned start,
@@ -64,7 +82,7 @@ class CrossPuzzle
 	unsigned removeIncompatible(RoworColumn& roc);
 	unsigned markConsistent(RoworColumn& roc);
 	
-	unsigned removeAndMark(RoworColumn rocs[], unsigned numrocs);
+	unsigned removeAndMark(std::vector<RoworColumn>& rocs);
 	
 	public:
 	
@@ -83,10 +101,6 @@ class CrossPuzzle
 	};
 	
 	CrossPuzzle(const char* infile);
-	CrossPuzzle(const CrossPuzzle& CP);
-	CrossPuzzle& operator=(const CrossPuzzle& CP);
-	CrossPuzzle& operator=(CrossPuzzle&& CP);
-	~CrossPuzzle();
 	
 	void solve();
 	
