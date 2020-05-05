@@ -4,7 +4,6 @@
 // File Name:     cpuzzle.cpp
 
 #include <iostream>
-#include <fstream>
 #include <list>
 #include "cpuzzle.h"
 #include "bmpMaker.h"
@@ -66,7 +65,7 @@ the items in grd, with a list of hints hintList.
 ----------------------------------------------------*/
 
 CrossPuzzle::RoworColumn::RoworColumn(std::vector<unsigned> grd,
-	const std::list<unsigned>& hintList) : grid(grd), complete(false)
+	const std::list<unsigned>& hintList) : grid(grd)
 {	
 	fillPosses.reserve(hintList.size());
 	
@@ -445,7 +444,7 @@ void CrossPuzzle::solve()
 GetList returns a list containing one line of ints read from in.
 --------------------------------------------------------------*/
 
-std::list<unsigned> CrossPuzzle::getList(std::ifstream& in)
+std::list<unsigned> CrossPuzzle::getList(std::istream& in)
 {
 	unsigned temp;
 	std::list<unsigned> L;
@@ -559,62 +558,55 @@ void CrossPuzzle::evaluateHintList(std::list<unsigned> hintList,
 Creates a CrossPuzzle from information in an input file, named infile.
 --------------------------------------------------------------------*/
 
-CrossPuzzle::CrossPuzzle(const char* infile) : lines()
+std::istream& operator>>(std::istream& stream, CrossPuzzle& CP)
 {
-	std::ifstream ifs(infile);
-	
-	if (!ifs.is_open())
-	{
-		throw std::exception();
-	}
-	
-	ifs >> numcols;
-	ifs >> numrows;
+	stream >> CP.numcols;
+	stream >> CP.numrows;
 	
 	#ifdef CPUZZLE_DEBUG
-		std::cout << "Rows: " << numrows << ", Cols: " << numcols << std::endl;
+		std::cout << "Rows: " << CP.numrows << ", Cols: " << CP.numcols << std::endl;
 	#endif
 	
 	// Create grid, fill with -1s
-	grid.resize(numrows * numcols);
-	std::fill(grid.begin(), grid.end(), -1);
+	CP.grid.resize(CP.numrows * CP.numcols);
+	std::fill(CP.grid.begin(), CP.grid.end(), -1);
 	
 	#ifdef CPUZZLE_DEBUG
 		std::cout << "Hintlists:" << std::endl;
 	#endif
 	
-	for (unsigned i = 0; i < numrows; i++)
+	for (unsigned i = 0; i < CP.numrows; i++)
 	{
-		auto hintList = getList(ifs);
+		auto hintList = CrossPuzzle::getList(stream);
 		
-		auto references = createGridReferenceLine(numcols,numcols * i,1);
+		auto references = CP.createGridReferenceLine(CP.numcols,CP.numcols * i,1);
 		
 		#ifndef CPUZZLE_DEBUG 
-		evaluateHintList(hintList, references);
+		CP.evaluateHintList(hintList, references);
 		#else
-		evaluateHintList(hintList, references, std::string("Row ") + std::to_string(i));
+		CP.evaluateHintList(hintList, references, std::string("Row ") + std::to_string(i));
 		#endif
 	}
 	
-	for (unsigned i = 0; i < numcols; i++)
+	for (unsigned i = 0; i < CP.numcols; i++)
 	{
-		auto hintList = getList(ifs);
+		auto hintList = CrossPuzzle::getList(stream);
 		
-		auto references = createGridReferenceLine(numrows,i,numcols);
+		auto references = CP.createGridReferenceLine(CP.numrows,i,CP.numcols);
 		
 		#ifndef CPUZZLE_DEBUG 
-		evaluateHintList(hintList, references);
+		CP.evaluateHintList(hintList, references);
 		#else
-		evaluateHintList(hintList, references, std::string("Column ") + std::to_string(i));
+		CP.evaluateHintList(hintList, references, std::string("Column ") + std::to_string(i));
 		#endif
 	}
 
-	ifs.close();
-
 	#ifdef CPUZZLE_DEBUG
 		std::cout << "Successfully read from file." << std::endl
-			<< std::endl << "Puzzle:" << std::endl << *this;
+			<< std::endl << "Puzzle:" << std::endl << CP;
 	#endif
+	
+	return stream;
 }
 
 bool CrossPuzzle::isComplete() const

@@ -50,7 +50,7 @@ class CrossPuzzle
 			const std::list<unsigned>& hintList);
 	};
 	
-	static std::list<unsigned> getList(std::ifstream& in);
+	static std::list<unsigned> getList(std::istream& in);
 	
 	std::vector<unsigned> createGridReferenceLine(unsigned size,
 		unsigned start, unsigned increment);
@@ -104,7 +104,9 @@ class CrossPuzzle
 		puzzle_error(const char* m) : msg(m) {}
 	};
 	
-	CrossPuzzle(const char* infile);
+	CrossPuzzle() {}
+	
+	friend std::istream& operator>>(std::istream& stream, CrossPuzzle& CP);
 	
 	void solve();
 	

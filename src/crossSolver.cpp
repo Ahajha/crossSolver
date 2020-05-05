@@ -26,6 +26,7 @@ column k clues
 #include <iostream>
 #include <cstdlib>
 #include <cstring>
+#include <fstream>
 #include "cpuzzle.h"
 
 char* parseArgs(int args, char* argv[])
@@ -52,10 +53,22 @@ int main(int args, char* argv[])
 {
 	char* inFileName = parseArgs(args, argv);
 	
+	CrossPuzzle puzzle;
+	
+	std::ifstream ifs(inFileName);
+	
+	if (!ifs.is_open())
+	{
+		std::cout << "Could not open file \"" << inFileName << "\" for reading." << std::endl;
+		return 1;
+	}
+	
+	ifs >> puzzle;
+	
+	ifs.close();
+	
 	try
 	{
-		CrossPuzzle puzzle(inFileName);
-	
 		puzzle.solve();
 		
 		#ifdef DEBUG
@@ -72,11 +85,6 @@ int main(int args, char* argv[])
 	catch (CrossPuzzle::puzzle_error& e)
 	{
 		std::cout << "No solution." << std::endl;
-		return 1;
-	}
-	catch (std::exception& e)
-	{
-		std::cout << "Could not open file \"" << inFileName << "\" for reading." << std::endl;
 		return 1;
 	}
 }
