@@ -69,7 +69,10 @@ class CrossPuzzle
 	std::list<RoworColumn> rows;
 	std::list<RoworColumn> cols;
 	
+	#ifdef CPUZZLE_DEBUG
 	void printRoC(std::ostream& stream, const RoworColumn& roc) const;
+	friend std::ostream& operator<<(std::ostream& stream, const CrossPuzzle& CP);
+	#endif
 	
 	static void throwIfEmpty(const std::list<unsigned>& LL);
 	void markInRange(std::vector<unsigned> gridReferences, unsigned start,
@@ -104,8 +107,6 @@ class CrossPuzzle
 	
 	bool isComplete() const;
 	BMP_24 bitmap() const;
-	
-	friend std::ostream& operator<<(std::ostream& stream, const CrossPuzzle& CP);
 };
 
 #endif

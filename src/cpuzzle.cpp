@@ -23,6 +23,7 @@ bool CrossPuzzle::isComplete(const RoworColumn& roc) const
 	return roc.complete = true;
 }
 
+#ifdef CPUZZLE_DEBUG
 void CrossPuzzle::printRoC(std::ostream& stream, const RoworColumn& roc) const
 {
 	if(isComplete(roc))
@@ -59,6 +60,7 @@ void CrossPuzzle::printRoC(std::ostream& stream, const RoworColumn& roc) const
 	}
 	stream << std::endl;
 }
+#endif
 
 /*----------------------------------------------------
 Constructs a RoworColumn of length 'siz', referencing
@@ -493,6 +495,7 @@ std::list<unsigned> CrossPuzzle::getList(std::ifstream& in)
 	return L;
 }
 
+#ifdef CPUZZLE_DEBUG
 std::ostream& operator<<(std::ostream& stream, const CrossPuzzle& CP)
 {
 	stream << "===========================================================" << std::endl;
@@ -533,6 +536,7 @@ std::ostream& operator<<(std::ostream& stream, const CrossPuzzle& CP)
 	stream << "===========================================================" << std::endl;
 	return stream;
 }
+#endif
 
 std::vector<unsigned> CrossPuzzle::createGridReferenceLine(unsigned size,
 	unsigned start, unsigned increment)
