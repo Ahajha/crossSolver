@@ -340,31 +340,32 @@ throws puzzle_error if any RoworColumn in lines is unsolvable.
 unsigned CrossPuzzle::removeAndMark()
 {
 	unsigned changesMade = 0;
-	for (auto& roc : lines)
+	for (auto it = lines.begin(); it != lines.end();)
 	{
-		if (!isComplete(roc))
-		{
-			unsigned numremoved = removeIncompatible(roc);
-			unsigned nummarked  = markConsistent(roc);
-			
-			#ifdef CPUZZLE_DEBUG
-				if (numremoved || nummarked)
+		unsigned numremoved = removeIncompatible(*it);
+		unsigned nummarked  = markConsistent(*it);
+		
+		#ifdef CPUZZLE_DEBUG
+			if (numremoved || nummarked)
+			{
+				std::cout << (*it).ID << ":" << std::endl;
+				if (numremoved)
 				{
-					std::cout << roc.ID << ":" << std::endl;
-					if (numremoved)
-					{
-						std::cout << "Removed " << numremoved << " possibilities." << std::endl;
-					}
-					if (nummarked)
-					{
-						std::cout << "Marked " << nummarked << " cells." << std::endl;
-					}
-					printRoC(std::cout,roc);
+					std::cout << "Removed " << numremoved << " possibilities." << std::endl;
 				}
-			#endif
-			
-			changesMade += (numremoved + nummarked);
-		}
+				if (nummarked)
+				{
+					std::cout << "Marked " << nummarked << " cells." << std::endl;
+				}
+				printRoC(std::cout,*it);
+			}
+		#endif
+		
+		changesMade += (numremoved + nummarked);
+		
+		// Delete complete lines
+		if (isComplete(*it)) lines.erase(it++);
+		else ++it;
 	}
 
 	return changesMade;

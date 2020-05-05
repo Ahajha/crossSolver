@@ -84,11 +84,10 @@ class CrossPuzzle
 	
 	unsigned removeAndMark();
 	
-	#ifndef CPUZZLE_DEBUG
 	void evaluateHintList(std::list<unsigned> hintList,
+	#ifndef CPUZZLE_DEBUG
 		std::vector<unsigned> references);
 	#else
-	void evaluateHintList(std::list<unsigned> hintList,
 		std::vector<unsigned> references, std::string ID);
 	#endif
 	
