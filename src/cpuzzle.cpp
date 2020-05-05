@@ -127,9 +127,8 @@ RoworColumn::RoworColumn(CrossPuzzle& CP, std::vector<unsigned> grd,
 Creates a copy of roc, which references grd.
 ------------------------------------------*/
 
-RoworColumn::RoworColumn(const CrossPuzzle& CP, const RoworColumn& roc,
-	std::vector<unsigned> grd)
-	: grid(grd), complete(roc.complete)
+RoworColumn::RoworColumn(const CrossPuzzle& CP, const RoworColumn& roc)
+	: grid(roc.grid), complete(roc.complete)
 {
 	// Avoid needless copying, to be removed later
 	if (!CP.isComplete(roc))
@@ -674,15 +673,13 @@ CrossPuzzle::CrossPuzzle(const CrossPuzzle& CP)
 	rows = new RoworColumn[numrows];
 	for (unsigned i = 0; i < numrows; i++)
 	{
-		rows[i] = RoworColumn(*this, CP.rows[i],
-			createGridReferenceLine(numcols,numcols * i,1));
+		rows[i] = RoworColumn(*this, CP.rows[i]);
 	}
 	
 	cols = new RoworColumn[numcols];
 	for (unsigned i = 0; i < numcols; i++)
 	{
-		cols[i] = RoworColumn(*this, CP.cols[i],
-			createGridReferenceLine(numrows,i,numcols));
+		cols[i] = RoworColumn(*this, CP.cols[i]);
 	}
 }
 
@@ -710,14 +707,12 @@ CrossPuzzle& CrossPuzzle::operator=(const CrossPuzzle& CP)
 	
 	for (unsigned i = 0; i < numrows; i++)
 	{
-		rows[i] = RoworColumn(*this, CP.rows[i],
-			createGridReferenceLine(numcols,numcols * i,1));
+		rows[i] = RoworColumn(*this, CP.rows[i]);
 	}
 	
 	for (unsigned i = 0; i < numcols; i++)
 	{
-		cols[i] = RoworColumn(*this, CP.cols[i],
-			createGridReferenceLine(numrows,i,numcols));
+		cols[i] = RoworColumn(*this, CP.cols[i]);
 	}
 	
 	return *this;

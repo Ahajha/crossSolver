@@ -28,8 +28,7 @@ struct RoworColumn
 	
 	RoworColumn(CrossPuzzle& CP, std::vector<unsigned> grd,
 		const std::list<unsigned>& hintList);
-	RoworColumn(const CrossPuzzle& CP, const RoworColumn& rc,
-		std::vector<unsigned> grd);
+	RoworColumn(const CrossPuzzle& CP, const RoworColumn& rc);
 	RoworColumn& operator=(const RoworColumn& rc) = default;
 	RoworColumn& operator=(RoworColumn&& rc);
 	RoworColumn() = default;
