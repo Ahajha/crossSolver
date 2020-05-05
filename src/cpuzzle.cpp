@@ -348,20 +348,20 @@ on each RoworColumn in rocs. Returns number of changes made, or
 throws puzzle_error if any RoworColumn in rocs is unsolvable.
 -------------------------------------------------------------*/
 
-unsigned CrossPuzzle::removeAndMark(std::vector<RoworColumn>& rocs)
+unsigned CrossPuzzle::removeAndMark(std::list<RoworColumn>& rocs)
 {
 	unsigned changesMade = 0;
-	for (unsigned i = 0; i < rocs.size(); i++)
+	for (auto& roc : rocs)
 	{
-		if (!isComplete(rocs[i]))
+		if (!isComplete(roc))
 		{
-			unsigned numremoved = removeIncompatible(rocs[i]);
-			unsigned nummarked  = markConsistent(rocs[i]);
+			unsigned numremoved = removeIncompatible(roc);
+			unsigned nummarked  = markConsistent(roc);
 			
 			#ifdef CPUZZLE_DEBUG
 				if (numremoved || nummarked)
 				{
-					std::cout << rocs[i].ID << ":" << std::endl;
+					std::cout << roc.ID << ":" << std::endl;
 					if (numremoved)
 					{
 						std::cout << "Removed " << numremoved << " possibilities." << std::endl;
@@ -370,7 +370,7 @@ unsigned CrossPuzzle::removeAndMark(std::vector<RoworColumn>& rocs)
 					{
 						std::cout << "Marked " << nummarked << " cells." << std::endl;
 					}
-					printRoC(std::cout,rocs[i]);
+					printRoC(std::cout,roc);
 				}
 			#endif
 			
@@ -500,15 +500,15 @@ std::ostream& operator<<(std::ostream& stream, const CrossPuzzle& CP)
 	
 	if (!CP.isComplete())
 	{
-		for (unsigned i = 0; i < CP.numrows; i++)
+		for (auto& roc : CP.rows)
 		{
-			stream << CP.rows[i].ID << ": ";
-			CP.printRoC(stream,CP.rows[i]);
+			stream << roc.ID << ": ";
+			CP.printRoC(stream,roc);
 		}
-		for (unsigned i = 0; i < CP.numcols; i++)
+		for (auto& roc : CP.rows)
 		{
-			stream << CP.cols[i].ID << ": ";
-			CP.printRoC(stream,CP.cols[i]);
+			stream << roc.ID << ": ";
+			CP.printRoC(stream,roc);
 		}
 	}
 	
@@ -628,9 +628,9 @@ bool CrossPuzzle::isComplete() const
 {
 	// Only need to check if rows or columns are complete,
 	// arbitrarily pick rows.
-	for (unsigned i = 0; i < numrows; i++)
+	for (auto& roc : rows)
 	{
-		if (!isComplete(rows[i]))
+		if (!isComplete(roc))
 		{
 			return false;
 		}
