@@ -48,7 +48,6 @@ struct RoworColumn
 		const std::list<unsigned>& hintList);
 	// For the time being, not having a custom copy constructor is
 	// a slight efficiency issue, but that will be resolved soon.
-	RoworColumn() = default;
 };
 
 class CrossPuzzle
