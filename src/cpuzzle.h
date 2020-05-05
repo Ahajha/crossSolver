@@ -66,8 +66,7 @@ class CrossPuzzle
 	// ...
 	std::vector<int> grid;
 	
-	std::list<RoworColumn> rows;
-	std::list<RoworColumn> cols;
+	std::list<RoworColumn> lines;
 	
 	#ifdef CPUZZLE_DEBUG
 	void printRoC(std::ostream& stream, const RoworColumn& roc) const;
@@ -83,7 +82,7 @@ class CrossPuzzle
 	unsigned removeIncompatible(RoworColumn& roc);
 	unsigned markConsistent(RoworColumn& roc);
 	
-	unsigned removeAndMark(std::list<RoworColumn>& rocs);
+	unsigned removeAndMark();
 	
 	public:
 	

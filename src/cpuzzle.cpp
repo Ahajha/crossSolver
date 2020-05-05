@@ -344,16 +344,16 @@ unsigned CrossPuzzle::markConsistent(RoworColumn& roc)
 	return changesMade;
 }
 
-/*-------------------------------------------------------------
+/*--------------------------------------------------------------
 Calls removeIncompatible() and markConsistent(), in that order,
-on each RoworColumn in rocs. Returns number of changes made, or
-throws puzzle_error if any RoworColumn in rocs is unsolvable.
--------------------------------------------------------------*/
+on each RoworColumn in lines. Returns number of changes made, or
+throws puzzle_error if any RoworColumn in lines is unsolvable.
+--------------------------------------------------------------*/
 
-unsigned CrossPuzzle::removeAndMark(std::list<RoworColumn>& rocs)
+unsigned CrossPuzzle::removeAndMark()
 {
 	unsigned changesMade = 0;
-	for (auto& roc : rocs)
+	for (auto& roc : lines)
 	{
 		if (!isComplete(roc))
 		{
@@ -394,21 +394,16 @@ void CrossPuzzle::solve()
 		std::cout << "Entering solve:" << std::endl << "Puzzle:" << std::endl << *this;
 	#endif
 	
-	int rowChanges, colChanges;
+	int changes;
 	
 	do
 	{
 		#ifdef CPUZZLE_DEBUG
 			std::cout << "Remove and mark:" << std::endl;
 		#endif
-		rowChanges = removeAndMark(rows);
-		
-		#ifdef CPUZZLE_DEBUG
-			std::cout << "Remove and mark:" << std::endl;
-		#endif
-		colChanges = removeAndMark(cols);
+		changes = removeAndMark();
 	}
-	while(!isComplete() && (rowChanges || colChanges));
+	while(!isComplete() && changes);
 	
 	#ifdef CPUZZLE_DEBUG
 		std::cout << "Done with logical rules:" << std::endl;	
@@ -503,12 +498,7 @@ std::ostream& operator<<(std::ostream& stream, const CrossPuzzle& CP)
 	
 	if (!CP.isComplete())
 	{
-		for (auto& roc : CP.rows)
-		{
-			stream << roc.ID << ": ";
-			CP.printRoC(stream,roc);
-		}
-		for (auto& roc : CP.rows)
+		for (auto& roc : CP.lines)
 		{
 			stream << roc.ID << ": ";
 			CP.printRoC(stream,roc);
@@ -556,7 +546,7 @@ std::vector<unsigned> CrossPuzzle::createGridReferenceLine(unsigned size,
 Creates a CrossPuzzle from information in an input file, named infile.
 --------------------------------------------------------------------*/
 
-CrossPuzzle::CrossPuzzle(const char* infile) : rows(), cols()
+CrossPuzzle::CrossPuzzle(const char* infile) : lines()
 {
 	std::ifstream ifs(infile);
 	
@@ -590,11 +580,11 @@ CrossPuzzle::CrossPuzzle(const char* infile) : rows(), cols()
 			std::cout << std::endl;
 		#endif
 		
-		rows.emplace_back(*this,
+		lines.emplace_back(*this,
 			createGridReferenceLine(numcols,numcols * i,1), hintList);
 		
 		#ifdef CPUZZLE_DEBUG
-		rows.back().ID = std::string("Row ") + std::to_string(i);
+		lines.back().ID = std::string("Row ") + std::to_string(i);
 		#endif
 	}
 	
@@ -612,11 +602,11 @@ CrossPuzzle::CrossPuzzle(const char* infile) : rows(), cols()
 			std::cout << std::endl;
 		#endif
 		
-		cols.emplace_back(*this,
+		lines.emplace_back(*this,
 			createGridReferenceLine(numrows,i,numcols), hintList);
 		
 		#ifdef CPUZZLE_DEBUG
-		cols.back().ID = std::string("Column ") + std::to_string(i);
+		lines.back().ID = std::string("Column ") + std::to_string(i);
 		#endif
 	}
 
@@ -630,9 +620,9 @@ CrossPuzzle::CrossPuzzle(const char* infile) : rows(), cols()
 
 bool CrossPuzzle::isComplete() const
 {
-	// Only need to check if rows or columns are complete,
-	// arbitrarily pick rows.
-	for (auto& roc : rows)
+	// This checks if both the rows and columns are complete,
+	// a very minor inefficiency that will be dealt with soon.
+	for (auto& roc : lines)
 	{
 		if (!isComplete(roc))
 		{
