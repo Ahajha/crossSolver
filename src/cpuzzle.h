@@ -20,7 +20,6 @@ class CrossPuzzle
 	struct RoworColumn
 	{
 		std::vector<unsigned> grid;
-		mutable bool complete;
 		
 		/*---------------------------------------------
 		A possibilityList contains the length of a fill
@@ -49,8 +48,6 @@ class CrossPuzzle
 		
 		RoworColumn(std::vector<unsigned> grd,
 			const std::list<unsigned>& hintList);
-		// For the time being, not having a custom copy constructor is
-		// a slight efficiency issue, but that will be resolved soon.
 	};
 	
 	static std::list<unsigned> getList(std::ifstream& in);

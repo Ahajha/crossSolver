@@ -11,8 +11,6 @@
 
 bool CrossPuzzle::isComplete(const RoworColumn& roc) const
 {
-	if (roc.complete) return true;
-	
 	for (unsigned i = 0; i < roc.grid.size(); i++)
 	{
 		if (grid[roc.grid[i]] == -1)
@@ -20,7 +18,7 @@ bool CrossPuzzle::isComplete(const RoworColumn& roc) const
 			return false;
 		}
 	}
-	return roc.complete = true;
+	return true;
 }
 
 #ifdef CPUZZLE_DEBUG
@@ -484,13 +482,11 @@ std::ostream& operator<<(std::ostream& stream, const CrossPuzzle& CP)
 	stream << "===========================================================" << std::endl;
 	stream << "Rows: " << CP.numrows << ", Columns: " << CP.numcols << std::endl << std::endl;
 	
-	if (!CP.isComplete())
+	// If CP is complete, this will print nothing
+	for (auto& roc : CP.lines)
 	{
-		for (auto& roc : CP.lines)
-		{
-			stream << roc.ID << ": ";
-			CP.printRoC(stream,roc);
-		}
+		stream << roc.ID << ": ";
+		CP.printRoC(stream,roc);
 	}
 	
 	unsigned pos = 0;
@@ -623,16 +619,7 @@ CrossPuzzle::CrossPuzzle(const char* infile) : lines()
 
 bool CrossPuzzle::isComplete() const
 {
-	// This checks if both the rows and columns are complete,
-	// a very minor inefficiency that will be dealt with soon.
-	for (auto& roc : lines)
-	{
-		if (!isComplete(roc))
-		{
-			return false;
-		}
-	}
-	return true;
+	return lines.empty();
 }
 
 BMP_24 CrossPuzzle::bitmap() const
