@@ -336,6 +336,10 @@ throws puzzle_error if any RoworColumn in lines is unsolvable.
 
 unsigned CrossPuzzle::removeAndMark()
 {
+	#ifdef CPUZZLE_DEBUG
+		std::cout << "Remove and mark:" << std::endl;
+	#endif
+	
 	unsigned changesMade = 0;
 	for (auto it = lines.begin(); it != lines.end();)
 	{
@@ -379,16 +383,7 @@ void CrossPuzzle::solve()
 		std::cout << "Entering solve:" << std::endl << "Puzzle:" << std::endl << *this;
 	#endif
 	
-	int changes;
-	
-	do
-	{
-		#ifdef CPUZZLE_DEBUG
-			std::cout << "Remove and mark:" << std::endl;
-		#endif
-		changes = removeAndMark();
-	}
-	while(!isComplete() && changes);
+	while(removeAndMark() && !isComplete()) {}
 	
 	#ifdef CPUZZLE_DEBUG
 		std::cout << "Done with logical rules:" << std::endl;	
