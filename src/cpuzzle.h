@@ -12,6 +12,8 @@
 #include <list>
 #include "bmpMaker.h"
 
+class CrossPuzzle;
+
 struct RoworColumn
 {
 	std::vector<int*> grid;
@@ -20,14 +22,12 @@ struct RoworColumn
 	struct possibilityList;
 	std::vector<possibilityList> fillPosses;
 	
-	void printgrid(std::ostream& stream) const;
+	//void printgrid(std::ostream& stream) const;
 	
-	bool isComplete() const;
-	
-	friend std::ostream& operator<<(std::ostream& stream, const RoworColumn& roc);
+	//friend std::ostream& operator<<(std::ostream& stream, const RoworColumn& roc);
 	
 	RoworColumn(std::vector<int*> grd, const std::list<unsigned>& hintList);
-	RoworColumn(const RoworColumn& rc, std::vector<int*> grd);
+	RoworColumn(const CrossPuzzle& CP, const RoworColumn& rc, std::vector<int*> grd);
 	RoworColumn& operator=(const RoworColumn& rc) = default;
 	RoworColumn& operator=(RoworColumn&& rc);
 	RoworColumn() = default;
@@ -37,6 +37,8 @@ struct RoworColumn
 class CrossPuzzle
 {
 	private:
+	
+	friend class RoworColumn;
 	
 	static std::list<unsigned> getList(std::ifstream& in);
 	
@@ -57,6 +59,8 @@ class CrossPuzzle
 	static void throwIfEmpty(const std::list<unsigned>& LL);
 	void markInRange(std::vector<int*> gridReferences, unsigned start,
 		unsigned end, int value, unsigned& changesMade);
+	
+	bool isComplete(const RoworColumn& roc) const;
 	
 	unsigned removeIncompatible(RoworColumn& roc);
 	unsigned markConsistent(RoworColumn& roc);

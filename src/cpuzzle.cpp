@@ -29,20 +29,20 @@ struct RoworColumn::possibilityList
 	}
 };
 
-bool RoworColumn::isComplete() const
+bool CrossPuzzle::isComplete(const RoworColumn& roc) const
 {
-	if (complete) return true;
+	if (roc.complete) return true;
 	
-	for (unsigned i = 0; i < grid.size(); i++)
+	for (unsigned i = 0; i < roc.grid.size(); i++)
 	{
-		if (*grid[i] == -1)
+		if (*roc.grid[i] == -1)
 		{
 			return false;
 		}
 	}
-	return complete = true;
+	return roc.complete = true;
 }
-
+/*
 void RoworColumn::printgrid(std::ostream& stream) const
 {
 	for (unsigned i = 0; i < grid.size(); i++)
@@ -81,7 +81,7 @@ std::ostream& operator<<(std::ostream& stream, const RoworColumn& roc)
 	}
 	return (stream << std::endl);
 }
-
+*/
 /*----------------------------------------------------
 Constructs a RoworColumn of length 'siz', referencing
 the items in grd, with a list of hints hintList.
@@ -127,11 +127,12 @@ RoworColumn::RoworColumn(std::vector<int*> grd,
 Creates a copy of roc, which references grd.
 ------------------------------------------*/
 
-RoworColumn::RoworColumn(const RoworColumn& roc, std::vector<int*> grd)
+RoworColumn::RoworColumn(const CrossPuzzle& CP, const RoworColumn& roc,
+	std::vector<int*> grd)
 	: grid(grd), complete(roc.complete)
 {
 	// Avoid needless copying, to be removed later
-	if (!isComplete())
+	if (!CP.isComplete(roc))
 	{
 		fillPosses = roc.fillPosses;
 	}
@@ -404,7 +405,7 @@ unsigned CrossPuzzle::removeAndMark(RoworColumn rocs[], unsigned numrocs)
 	unsigned changesMade = 0;
 	for (unsigned i = 0; i < numrocs; i++)
 	{
-		if (!rocs[i].isComplete())
+		if (!isComplete(rocs[i]))
 		{
 			unsigned numremoved = removeIncompatible(rocs[i]);
 			unsigned nummarked  = markConsistent(rocs[i]);
@@ -548,7 +549,7 @@ std::ostream& operator<<(std::ostream& stream, const CrossPuzzle& CP)
 {
 	stream << "===========================================================" << std::endl;
 	stream << "Rows: " << CP.numrows << ", Columns: " << CP.numcols << std::endl << std::endl;
-	
+	/*
 	if (!CP.isComplete())
 	{
 		for (unsigned i = 0; i < CP.numrows; i++)
@@ -560,7 +561,7 @@ std::ostream& operator<<(std::ostream& stream, const CrossPuzzle& CP)
 			stream << "Column " << i << ": " << CP.cols[i];
 		}
 	}
-	
+	*/
 	unsigned pos = 0;
 	for (unsigned i = 0; i < CP.numrows; i++)
 	{
@@ -671,13 +672,15 @@ CrossPuzzle::CrossPuzzle(const CrossPuzzle& CP)
 	rows = new RoworColumn[numrows];
 	for (unsigned i = 0; i < numrows; i++)
 	{
-		rows[i] = RoworColumn(CP.rows[i], createGridReferenceLine(numcols,numcols * i,1));
+		rows[i] = RoworColumn(*this, CP.rows[i],
+			createGridReferenceLine(numcols,numcols * i,1));
 	}
 	
 	cols = new RoworColumn[numcols];
 	for (unsigned i = 0; i < numcols; i++)
 	{
-		cols[i] = RoworColumn(CP.cols[i], createGridReferenceLine(numrows,i,numcols));
+		cols[i] = RoworColumn(*this, CP.cols[i],
+			createGridReferenceLine(numrows,i,numcols));
 	}
 }
 
@@ -705,12 +708,14 @@ CrossPuzzle& CrossPuzzle::operator=(const CrossPuzzle& CP)
 	
 	for (unsigned i = 0; i < numrows; i++)
 	{
-		rows[i] = RoworColumn(CP.rows[i], createGridReferenceLine(numcols,numcols * i,1));
+		rows[i] = RoworColumn(*this, CP.rows[i],
+			createGridReferenceLine(numcols,numcols * i,1));
 	}
 	
 	for (unsigned i = 0; i < numcols; i++)
 	{
-		cols[i] = RoworColumn(CP.cols[i], createGridReferenceLine(numrows,i,numcols));
+		cols[i] = RoworColumn(*this, CP.cols[i],
+			createGridReferenceLine(numrows,i,numcols));
 	}
 	
 	return *this;
@@ -753,7 +758,7 @@ bool CrossPuzzle::isComplete() const
 	// arbitrarily pick rows.
 	for (unsigned i = 0; i < numrows; i++)
 	{
-		if (!rows[i].isComplete())
+		if (!isComplete(rows[i]))
 		{
 			return false;
 		}
