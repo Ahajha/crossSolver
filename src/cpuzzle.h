@@ -102,8 +102,6 @@ class CrossPuzzle
 		}
 	};
 	
-	CrossPuzzle() {}
-	
 	friend std::istream& operator>>(std::istream& stream, CrossPuzzle& CP);
 	
 	void solve();
