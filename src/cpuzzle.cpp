@@ -272,14 +272,13 @@ unsigned CrossPuzzle::markConsistent(RoworColumn& roc)
 	unsigned changesMade = 0;
 	
 	// Mark filled spaces
-	for (unsigned i = 0; i < roc.fillPosses.size(); i++)
+	for (auto& fillPoss : roc.fillPosses)
 	{
 		// Mark every cell from the last possible start position of the fill
 		// to the first possible end position of the fill. This may not mark anything.
-		unsigned lastToMark = roc.fillPosses[i].possiblePositions.front() +
-			roc.fillPosses[i].fillLength;
+		unsigned lastToMark = fillPoss.possiblePositions.front() + fillPoss.fillLength;
 		
-		markInRange(roc.grid, roc.fillPosses[i].possiblePositions.back(),
+		markInRange(roc.grid, fillPoss.possiblePositions.back(),
 			lastToMark, 1, changesMade);
 	}
 	
