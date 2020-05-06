@@ -8,16 +8,105 @@
 #include "cpuzzle.h"
 #include "bmpMaker.h"
 
-bool CrossPuzzle::isComplete(const RoworColumn& roc) const
+/*----------------------------------------------------
+Constructs a RoworColumn of length 'siz', referencing
+the items in grd, with a list of hints hintList.
+----------------------------------------------------*/
+
+CrossPuzzle::RoworColumn::RoworColumn(std::vector<unsigned> grd,
+	const std::list<unsigned>& hintList) : grid(grd)
 {
-	for (unsigned i = 0; i < roc.grid.size(); i++)
+	fillPosses.reserve(hintList.size());
+	
+	unsigned sum = 0;
+	for (unsigned hint : hintList) sum += hint;
+	
+	unsigned extraSpace = grid.size() - (sum + hintList.size() - 1);
+	
+	unsigned minPos = 0;
+	for (unsigned hint : hintList)
 	{
-		if (grid[roc.grid[i]] == -1)
+		fillPosses.emplace_back(hint, minPos, minPos + extraSpace);
+		minPos += hint + 1;
+	}
+}
+
+/*--------------------------------------------------------------
+GetList returns a list containing one line of ints read from in.
+--------------------------------------------------------------*/
+
+std::list<unsigned> CrossPuzzle::getList(std::istream& in)
+{
+	unsigned temp;
+	std::list<unsigned> L;
+	
+	// There will always be at least one number
+	in >> temp;
+	L.push_front(temp);
+	
+	for (int c = in.peek(); c != '\n' && !in.eof(); c = in.peek())
+	{
+		if ('0' <= c && c <= '9')
 		{
-			return false;
+			in >> temp;
+			L.push_back(temp);
+		}
+		else
+		{
+			in.ignore();
 		}
 	}
-	return true;
+	
+	// If the list is just 0, let it be an empty list
+	if (L.size() == 1 && L.front() == 0)
+	{
+		L.pop_front();
+	}
+	
+	return L;
+}
+
+std::vector<unsigned> CrossPuzzle::createGridReferenceLine(unsigned size,
+	unsigned start, unsigned increment)
+{
+	std::vector<unsigned> tempgrid(size);
+	
+	unsigned pos = start;
+	for (unsigned j = 0; j < size; j++)
+	{
+		tempgrid[j] = pos;
+		pos += increment;
+	}
+	return tempgrid;
+}
+
+void CrossPuzzle::evaluateHintList(std::list<unsigned> hintList,
+#ifndef CPUZZLE_DEBUG
+	std::vector<unsigned> references)
+#else
+	std::vector<unsigned> references, std::string ID)
+#endif
+{
+	#ifdef CPUZZLE_DEBUG
+		std::cout << "    " << ID << ": ";
+		for (unsigned hint : hintList) std::cout << hint << ' ';
+		std::cout << std::endl;
+	#endif
+	
+	if (hintList.empty())
+	{
+		for (unsigned ref : references)
+		{
+			grid[ref] = 0;
+		}
+	}
+	else
+	{
+		lines.emplace_back(references, hintList);
+		#ifdef CPUZZLE_DEBUG
+		lines.back().ID = ID;
+		#endif
+	}
 }
 
 #ifdef CPUZZLE_DEBUG
@@ -42,7 +131,7 @@ void CrossPuzzle::printRoC(std::ostream& stream, const RoworColumn& roc) const
 	stream << std::endl;
 	
 	if (!isComplete(roc))
-	{	
+	{
 		for (unsigned i = 0; i < roc.fillPosses.size(); i++)
 		{
 			stream << "Fill #" << i << ", length " << roc.fillPosses[i].fillLength << ": ";
@@ -57,30 +146,41 @@ void CrossPuzzle::printRoC(std::ostream& stream, const RoworColumn& roc) const
 	}
 	stream << std::endl;
 }
-#endif
 
-/*----------------------------------------------------
-Constructs a RoworColumn of length 'siz', referencing
-the items in grd, with a list of hints hintList.
-----------------------------------------------------*/
-
-CrossPuzzle::RoworColumn::RoworColumn(std::vector<unsigned> grd,
-	const std::list<unsigned>& hintList) : grid(grd)
-{	
-	fillPosses.reserve(hintList.size());
+std::ostream& operator<<(std::ostream& stream, const CrossPuzzle& CP)
+{
+	stream << "===========================================================" << std::endl;
+	stream << "Rows: " << CP.numrows << ", Columns: " << CP.numcols << std::endl << std::endl;
 	
-	unsigned sum = 0;
-	for (unsigned hint : hintList) sum += hint;
-	
-	unsigned extraSpace = grid.size() - (sum + hintList.size() - 1);
-	
-	unsigned minPos = 0;
-	for (unsigned hint : hintList)
+	// If CP is complete, this will print nothing
+	for (auto& roc : CP.lines)
 	{
-		fillPosses.emplace_back(hint, minPos, minPos + extraSpace);
-		minPos += hint + 1;
+		stream << roc.ID << ": ";
+		CP.printRoC(stream,roc);
 	}
+	
+	unsigned pos = 0;
+	for (unsigned i = 0; i < CP.numrows; i++)
+	{
+		for (unsigned j = 0; j < CP.numcols; j++)
+		{
+			if (CP.grid[pos] == -1)
+			{
+				stream << "_ ";
+			}
+			else
+			{
+				stream << CP.grid[pos] << " ";
+			}
+			++pos;
+		}
+		stream << std::endl;
+	}
+	
+	stream << "===========================================================" << std::endl;
+	return stream;
 }
+#endif
 
 /*-----------------------------------
 Throws a puzzle_error if LL is empty.
@@ -92,13 +192,47 @@ void CrossPuzzle::throwIfEmpty(const std::list<unsigned>& LL)
 		throw CrossPuzzle::puzzle_error();
 }
 
+/*--------------------------------------------------------------------
+Marks each cell in grid starting at index start and stopping before
+index end to 'value', and increments changesMade for each change made.
+--------------------------------------------------------------------*/
+
+void CrossPuzzle::markInRange(std::vector<unsigned> gridReferences,
+	unsigned start, unsigned end, int value, unsigned& changesMade)
+{
+	for (unsigned i = start; i < end; i++)
+	{
+		if (grid[gridReferences[i]] == -1)
+		{
+			grid[gridReferences[i]] = value;
+			changesMade++;
+		}
+		else if (grid[gridReferences[i]] != value)
+		{
+			throw CrossPuzzle::puzzle_error();
+		}
+	}
+}
+
+bool CrossPuzzle::isComplete(const RoworColumn& roc) const
+{
+	for (unsigned i = 0; i < roc.grid.size(); i++)
+	{
+		if (grid[roc.grid[i]] == -1)
+		{
+			return false;
+		}
+	}
+	return true;
+}
+
 /*------------------------------------------------------
 Removes incompatible possibilites from a RoworColumn.
 If a fill has no more possibilites, throws puzzle_error,
 otherwise returns the number of possibilites removed.
 ------------------------------------------------------*/
 
-// TODO: Some rules added for the first and last fills can be condensed by 
+// TODO: Some rules added for the first and last fills can be condensed by
 // making "empty" first and last fills (i.e. cell 0 to -1, length 0 for the
 // beginning). Need to double check, but it seems that all of the special
 // case rules would collapse into other rules.
@@ -106,7 +240,7 @@ otherwise returns the number of possibilites removed.
 unsigned CrossPuzzle::removeIncompatible(RoworColumn& roc)
 {
 	unsigned changesMade = 0;
-
+	
 	// Check each position for a space that has recently been marked
 	for (unsigned i = 0; i < roc.grid.size(); i++)
 	{
@@ -155,7 +289,7 @@ unsigned CrossPuzzle::removeIncompatible(RoworColumn& roc)
 			}
 			
 			// TODO: These two rules would be unneeded if the above
-			// change was made	
+			// change was made
 			
 			// Filled space cannot be before the first fill
 			while (roc.fillPosses[0].possiblePositions.back() > i)
@@ -180,7 +314,7 @@ unsigned CrossPuzzle::removeIncompatible(RoworColumn& roc)
 				// If the first of the two fills cannot reach the filled
 				// space, the second cannot start after it.
 				
-				if (roc.fillPosses[j - 1].possiblePositions.back() + 
+				if (roc.fillPosses[j - 1].possiblePositions.back() +
 					roc.fillPosses[j - 1].fillLength < i)
 				{
 					// Delete all possibilites that start after the filled
@@ -240,28 +374,6 @@ unsigned CrossPuzzle::removeIncompatible(RoworColumn& roc)
 	return changesMade;
 }
 
-/*--------------------------------------------------------------------
-Marks each cell in grid starting at index start and stopping before
-index end to 'value', and increments changesMade for each change made.
---------------------------------------------------------------------*/
-
-void CrossPuzzle::markInRange(std::vector<unsigned> gridReferences,
-	unsigned start, unsigned end, int value, unsigned& changesMade)
-{
-	for (unsigned i = start; i < end; i++)
-	{
-		if (grid[gridReferences[i]] == -1)
-		{
-			grid[gridReferences[i]] = value;
-			changesMade++;
-		}
-		else if (grid[gridReferences[i]] != value)
-		{
-			throw CrossPuzzle::puzzle_error();
-		}
-	}
-}
-
 /*-----------------------------------------
 Marks items in the grid that are consistent
 with all possibilites in a RoworColumn.
@@ -289,7 +401,7 @@ unsigned CrossPuzzle::markConsistent(RoworColumn& roc)
 	
 	markInRange(roc.grid, 0, roc.fillPosses[0].possiblePositions.front(),
 		0, changesMade);
-		
+	
 	// Mark every cell that is after all possible end positions of the last
 	// fill as empty.
 	
@@ -353,185 +465,8 @@ unsigned CrossPuzzle::removeAndMark()
 		if (isComplete(*it)) lines.erase(it++);
 		else ++it;
 	}
-
+	
 	return changesMade;
-}
-
-/*--------------------------------------
-Solves this, or throws a
-CrossPuzzle::puzzle_error if unsolvable.
---------------------------------------*/
-
-void CrossPuzzle::solve()
-{
-	#ifdef CPUZZLE_DEBUG
-		std::cout << "Entering solve:" << std::endl << "Puzzle:" << std::endl << *this;
-	#endif
-	
-	while(removeAndMark() && !isComplete()) {}
-	
-	#ifdef CPUZZLE_DEBUG
-		std::cout << "Done with logical rules:" << std::endl;	
-	#endif
-	
-	if (isComplete())
-	{
-		#ifdef CPUZZLE_DEBUG
-			std::cout << "Puzzle complete:" << std::endl << *this;	
-		#endif
-		
-		return;
-	}
-	
-	#ifdef CPUZZLE_DEBUG
-		std::cout << "\nUsing brute force:\n" << std::endl;
-	#endif
-	
-	// find position to brute force
-	unsigned pos = 0;
-	while (grid[pos] != -1) ++pos;
-	
-	// Guess 1 first, is significantly quicker on some puzzles.
-	for (int guess = 1; guess >= 0; guess--)
-	{
-		CrossPuzzle copy(*this);
-		
-		#ifdef CPUZZLE_DEBUG
-			std::cout << "Guessing " << guess << " at position "
-				<< pos << "(" << (pos/numrows) << "," << (pos%numrows)
-				<< ")" << std::endl;
-		#endif
-	
-		copy.grid[pos] = guess;
-		
-		try
-		{
-			copy.solve();
-			std::swap(copy,*this);
-			return;
-		}
-		catch (CrossPuzzle::puzzle_error& e) {}
-	}
-	
-	#ifdef CPUZZLE_DEBUG
-		std::cout << "No solution." << std::endl;
-	#endif
-	
-	throw CrossPuzzle::puzzle_error();
-}
-
-/*--------------------------------------------------------------
-GetList returns a list containing one line of ints read from in.
---------------------------------------------------------------*/
-
-std::list<unsigned> CrossPuzzle::getList(std::istream& in)
-{
-	unsigned temp;
-	std::list<unsigned> L;
-
-	// There will always be at least one number
-	in >> temp;
-	L.push_front(temp);
-
-	for (int c = in.peek(); c != '\n' && !in.eof(); c = in.peek())
-	{
-		if ('0' <= c && c <= '9')
-		{
-			in >> temp;
-			L.push_back(temp);
-		}
-		else
-		{
-			in.ignore();
-		}
-	}
-	
-	// If the list is just 0, let it be an empty list
-	if (L.size() == 1 && L.front() == 0)
-	{
-		L.pop_front();
-	}
-
-	return L;
-}
-
-#ifdef CPUZZLE_DEBUG
-std::ostream& operator<<(std::ostream& stream, const CrossPuzzle& CP)
-{
-	stream << "===========================================================" << std::endl;
-	stream << "Rows: " << CP.numrows << ", Columns: " << CP.numcols << std::endl << std::endl;
-	
-	// If CP is complete, this will print nothing
-	for (auto& roc : CP.lines)
-	{
-		stream << roc.ID << ": ";
-		CP.printRoC(stream,roc);
-	}
-	
-	unsigned pos = 0;
-	for (unsigned i = 0; i < CP.numrows; i++)
-	{
-		for (unsigned j = 0; j < CP.numcols; j++)
-		{
-			if (CP.grid[pos] == -1)
-			{
-				stream << "_ ";
-			}
-			else
-			{
-				stream << CP.grid[pos] << " ";
-			}
-			++pos;
-		}
-		stream << std::endl;
-	}
-	
-	stream << "===========================================================" << std::endl;
-	return stream;
-}
-#endif
-
-std::vector<unsigned> CrossPuzzle::createGridReferenceLine(unsigned size,
-	unsigned start, unsigned increment)
-{
-	std::vector<unsigned> tempgrid(size);
-	
-	unsigned pos = start;
-	for (unsigned j = 0; j < size; j++)
-	{
-		tempgrid[j] = pos;
-		pos += increment;
-	}
-	return tempgrid;
-}
-
-void CrossPuzzle::evaluateHintList(std::list<unsigned> hintList,
-#ifndef CPUZZLE_DEBUG
-	std::vector<unsigned> references)
-#else
-	std::vector<unsigned> references, std::string ID)
-#endif
-{
-	#ifdef CPUZZLE_DEBUG
-		std::cout << "    " << ID << ": ";
-		for (unsigned hint : hintList) std::cout << hint << ' ';
-		std::cout << std::endl;
-	#endif
-	
-	if (hintList.empty())
-	{
-		for (unsigned ref : references)
-		{
-			grid[ref] = 0;
-		}
-	}
-	else
-	{
-		lines.emplace_back(references, hintList);
-		#ifdef CPUZZLE_DEBUG
-		lines.back().ID = ID;
-		#endif
-	}
 }
 
 /*--------------------------------------------------------------------
@@ -561,7 +496,7 @@ std::istream& operator>>(std::istream& stream, CrossPuzzle& CP)
 		
 		auto references = CP.createGridReferenceLine(CP.numcols,CP.numcols * i,1);
 		
-		#ifndef CPUZZLE_DEBUG 
+		#ifndef CPUZZLE_DEBUG
 		CP.evaluateHintList(hintList, references);
 		#else
 		CP.evaluateHintList(hintList, references, std::string("Row ") + std::to_string(i));
@@ -574,19 +509,82 @@ std::istream& operator>>(std::istream& stream, CrossPuzzle& CP)
 		
 		auto references = CP.createGridReferenceLine(CP.numrows,i,CP.numcols);
 		
-		#ifndef CPUZZLE_DEBUG 
+		#ifndef CPUZZLE_DEBUG
 		CP.evaluateHintList(hintList, references);
 		#else
 		CP.evaluateHintList(hintList, references, std::string("Column ") + std::to_string(i));
 		#endif
 	}
-
+	
 	#ifdef CPUZZLE_DEBUG
 		std::cout << "Successfully read from file." << std::endl
 			<< std::endl << "Puzzle:" << std::endl << CP;
 	#endif
 	
 	return stream;
+}
+
+/*--------------------------------------
+Solves this, or throws a
+CrossPuzzle::puzzle_error if unsolvable.
+--------------------------------------*/
+
+void CrossPuzzle::solve()
+{
+	#ifdef CPUZZLE_DEBUG
+		std::cout << "Entering solve:" << std::endl << "Puzzle:" << std::endl << *this;
+	#endif
+	
+	while(removeAndMark() && !isComplete()) {}
+	
+	#ifdef CPUZZLE_DEBUG
+		std::cout << "Done with logical rules:" << std::endl;
+	#endif
+	
+	if (isComplete())
+	{
+		#ifdef CPUZZLE_DEBUG
+			std::cout << "Puzzle complete:" << std::endl << *this;
+		#endif
+		
+		return;
+	}
+	
+	#ifdef CPUZZLE_DEBUG
+		std::cout << "\nUsing brute force:\n" << std::endl;
+	#endif
+	
+	// find position to brute force
+	unsigned pos = 0;
+	while (grid[pos] != -1) ++pos;
+	
+	// Guess 1 first, is significantly quicker on some puzzles.
+	for (int guess = 1; guess >= 0; guess--)
+	{
+		CrossPuzzle copy(*this);
+		
+		#ifdef CPUZZLE_DEBUG
+			std::cout << "Guessing " << guess << " at position "
+				<< pos << "(" << (pos/numrows) << "," << (pos%numrows)
+				<< ")" << std::endl;
+		#endif
+		
+		copy.grid[pos] = guess;
+		
+		try
+		{
+			copy.solve();
+			std::swap(copy,*this);
+			return;
+		}
+		catch (CrossPuzzle::puzzle_error& e) {}
+	}
+	
+	#ifdef CPUZZLE_DEBUG
+		std::cout << "No solution." << std::endl;
+	#endif
+	
+	throw CrossPuzzle::puzzle_error();
 }
 
 bool CrossPuzzle::isComplete() const
@@ -597,7 +595,7 @@ bool CrossPuzzle::isComplete() const
 BMP_24 CrossPuzzle::bitmap() const
 {
 	BMP_24 soln(numrows, numcols);
-
+	
 	unsigned pos = 0;
 	for (unsigned i = 0; i < numrows; i++)
 	{
