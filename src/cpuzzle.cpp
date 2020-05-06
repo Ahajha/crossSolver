@@ -115,29 +115,21 @@ unsigned CrossPuzzle::removeIncompatible(RoworColumn& roc)
 			// Remove due to empty spaces
 			for (unsigned j = 0; j < roc.fillPosses.size(); j++)
 			{
-				unsigned length = roc.fillPosses[j].fillLength;
-				
 				// If the empty space is within the fill,
 				// remove the possibility.
 				
-				// Reference this list, for brevity
 				auto& positions = roc.fillPosses[j].possiblePositions;
-				for (auto it = positions.begin(); it != positions.end();)
+				unsigned length = roc.fillPosses[j].fillLength;
+				unsigned originalSize = positions.size();
+				
+				std::erase_if(positions, [i,length](unsigned start)
 				{
-					unsigned start = *it;
-					if ((start <= i) && (i < start + length))
-					{
-						positions.erase(it++);
-						throwIfEmpty(positions);
-						changesMade++;
-					}
-					else
-					{
-						// This seems to segfault if I put this in the loop
-						// section, unsure why.
-						++it;
-					}
-				}
+					return (start <= i) && (i < start + length);
+				});
+				
+				throwIfEmpty(positions);
+				
+				changesMade += (originalSize - positions.size());
 			}
 		}
 		else if (grid[roc.grid[i]] == 1)
