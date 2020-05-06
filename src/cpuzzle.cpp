@@ -137,27 +137,21 @@ unsigned CrossPuzzle::removeIncompatible(RoworColumn& roc)
 			// Remove due to filled spaces
 			for (unsigned j = 0; j < roc.fillPosses.size(); j++)
 			{
-				unsigned length = roc.fillPosses[j].fillLength;
-				
 				// If the filled space is immediately before or after
 				// a possible fill, remove the possibility.
 				
-				// Reference this list, for brevity
 				auto& positions = roc.fillPosses[j].possiblePositions;
-				for (auto it = positions.begin(); it != positions.end();)
+				unsigned length = roc.fillPosses[j].fillLength;
+				unsigned originalSize = positions.size();
+				
+				std::erase_if(positions, [i,length](unsigned start)
 				{
-					unsigned start = *it;
-					if (start == i + 1 || start + length == i)
-					{
-						positions.erase(it++);
-						throwIfEmpty(positions);
-						changesMade++;
-					}
-					else
-					{
-						++it;
-					}
-				}
+					return (start == i + 1) || (start + length == i);
+				});
+				
+				throwIfEmpty(positions);
+				
+				changesMade += (originalSize - positions.size());
 			}
 			
 			// TODO: These two rules would be unneeded if the above
