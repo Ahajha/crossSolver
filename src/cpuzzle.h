@@ -50,11 +50,7 @@ class CrossPuzzle
 			const std::list<unsigned>& hintList);
 	};
 	
-	static std::list<unsigned> getList(std::istream& in);
-	
-	std::vector<unsigned> createGridReferenceLine(unsigned size,
-		unsigned start, unsigned increment);
-	
+	// Variables
 	unsigned numrows, numcols;
 	
 	// Layout of indexes:
@@ -65,11 +61,26 @@ class CrossPuzzle
 	
 	std::list<RoworColumn> lines;
 	
+	// Methods related to input
+	static std::list<unsigned> getList(std::istream& in);
+	
+	std::vector<unsigned> createGridReferenceLine(unsigned size,
+		unsigned start, unsigned increment);
+	
+	void evaluateHintList(std::list<unsigned> hintList,
+	#ifndef CPUZZLE_DEBUG
+		std::vector<unsigned> references);
+	#else
+		std::vector<unsigned> references, std::string ID);
+	#endif
+	
+	// Debugging methods
 	#ifdef CPUZZLE_DEBUG
 	void printRoC(std::ostream& stream, const RoworColumn& roc) const;
 	friend std::ostream& operator<<(std::ostream& stream, const CrossPuzzle& CP);
 	#endif
 	
+	// Methods related to solving
 	static void throwIfEmpty(const std::list<unsigned>& LL);
 	void markInRange(std::vector<unsigned> gridReferences, unsigned start,
 		unsigned end, int value, unsigned& changesMade);
@@ -80,13 +91,6 @@ class CrossPuzzle
 	unsigned markConsistent(RoworColumn& roc);
 	
 	unsigned removeAndMark();
-	
-	void evaluateHintList(std::list<unsigned> hintList,
-	#ifndef CPUZZLE_DEBUG
-		std::vector<unsigned> references);
-	#else
-		std::vector<unsigned> references, std::string ID);
-	#endif
 	
 	public:
 	
