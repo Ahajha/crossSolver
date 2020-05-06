@@ -90,18 +90,12 @@ class CrossPuzzle
 	
 	public:
 	
-	class puzzle_error : public std::exception
+	struct puzzle_error : public std::exception
 	{
-		const char* msg;
-		
-		public:
-		
 		virtual const char* what() const throw()
 		{
-			return msg;
+			return "Puzzle is unsolvable";
 		}
-		
-		puzzle_error(const char* m) : msg(m) {}
 	};
 	
 	CrossPuzzle() {}

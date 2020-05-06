@@ -89,7 +89,7 @@ Throws a puzzle_error if LL is empty.
 void CrossPuzzle::throwIfEmpty(const std::list<unsigned>& LL)
 {
 	if (LL.empty())
-		throw CrossPuzzle::puzzle_error("Puzzle is unsolvable");
+		throw CrossPuzzle::puzzle_error();
 }
 
 /*------------------------------------------------------
@@ -257,7 +257,7 @@ void CrossPuzzle::markInRange(std::vector<unsigned> gridReferences,
 		}
 		else if (grid[gridReferences[i]] != value)
 		{
-			throw CrossPuzzle::puzzle_error("Puzzle is unsolvable");
+			throw CrossPuzzle::puzzle_error();
 		}
 	}
 }
@@ -417,7 +417,7 @@ void CrossPuzzle::solve()
 		std::cout << "No solution." << std::endl;
 	#endif
 	
-	throw CrossPuzzle::puzzle_error("Unsolvable puzzle");
+	throw CrossPuzzle::puzzle_error();
 }
 
 /*--------------------------------------------------------------
