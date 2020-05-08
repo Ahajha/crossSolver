@@ -73,10 +73,12 @@ std::ostream& operator<<(std::ostream& out, const BMP_24& bmp)
 	// ID field ("BM") // Must be used
 	out << 'B';
 	out << 'M';
+	
+	// Size of the bitmap data, in bytes, including padding. Used twice
+	int bitmapSize = bmp.height*((bmp.width*3)/4)*4 + ((bmp.width%4 != 0) * 4);
 
 	// Size of the file // Used, only pixel size and amount will change this
-	BMP_24::writeLittleEndian(54 + bmp.height*((bmp.width*3)/4)*4 +
-		((bmp.width%4 != 0) * 4), out, 4);
+	BMP_24::writeLittleEndian(54 + bitmapSize, out, 4);
 	
 	// Unused (x2)
 	BMP_24::writeLittleEndian(0, out, 4);
@@ -107,7 +109,7 @@ std::ostream& operator<<(std::ostream& out, const BMP_24& bmp)
 	BMP_24::writeLittleEndian(0, out, 4);
 	
 	// Size of raw bitmap data in bytes (including padding) // Must be used
-	BMP_24::writeLittleEndian(bmp.height*((bmp.width*3)/4)*4 + ((bmp.width%4 != 0) * 4), out, 4);
+	BMP_24::writeLittleEndian(bitmapSize, out, 4);
 	
 	// Print resolution:
 	
