@@ -71,10 +71,6 @@ int main(int args, char* argv[])
 	{
 		puzzle.solve();
 		
-		#ifdef DEBUG
-			std::cout << "\nFinal puzzle:" << std::endl << puzzle;
-		#endif
-		
 		// Make .bmp file
 		const char* outFile = getOutFileName(inFileName);
 		puzzle.bitmap().write(outFile);
