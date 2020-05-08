@@ -423,15 +423,15 @@ unsigned CrossPuzzle::removeAndMark()
 	#endif
 	
 	unsigned changesMade = 0;
-	for (auto it = lines.begin(); it != lines.end();)
+	std::erase_if(lines, [&](RoworColumn& roc)
 	{
-		unsigned numremoved = removeIncompatible(*it);
-		unsigned nummarked  = markConsistent(*it);
+		unsigned numremoved = removeIncompatible(roc);
+		unsigned nummarked  = markConsistent(roc);
 		
 		#ifdef CPUZZLE_DEBUG
 			if (numremoved || nummarked)
 			{
-				std::cout << (*it).ID << ":" << std::endl;
+				std::cout << roc.ID << ":" << std::endl;
 				if (numremoved)
 				{
 					std::cout << "Removed " << numremoved << " possibilities." << std::endl;
@@ -440,16 +440,14 @@ unsigned CrossPuzzle::removeAndMark()
 				{
 					std::cout << "Marked " << nummarked << " cells." << std::endl;
 				}
-				printRoC(std::cout,*it);
+				printRoC(std::cout,roc);
 			}
 		#endif
 		
 		changesMade += (numremoved + nummarked);
 		
-		// Delete complete lines
-		if (isComplete(*it)) lines.erase(it++);
-		else ++it;
-	}
+		return isComplete(roc);
+	});
 	
 	return changesMade;
 }
