@@ -58,7 +58,7 @@ class BMP_24
 	int height;
 
 	// Row 0 is the bottom row, column 0 is the left
-	color_24** grid;
+	std::vector<std::vector<color_24>> grid;
 
 	static void writeLittleEndian(int e, std::ostream& out, int numBytes);
 
@@ -69,9 +69,7 @@ class BMP_24
 
 	// Creates a bitmap of specified size and default color
 	BMP_24(int hgt, int wid, color_24 def);
-		
-	~BMP_24();
-
+	
 	// Loads a bitmap from a file
 	// BMP_24(const char* file);
 

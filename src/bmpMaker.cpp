@@ -5,6 +5,7 @@
 
 #include <iostream>
 #include <fstream>
+#include <vector>
 #include "bmpMaker.h"
 
 const color_24 color_24::white (255,255,255);
@@ -25,32 +26,21 @@ const color_24 color_24::orange (255,165,0);
 const color_24 color_24::light_brown (181,101,29);
 const color_24 color_24::magenta (255,0,255);
 
-BMP_24::BMP_24 (int hgt, int wid) : width(wid), height(hgt), grid(new color_24* [hgt])
+BMP_24::BMP_24 (int hgt, int wid) : width(wid), height(hgt)
 {
+	grid.resize(height);
 	for (int i = 0; i < hgt; i++)
 	{
-		grid[i] = new color_24 [wid];
+		grid[i].resize(width);
 	}
 }
 
 BMP_24::BMP_24(int hgt, int wid, color_24 def) : BMP_24(hgt,wid)
 {
-	for (int i = 0; i < hgt; i++)
-	{
-		for (int j = 0; j < wid; j++)
-		{
-			grid[i][j] = def;
-		}
-	}
-}
-
-BMP_24::~BMP_24()
-{
 	for (int i = 0; i < height; i++)
 	{
-		delete[] grid[i];
+		std::fill(grid[i].begin(), grid[i].end(), def);
 	}
-	delete[] grid;
 }
 
 void BMP_24::writeLittleEndian(int e, std::ostream& out, int numBytes)
@@ -137,8 +127,7 @@ std::ostream& operator<<(std::ostream& out, const BMP_24& bmp)
 	/* Pixel Array */
 
 	int padding = (bmp.width % 4 == 0) ? 0 : (bmp.width % 4);
-	//printf("Printed %i buffer characters.\n", padding);
-
+	
 	// From the bottom left, going row by row.
 	for (int i = 0; i < bmp.height; i++)
 	{
