@@ -288,33 +288,14 @@ unsigned CrossPuzzle::removeIncompatible(RoworColumn& roc)
 				changesMade += (originalSize - positions.size());
 			}
 			
-			// TODO: These two rules would be unneeded if the above
-			// change was made
-			
-			// Filled space cannot be before the first fill
-			while (roc.fillPosses[0].possiblePositions.back() > i)
-			{
-				roc.fillPosses[0].possiblePositions.pop_back();
-				throwIfEmpty(roc.fillPosses[0].possiblePositions);
-				changesMade++;
-			}
-			
-			// ... or after the last fill.
-			unsigned len = roc.fillPosses.back().fillLength;
-			while (roc.fillPosses.back().possiblePositions.front() + len < i)
-			{
-				roc.fillPosses.back().possiblePositions.pop_front();
-				throwIfEmpty(roc.fillPosses.back().possiblePositions);
-				changesMade++;
-			}
-			
 			// Filled space cannot fall between two adjacent fills
-			for (unsigned j = 1; j < roc.fillPosses.size(); j++)
+			for (unsigned j = 0; j < roc.fillPosses.size(); j++)
 			{
+				// If the first fill comes after the filled space, or
 				// If the first of the two fills cannot reach the filled
 				// space, the second cannot start after it.
 				
-				if (roc.fillPosses[j - 1].possiblePositions.back() +
+				if (j == 0 || roc.fillPosses[j - 1].possiblePositions.back() +
 					roc.fillPosses[j - 1].fillLength < i)
 				{
 					// Delete all possibilites that start after the filled
@@ -326,17 +307,21 @@ unsigned CrossPuzzle::removeIncompatible(RoworColumn& roc)
 						changesMade++;
 					}
 				}
+				
+				// If the last fill ends before the filled space, or
 				// If the second cannot reach it, the first cannot end
 				// before it.
-				if (i < roc.fillPosses[j].possiblePositions.front())
+				
+				if (j == roc.fillPosses.size() - 1 ||
+					i < roc.fillPosses[j + 1].possiblePositions.front())
 				{
 					// Delete all possibilites that end before the filled
 					// space.
-					while (roc.fillPosses[j - 1].possiblePositions.front()
-						+ roc.fillPosses[j - 1].fillLength < i)
+					while (roc.fillPosses[j].possiblePositions.front()
+						+ roc.fillPosses[j].fillLength < i)
 					{
-						roc.fillPosses[j - 1].possiblePositions.pop_front();
-						throwIfEmpty(roc.fillPosses[j - 1].possiblePositions);
+						roc.fillPosses[j].possiblePositions.pop_front();
+						throwIfEmpty(roc.fillPosses[j].possiblePositions);
 						changesMade++;
 					}
 				}
