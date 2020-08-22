@@ -247,13 +247,11 @@ unsigned CrossPuzzle::removeIncompatible(RoworColumn& roc)
 		if (grid[roc.grid[i]] == 0)
 		{
 			// Remove due to empty spaces
-			for (auto& fillPoss : roc.fillPosses)
+			for (auto& [length,positions] : roc.fillPosses)
 			{
 				// If the empty space is within the fill,
 				// remove the possibility.
 				
-				auto& positions = fillPoss.possiblePositions;
-				unsigned length = fillPoss.fillLength;
 				unsigned originalSize = positions.size();
 				
 				std::erase_if(positions, [i,length](unsigned start)
@@ -269,13 +267,11 @@ unsigned CrossPuzzle::removeIncompatible(RoworColumn& roc)
 		else if (grid[roc.grid[i]] == 1)
 		{
 			// Remove due to filled spaces
-			for (auto& fillPoss : roc.fillPosses)
+			for (auto& [length,positions] : roc.fillPosses)
 			{
 				// If the filled space is immediately before or after
 				// a possible fill, remove the possibility.
 				
-				auto& positions = fillPoss.possiblePositions;
-				unsigned length = fillPoss.fillLength;
 				unsigned originalSize = positions.size();
 				
 				std::erase_if(positions, [i,length](unsigned start)
