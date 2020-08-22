@@ -1,6 +1,6 @@
 CFLAGS = --std=c++2a -g -Wall -Wextra -Wshadow -Wuninitialized -O3
-CC     = g++
-LINK   = g++
+CC     = g++-10
+LINK   = g++-10
 
 CFILES = src/bmpMaker.cpp\
          src/cpuzzle.cpp\
