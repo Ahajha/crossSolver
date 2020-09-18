@@ -26,22 +26,11 @@ const color_24 color_24::orange (255,165,0);
 const color_24 color_24::light_brown (181,101,29);
 const color_24 color_24::magenta (255,0,255);
 
-BMP_24::BMP_24 (int hgt, int wid) : width(wid), height(hgt)
-{
-	grid.resize(height);
-	for (int i = 0; i < hgt; i++)
-	{
-		grid[i].resize(width);
-	}
-}
+BMP_24::BMP_24 (int hgt, int wid) : width(wid), height(hgt),
+	grid(height,std::vector<color_24>(width)) {}
 
-BMP_24::BMP_24(int hgt, int wid, color_24 def) : BMP_24(hgt,wid)
-{
-	for (int i = 0; i < height; i++)
-	{
-		std::fill(grid[i].begin(), grid[i].end(), def);
-	}
-}
+BMP_24::BMP_24(int hgt, int wid, color_24 def) : width(wid), height(hgt),
+	grid(height,std::vector<color_24>(width,def)) {}
 
 void BMP_24::writeLittleEndian(int e, std::ostream& out, int numBytes)
 {
