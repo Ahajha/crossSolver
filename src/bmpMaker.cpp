@@ -71,8 +71,7 @@ void BMP_24::write(const char* file) const
 std::ostream& operator<<(std::ostream& out, const BMP_24& bmp)
 {
 	// ID field ("BM") // Must be used
-	out << 'B';
-	out << 'M';
+	out << "BM";
 	
 	// Size of the bitmap data, in bytes, including padding. Used twice
 	int bitmapSize = bmp.height*((bmp.width*3)/4)*4 + ((bmp.width%4 != 0) * 4);
@@ -98,12 +97,10 @@ std::ostream& operator<<(std::ostream& out, const BMP_24& bmp)
 	BMP_24::writeLittleEndian(bmp.height, out, 4);
 	
 	// Number of color planes used // No feature for this
-	out << (char)1;
-	out << (char)0;
+	out << (char)1 << (char)0;
 	
 	// Number of bits per pixel // No feature for this
-	out << (char)24;
-	out << (char)0;
+	out << (char)24 << (char)0;
 
 	// Compression type // No feature for this
 	BMP_24::writeLittleEndian(0, out, 4);

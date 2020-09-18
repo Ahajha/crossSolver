@@ -452,8 +452,7 @@ Creates a CrossPuzzle from information in an input file, named infile.
 
 std::istream& operator>>(std::istream& stream, CrossPuzzle& CP)
 {
-	stream >> CP.numcols;
-	stream >> CP.numrows;
+	stream >> CP.numcols >> CP.numrows;
 	
 	#ifdef CPUZZLE_DEBUG
 		std::cout << "Rows: " << CP.numrows << ", Cols: " << CP.numcols << std::endl;
