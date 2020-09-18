@@ -113,7 +113,7 @@ std::ostream& operator<<(std::ostream& out, const BMP_24& bmp)
 	
 	/* Pixel Array */
 	
-	int padding = (bmp.width % 4 == 0) ? 0 : (bmp.width % 4);
+	int padding = bmp.width % 4;
 	
 	// From the bottom left, going row by row.
 	for (int i = 0; i < bmp.height; i++)
