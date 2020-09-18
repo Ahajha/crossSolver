@@ -40,9 +40,9 @@ color_24& BMP_24::position(int x, int y)
 	return grid[x][y];
 }
 
-void BMP_24::write(const char* file) const
+void BMP_24::write(const std::string& filename) const
 {
-	std::ofstream out(file, std::ios_base::binary);
+	std::ofstream out(filename, std::ios_base::binary);
 	
 	out << *this;
 	

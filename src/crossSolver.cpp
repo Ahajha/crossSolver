@@ -18,11 +18,11 @@ column 2 clues
 column k clues
 */
 
-#include <cstring>
+#include <string>
 #include <fstream>
 #include "cpuzzle.h"
 
-char* parseArgs(int args, char* argv[])
+std::string parseArgs(int args, char* argv[])
 {
 	if (args != 2)
 	{
@@ -32,19 +32,14 @@ char* parseArgs(int args, char* argv[])
 	return argv[1];
 }
 
-char* getOutFileName(const char* inFileName)
+std::string getOutFileName(const std::string& inFileName)
 {
-	int len = strlen(inFileName);
-	char* out = strcpy(new char[len + 1], inFileName);
-	out[len - 3] = 'b';
-	out[len - 2] = 'm';
-	out[len - 1] = 'p';
-	return out;
+	return std::string(inFileName,0,inFileName.find_last_of('.')) + ".bmp";
 }
 
 int main(int args, char* argv[])
 {
-	char* inFileName = parseArgs(args, argv);
+	std::string inFileName = parseArgs(args, argv);
 	
 	CrossPuzzle puzzle;
 	
@@ -65,11 +60,11 @@ int main(int args, char* argv[])
 		puzzle.solve();
 		
 		// Make .bmp file
-		const char* outFile = getOutFileName(inFileName);
-		puzzle.bitmap().write(outFile);
+		std::string outFileName = getOutFileName(inFileName);
+		puzzle.bitmap().write(outFileName);
 		
 		std::cout << "Solution image written to file \""
-			<<  outFile << "\"." << std::endl;
+			<<  outFileName << "\"." << std::endl;
 	}
 	catch (CrossPuzzle::puzzle_error& e)
 	{

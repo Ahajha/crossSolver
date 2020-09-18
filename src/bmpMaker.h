@@ -73,7 +73,7 @@ class BMP_24
 	
 	friend std::ostream& operator<<(std::ostream& out, const BMP_24& bmp);
 	
-	void write(const char* file) const;
+	void write(const std::string& filename) const;
 };
 
 #endif
