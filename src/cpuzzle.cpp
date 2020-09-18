@@ -245,16 +245,12 @@ unsigned CrossPuzzle::removeIncompatible(RoworColumn& roc)
 				// If the empty space is within the fill,
 				// remove the possibility.
 				
-				unsigned originalSize = positions.size();
-				
-				std::erase_if(positions, [i,length](unsigned start)
+				changesMade += std::erase_if(positions, [i,length](unsigned start)
 				{
 					return (start <= i) && (i < start + length);
 				});
 				
 				throwIfEmpty(positions);
-				
-				changesMade += (originalSize - positions.size());
 			}
 		}
 		else if (grid[roc.grid[i]] == 1)
@@ -265,16 +261,12 @@ unsigned CrossPuzzle::removeIncompatible(RoworColumn& roc)
 				// If the filled space is immediately before or after
 				// a possible fill, remove the possibility.
 				
-				unsigned originalSize = positions.size();
-				
-				std::erase_if(positions, [i,length](unsigned start)
+				changesMade += std::erase_if(positions, [i,length](unsigned start)
 				{
 					return (start == i + 1) || (start + length == i);
 				});
 				
 				throwIfEmpty(positions);
-				
-				changesMade += (originalSize - positions.size());
 			}
 			
 			// Filled space cannot fall between two adjacent fills
