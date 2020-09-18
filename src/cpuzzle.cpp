@@ -1,5 +1,3 @@
-#include <iostream>
-#include <list>
 #include "cpuzzle.h"
 #include "bmpMaker.h"
 

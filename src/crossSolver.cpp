@@ -18,8 +18,6 @@ column 2 clues
 column k clues
 */
 
-#include <iostream>
-#include <cstdlib>
 #include <cstring>
 #include <fstream>
 #include "cpuzzle.h"

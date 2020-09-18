@@ -5,8 +5,11 @@
 #include <exception>
 #include <vector>
 #include <list>
-#include <string>
 #include "bmpMaker.h"
+
+#ifdef CPUZZLE_DEBUG
+#include <string>
+#endif
 
 class CrossPuzzle
 {

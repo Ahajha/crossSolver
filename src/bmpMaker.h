@@ -1,7 +1,8 @@
 #ifndef BMP_MAKER_H
 #define BMP_MAKER_H
 
-#include <iostream>
+#include <fstream>
+#include <vector>
 
 /*-----------------------------------------
 A color_24 is a 24 bit color. Contains BGR.

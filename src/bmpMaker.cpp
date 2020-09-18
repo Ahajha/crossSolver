@@ -1,6 +1,3 @@
-#include <iostream>
-#include <fstream>
-#include <vector>
 #include "bmpMaker.h"
 
 const color_24 color_24::white (255,255,255);
