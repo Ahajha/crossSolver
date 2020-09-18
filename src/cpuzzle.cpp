@@ -365,14 +365,12 @@ unsigned CrossPuzzle::markConsistent(RoworColumn& roc)
 	unsigned changesMade = 0;
 	
 	// Mark filled spaces
-	for (auto& fillPoss : roc.fillPosses)
+	for (auto& [length,positions] : roc.fillPosses)
 	{
 		// Mark every cell from the last possible start position of the fill
 		// to the first possible end position of the fill. This may not mark anything.
-		unsigned lastToMark = fillPoss.possiblePositions.front() + fillPoss.fillLength;
-		
-		markInRange(roc.grid, fillPoss.possiblePositions.back(),
-			lastToMark, 1, changesMade);
+		markInRange(roc.grid, positions.back(),
+			positions.front() + length, 1, changesMade);
 	}
 	
 	// Mark empty spaces
