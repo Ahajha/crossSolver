@@ -1,8 +1,3 @@
-// Author:        Alex Trotta
-// Start Date:    3/20/18
-// Last Modified: 12/19/18
-// File Name:     bmpMaker.cpp
-
 #include <iostream>
 #include <fstream>
 #include <vector>

@@ -1,8 +1,3 @@
-// Author:        Alex Trotta
-// Start Date:    4/30/18
-// Last Modified: 12/19/18
-// File Name:     crossSolver.cpp
-
 /*
 Format for the input file:
 

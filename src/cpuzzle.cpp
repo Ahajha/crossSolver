@@ -1,8 +1,3 @@
-// Author:        Alex Trotta
-// Start Date:    5/1/18
-// Last Modified: 12/20/18
-// File Name:     cpuzzle.cpp
-
 #include <iostream>
 #include <list>
 #include "cpuzzle.h"
