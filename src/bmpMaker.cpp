@@ -42,11 +42,7 @@ color_24& BMP_24::position(int x, int y)
 
 void BMP_24::write(const std::string& filename) const
 {
-	std::ofstream out(filename, std::ios_base::binary);
-	
-	out << *this;
-	
-	out.close();
+	std::ofstream(filename, std::ios_base::binary) << *this;
 }
 
 std::ostream& operator<<(std::ostream& out, const BMP_24& bmp)
