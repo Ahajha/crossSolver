@@ -1,4 +1,3 @@
-#include <functional>
 #include "cpuzzle.h"
 #include "bmpMaker.h"
 
@@ -238,29 +237,38 @@ unsigned CrossPuzzle::removeIncompatible(RoworColumn& roc)
 	// Check each position for a space that has recently been marked
 	for (unsigned i = 0; i < roc.grid.size(); i++)
 	{
-		if (grid[roc.grid[i]] != -1)
+		if (grid[roc.grid[i]] == 0)
 		{
+			// Remove due to empty spaces
 			for (auto& [length,positions] : roc.fillPosses)
 			{
-				// Remove possibilities based on whether the cell is filled or not.
-				changesMade += std::erase_if(positions,(grid[roc.grid[i]] == 0)
-					? std::function{[i,length](unsigned start)
-					{
-						// Rule 1: Empty space in the middle of a fill.
-						return (start <= i) && (i < start + length);
-					}}
-					: std::function{[i,length](unsigned start)
-					{
-						// Rule 2: Filled space immediately before or after a fill.
-						return (start == i + 1) || (start + length == i);
-					}}
-				);
+				// If the empty space is within the fill,
+				// remove the possibility.
+				
+				changesMade += std::erase_if(positions, [i,length](unsigned start)
+				{
+					return (start <= i) && (i < start + length);
+				});
+				
 				throwIfEmpty(positions);
 			}
 		}
-		
-		if (grid[roc.grid[i]] == 1)
+		else if (grid[roc.grid[i]] == 1)
 		{
+			// Remove due to filled spaces
+			for (auto& [length,positions] : roc.fillPosses)
+			{
+				// If the filled space is immediately before or after
+				// a possible fill, remove the possibility.
+				
+				changesMade += std::erase_if(positions, [i,length](unsigned start)
+				{
+					return (start == i + 1) || (start + length == i);
+				});
+				
+				throwIfEmpty(positions);
+			}
+			
 			// Filled space cannot fall between two adjacent fills
 			for (unsigned j = 0; j < roc.fillPosses.size(); j++)
 			{
