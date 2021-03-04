@@ -76,6 +76,7 @@ class CrossPuzzle
 	#ifdef CPUZZLE_DEBUG
 	void printRoC(std::ostream& stream, const RoworColumn& roc) const;
 	friend std::ostream& operator<<(std::ostream& stream, const CrossPuzzle& CP);
+	friend std::ostream& operator<<(std::ostream& stream, cell_state cs);
 	#endif
 	
 	// Methods related to solving

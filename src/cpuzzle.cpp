@@ -116,18 +116,7 @@ void CrossPuzzle::printRoC(std::ostream& stream, const RoworColumn& roc) const
 	
 	for (const auto ref : roc.grid)
 	{
-		switch (grid[ref])
-		{
-			case cell_state::unknown:
-				stream << "_ ";
-				break;
-			case cell_state::filled:
-				stream << "1 ";
-				break;
-			case cell_state::empty:
-				stream << "0 ";
-				break;
-		}
+		stream << grid[ref];
 	}
 	stream << std::endl;
 	
@@ -165,19 +154,7 @@ std::ostream& operator<<(std::ostream& stream, const CrossPuzzle& CP)
 	{
 		for (unsigned j = 0; j < CP.numcols; ++j)
 		{
-			switch (CP.grid[pos])
-			{
-				case CrossPuzzle::cell_state::unknown:
-					stream << "_ ";
-					break;
-				case CrossPuzzle::cell_state::filled:
-					stream << "1 ";
-					break;
-				case CrossPuzzle::cell_state::empty:
-					stream << "0 ";
-					break;
-			}
-			++pos;
+			stream << CP.grid[pos++];
 		}
 		stream << std::endl;
 	}
@@ -185,6 +162,21 @@ std::ostream& operator<<(std::ostream& stream, const CrossPuzzle& CP)
 	stream << "===========================================================" << std::endl;
 	return stream;
 }
+
+std::ostream& operator<<(std::ostream& stream, CrossPuzzle::cell_state cs)
+{
+	switch (cs)
+	{
+		case CrossPuzzle::cell_state::unknown:
+			stream << "_ "; break;
+		case CrossPuzzle::cell_state::filled:
+			stream << "1 "; break;
+		case CrossPuzzle::cell_state::empty:
+			stream << "0 "; break;
+	}
+	return stream;
+}
+
 #endif
 
 /*-----------------------------------
