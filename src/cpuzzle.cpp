@@ -542,14 +542,14 @@ void CrossPuzzle::solve()
 			std::swap(copy,*this);
 			return;
 		}
-		catch (CrossPuzzle::puzzle_error&) {}
+		catch (puzzle_error&) {}
 	}
 	
 	#ifdef CPUZZLE_DEBUG
 		std::cout << "No solution." << std::endl;
 	#endif
 	
-	throw CrossPuzzle::puzzle_error();
+	throw puzzle_error();
 }
 
 bool CrossPuzzle::isComplete() const
