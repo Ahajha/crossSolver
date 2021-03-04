@@ -11,7 +11,7 @@
 #include <string>
 #endif
 
-class CrossPuzzle
+class nonagram
 {
 	enum class cell_state : int { unknown, filled, empty };
 	
@@ -67,7 +67,7 @@ class CrossPuzzle
 	// Debugging methods
 	#ifdef CPUZZLE_DEBUG
 	void print_line(std::ostream& stream, const line& roc) const;
-	friend std::ostream& operator<<(std::ostream& stream, const CrossPuzzle& CP);
+	friend std::ostream& operator<<(std::ostream& stream, const nonagram& CP);
 	friend std::ostream& operator<<(std::ostream& stream, cell_state cs);
 	#endif
 	
@@ -88,7 +88,7 @@ class CrossPuzzle
 	// Thrown when a puzzle is unsolvable
 	struct puzzle_error : std::exception {};
 	
-	friend std::istream& operator>>(std::istream& stream, CrossPuzzle& CP);
+	friend std::istream& operator>>(std::istream& stream, nonagram& CP);
 	
 	void solve();
 	

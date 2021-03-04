@@ -41,7 +41,7 @@ int main(int args, char* argv[])
 {
 	std::string inFileName = parseArgs(args, argv);
 	
-	CrossPuzzle puzzle;
+	nonagram puzzle;
 	
 	std::ifstream ifs(inFileName);
 	
@@ -66,7 +66,7 @@ int main(int args, char* argv[])
 		std::cout << "Solution image written to file \""
 			<<  outFileName << "\"." << std::endl;
 	}
-	catch (CrossPuzzle::puzzle_error&)
+	catch (nonagram::puzzle_error&)
 	{
 		std::cout << "No solution." << std::endl;
 		return 1;

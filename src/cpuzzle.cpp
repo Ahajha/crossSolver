@@ -2,7 +2,7 @@
 #include "bmpMaker.h"
 #include <numeric>
 
-CrossPuzzle::line::fill::fill(unsigned fl, unsigned start, unsigned end)
+nonagram::line::fill::fill(unsigned fl, unsigned start, unsigned end)
 	: length(fl), candidates(end - start + 1)
 {
 	std::iota(candidates.begin(), candidates.end(), start);
@@ -13,7 +13,7 @@ Constructs a line of length 'siz', referencing
 the items in grd, with a list of hints hintList.
 ----------------------------------------------*/
 
-CrossPuzzle::line::line(std::vector<unsigned> grd,
+nonagram::line::line(std::vector<unsigned> grd,
 	const std::list<unsigned>& hintList) : grid(grd)
 {
 	fills.reserve(hintList.size());
@@ -35,7 +35,7 @@ CrossPuzzle::line::line(std::vector<unsigned> grd,
 GetList returns a list containing one line of ints read from in.
 --------------------------------------------------------------*/
 
-std::list<unsigned> CrossPuzzle::getList(std::istream& in)
+std::list<unsigned> nonagram::getList(std::istream& in)
 {
 	unsigned temp;
 	std::list<unsigned> L;
@@ -66,7 +66,7 @@ std::list<unsigned> CrossPuzzle::getList(std::istream& in)
 	return L;
 }
 
-std::vector<unsigned> CrossPuzzle::createGridReferenceLine(unsigned size,
+std::vector<unsigned> nonagram::createGridReferenceLine(unsigned size,
 	unsigned start, unsigned increment)
 {
 	std::vector<unsigned> tempgrid(size);
@@ -80,7 +80,7 @@ std::vector<unsigned> CrossPuzzle::createGridReferenceLine(unsigned size,
 	return tempgrid;
 }
 
-void CrossPuzzle::evaluateHintList(std::list<unsigned> hintList,
+void nonagram::evaluateHintList(std::list<unsigned> hintList,
 #ifndef CPUZZLE_DEBUG
 	std::vector<unsigned> references)
 #else
@@ -110,7 +110,7 @@ void CrossPuzzle::evaluateHintList(std::list<unsigned> hintList,
 }
 
 #ifdef CPUZZLE_DEBUG
-void CrossPuzzle::print_line(std::ostream& stream, const line& lin) const
+void nonagram::print_line(std::ostream& stream, const line& lin) const
 {
 	if(isComplete(lin))
 	{
@@ -144,7 +144,7 @@ void CrossPuzzle::print_line(std::ostream& stream, const line& lin) const
 	stream << std::endl;
 }
 
-std::ostream& operator<<(std::ostream& stream, const CrossPuzzle& CP)
+std::ostream& operator<<(std::ostream& stream, const nonagram& CP)
 {
 	stream << "===========================================================" << std::endl;
 	stream << "Rows: " << CP.numrows << ", Columns: " << CP.numcols << std::endl << std::endl;
@@ -170,15 +170,15 @@ std::ostream& operator<<(std::ostream& stream, const CrossPuzzle& CP)
 	return stream;
 }
 
-std::ostream& operator<<(std::ostream& stream, CrossPuzzle::cell_state cs)
+std::ostream& operator<<(std::ostream& stream, nonagram::cell_state cs)
 {
 	switch (cs)
 	{
-		case CrossPuzzle::cell_state::unknown:
+		case nonagram::cell_state::unknown:
 			stream << "? "; break;
-		case CrossPuzzle::cell_state::filled:
+		case nonagram::cell_state::filled:
 			stream << "X "; break;
-		case CrossPuzzle::cell_state::empty:
+		case nonagram::cell_state::empty:
 			stream << ". "; break;
 	}
 	return stream;
@@ -190,7 +190,7 @@ std::ostream& operator<<(std::ostream& stream, CrossPuzzle::cell_state cs)
 Throws a puzzle_error if L is empty.
 ----------------------------------*/
 
-void CrossPuzzle::throwIfEmpty(const std::list<unsigned>& L)
+void nonagram::throwIfEmpty(const std::list<unsigned>& L)
 {
 	if (L.empty()) throw puzzle_error();
 }
@@ -200,7 +200,7 @@ Marks each cell in grid starting at index start and stopping before
 index end to 'value', and increments changesMade for each change made.
 --------------------------------------------------------------------*/
 
-void CrossPuzzle::markInRange(std::vector<unsigned> gridReferences,
+void nonagram::markInRange(std::vector<unsigned> gridReferences,
 	unsigned start, unsigned end, cell_state value, unsigned& changesMade)
 {
 	for (unsigned i = start; i < end; ++i)
@@ -212,12 +212,12 @@ void CrossPuzzle::markInRange(std::vector<unsigned> gridReferences,
 		}
 		else if (grid[gridReferences[i]] != value)
 		{
-			throw CrossPuzzle::puzzle_error();
+			throw nonagram::puzzle_error();
 		}
 	}
 }
 
-bool CrossPuzzle::isComplete(const line& lin) const
+bool nonagram::isComplete(const line& lin) const
 {
 	for (const auto ref : lin.grid)
 	{
@@ -240,7 +240,7 @@ otherwise returns the number of candidates removed.
 // beginning). Need to double check, but it seems that all of the special
 // case rules would collapse into other rules.
 
-unsigned CrossPuzzle::removeIncompatible(line& lin)
+unsigned nonagram::removeIncompatible(line& lin)
 {
 	unsigned changesMade = 0;
 	
@@ -355,7 +355,7 @@ Marks items in the grid that are consistent
 with all possibilites in a line.
 -----------------------------------------*/
 
-unsigned CrossPuzzle::markConsistent(line& lin)
+unsigned nonagram::markConsistent(line& lin)
 {
 	unsigned changesMade = 0;
 	
@@ -405,7 +405,7 @@ order, on each line in lines. Returns number of changes made,
 or throws puzzle_error if any line in lines is unsolvable.
 -----------------------------------------------------------*/
 
-unsigned CrossPuzzle::removeAndMark()
+unsigned nonagram::removeAndMark()
 {
 	#ifdef CPUZZLE_DEBUG
 		std::cout << "Remove and mark:" << std::endl;
@@ -441,11 +441,11 @@ unsigned CrossPuzzle::removeAndMark()
 	return changesMade;
 }
 
-/*--------------------------------------------------------------------
-Creates a CrossPuzzle from information in an input file, named infile.
---------------------------------------------------------------------*/
+/*-----------------------------------------------------------------
+Creates a nonagram from information in an input file, named infile.
+-----------------------------------------------------------------*/
 
-std::istream& operator>>(std::istream& stream, CrossPuzzle& CP)
+std::istream& operator>>(std::istream& stream, nonagram& CP)
 {
 	stream >> CP.numcols >> CP.numrows;
 	
@@ -455,7 +455,7 @@ std::istream& operator>>(std::istream& stream, CrossPuzzle& CP)
 	
 	// Create grid, fill with "unknown"
 	CP.grid.resize(CP.numrows * CP.numcols);
-	std::fill(CP.grid.begin(), CP.grid.end(), CrossPuzzle::cell_state::unknown);
+	std::fill(CP.grid.begin(), CP.grid.end(), nonagram::cell_state::unknown);
 	
 	#ifdef CPUZZLE_DEBUG
 		std::cout << "Hintlists:" << std::endl;
@@ -463,7 +463,7 @@ std::istream& operator>>(std::istream& stream, CrossPuzzle& CP)
 	
 	for (unsigned i = 0; i < CP.numrows; ++i)
 	{
-		auto hintList = CrossPuzzle::getList(stream);
+		auto hintList = nonagram::getList(stream);
 		
 		auto references = CP.createGridReferenceLine(CP.numcols,CP.numcols * i,1);
 		
@@ -476,7 +476,7 @@ std::istream& operator>>(std::istream& stream, CrossPuzzle& CP)
 	
 	for (unsigned i = 0; i < CP.numcols; ++i)
 	{
-		auto hintList = CrossPuzzle::getList(stream);
+		auto hintList = nonagram::getList(stream);
 		
 		auto references = CP.createGridReferenceLine(CP.numrows,i,CP.numcols);
 		
@@ -495,12 +495,11 @@ std::istream& operator>>(std::istream& stream, CrossPuzzle& CP)
 	return stream;
 }
 
-/*--------------------------------------
-Solves this, or throws a
-CrossPuzzle::puzzle_error if unsolvable.
---------------------------------------*/
+/*------------------------------------------------------------
+Solves this, or throws a nonagram::puzzle_error if unsolvable.
+------------------------------------------------------------*/
 
-void CrossPuzzle::solve()
+void nonagram::solve()
 {
 	#ifdef CPUZZLE_DEBUG
 		std::cout << "Entering solve:" << std::endl << "Puzzle:" << std::endl << *this;
@@ -532,7 +531,7 @@ void CrossPuzzle::solve()
 	// Guess filled first, is significantly quicker on some puzzles.
 	for (auto guess : { cell_state::filled, cell_state::empty })
 	{
-		CrossPuzzle copy(*this);
+		nonagram copy(*this);
 		
 		#ifdef CPUZZLE_DEBUG
 			std::cout << "Guessing "
@@ -559,12 +558,12 @@ void CrossPuzzle::solve()
 	throw puzzle_error();
 }
 
-bool CrossPuzzle::isComplete() const
+bool nonagram::isComplete() const
 {
 	return lines.empty();
 }
 
-BMP_24 CrossPuzzle::bitmap() const
+BMP_24 nonagram::bitmap() const
 {
 	BMP_24 soln(numrows, numcols);
 	
