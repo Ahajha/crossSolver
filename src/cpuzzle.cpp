@@ -179,14 +179,13 @@ std::ostream& operator<<(std::ostream& stream, CrossPuzzle::cell_state cs)
 
 #endif
 
-/*-----------------------------------
-Throws a puzzle_error if LL is empty.
------------------------------------*/
+/*----------------------------------
+Throws a puzzle_error if L is empty.
+----------------------------------*/
 
-void CrossPuzzle::throwIfEmpty(const std::list<unsigned>& LL)
+void CrossPuzzle::throwIfEmpty(const std::list<unsigned>& L)
 {
-	if (LL.empty())
-		throw CrossPuzzle::puzzle_error();
+	if (L.empty()) throw puzzle_error();
 }
 
 /*--------------------------------------------------------------------
