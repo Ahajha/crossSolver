@@ -65,9 +65,9 @@ std::vector<unsigned> CrossPuzzle::createGridReferenceLine(unsigned size,
 	std::vector<unsigned> tempgrid(size);
 	
 	unsigned pos = start;
-	for (unsigned j = 0; j < size; j++)
+	for (auto& item : tempgrid)
 	{
-		tempgrid[j] = pos;
+		item = pos;
 		pos += increment;
 	}
 	return tempgrid;
@@ -114,9 +114,9 @@ void CrossPuzzle::printRoC(std::ostream& stream, const RoworColumn& roc) const
 		stream << "Incomplete. Grid:" << std::endl;
 	}
 	
-	for (unsigned i = 0; i < roc.grid.size(); i++)
+	for (const auto ref : roc.grid)
 	{
-		switch (grid[roc.grid[i]])
+		switch (grid[ref])
 		{
 			case cell_state::unknown:
 				stream << "_ ";
@@ -133,11 +133,11 @@ void CrossPuzzle::printRoC(std::ostream& stream, const RoworColumn& roc) const
 	
 	if (!isComplete(roc))
 	{
-		for (unsigned i = 0; i < roc.fillPosses.size(); i++)
+		for (unsigned i = 0; i < roc.fillPosses.size(); ++i)
 		{
 			stream << "Fill #" << i << ", length " << roc.fillPosses[i].fillLength << ": ";
 			
-			for (auto x : roc.fillPosses[i].possiblePositions)
+			for (const auto x : roc.fillPosses[i].possiblePositions)
 			{
 				stream << x << ' ';
 			}
@@ -161,9 +161,9 @@ std::ostream& operator<<(std::ostream& stream, const CrossPuzzle& CP)
 	}
 	
 	unsigned pos = 0;
-	for (unsigned i = 0; i < CP.numrows; i++)
+	for (unsigned i = 0; i < CP.numrows; ++i)
 	{
-		for (unsigned j = 0; j < CP.numcols; j++)
+		for (unsigned j = 0; j < CP.numcols; ++j)
 		{
 			switch (CP.grid[pos])
 			{
@@ -205,12 +205,12 @@ index end to 'value', and increments changesMade for each change made.
 void CrossPuzzle::markInRange(std::vector<unsigned> gridReferences,
 	unsigned start, unsigned end, cell_state value, unsigned& changesMade)
 {
-	for (unsigned i = start; i < end; i++)
+	for (unsigned i = start; i < end; ++i)
 	{
 		if (grid[gridReferences[i]] == cell_state::unknown)
 		{
 			grid[gridReferences[i]] = value;
-			changesMade++;
+			++changesMade;
 		}
 		else if (grid[gridReferences[i]] != value)
 		{
@@ -221,9 +221,9 @@ void CrossPuzzle::markInRange(std::vector<unsigned> gridReferences,
 
 bool CrossPuzzle::isComplete(const RoworColumn& roc) const
 {
-	for (unsigned i = 0; i < roc.grid.size(); i++)
+	for (const auto ref : roc.grid)
 	{
-		if (grid[roc.grid[i]] == cell_state::unknown)
+		if (grid[ref] == cell_state::unknown)
 		{
 			return false;
 		}
@@ -247,7 +247,7 @@ unsigned CrossPuzzle::removeIncompatible(RoworColumn& roc)
 	unsigned changesMade = 0;
 	
 	// Check each position for a space that has recently been marked
-	for (unsigned i = 0; i < roc.grid.size(); i++)
+	for (unsigned i = 0; i < roc.grid.size(); ++i)
 	{
 		if (grid[roc.grid[i]] == cell_state::empty)
 		{
@@ -282,7 +282,7 @@ unsigned CrossPuzzle::removeIncompatible(RoworColumn& roc)
 			}
 			
 			// Filled space cannot fall between two adjacent fills
-			for (unsigned j = 0; j < roc.fillPosses.size(); j++)
+			for (unsigned j = 0; j < roc.fillPosses.size(); ++j)
 			{
 				// If the first fill comes after the filled space, or
 				// If the first of the two fills cannot reach the filled
@@ -297,7 +297,7 @@ unsigned CrossPuzzle::removeIncompatible(RoworColumn& roc)
 					{
 						roc.fillPosses[j].possiblePositions.pop_back();
 						throwIfEmpty(roc.fillPosses[j].possiblePositions);
-						changesMade++;
+						++changesMade;
 					}
 				}
 				
@@ -315,7 +315,7 @@ unsigned CrossPuzzle::removeIncompatible(RoworColumn& roc)
 					{
 						roc.fillPosses[j].possiblePositions.pop_front();
 						throwIfEmpty(roc.fillPosses[j].possiblePositions);
-						changesMade++;
+						++changesMade;
 					}
 				}
 			}
@@ -325,7 +325,7 @@ unsigned CrossPuzzle::removeIncompatible(RoworColumn& roc)
 	// Push back/Push forward correcting
 	
 	// Possible TODO: Combine this with last rule in markConsistent, or the rule above
-	for (unsigned i = 1; i < roc.fillPosses.size(); i++)
+	for (unsigned i = 1; i < roc.fillPosses.size(); ++i)
 	{
 		unsigned furthestback = roc.fillPosses[i - 1].possiblePositions.front() +
 			roc.fillPosses[i - 1].fillLength;
@@ -333,11 +333,11 @@ unsigned CrossPuzzle::removeIncompatible(RoworColumn& roc)
 		{
 			roc.fillPosses[i].possiblePositions.pop_front();
 			throwIfEmpty(roc.fillPosses[i].possiblePositions);
-			changesMade++;
+			++changesMade;
 		}
 	}
 	
-	for (unsigned i = roc.fillPosses.size() - 1; i > 0; i--)
+	for (unsigned i = roc.fillPosses.size() - 1; i > 0; --i)
 	{
 		unsigned furthestforward = roc.fillPosses[i].possiblePositions.back();
 		unsigned length = roc.fillPosses[i - 1].fillLength;
@@ -345,7 +345,7 @@ unsigned CrossPuzzle::removeIncompatible(RoworColumn& roc)
 		{
 			roc.fillPosses[i - 1].possiblePositions.pop_back();
 			throwIfEmpty(roc.fillPosses[i - 1].possiblePositions);
-			changesMade++;
+			++changesMade;
 		}
 	}
 	
@@ -389,7 +389,7 @@ unsigned CrossPuzzle::markConsistent(RoworColumn& roc)
 	// For each consecutive pair of fills, fill any gaps between
 	// the last possibility of the first and the first possibility
 	// of the second with empty space.
-	for (unsigned i = 1; i < roc.fillPosses.size(); i++)
+	for (unsigned i = 1; i < roc.fillPosses.size(); ++i)
 	{
 		unsigned lastoffirst = roc.fillPosses[i - 1].possiblePositions.back()
 			+ roc.fillPosses[i - 1].fillLength;
@@ -463,7 +463,7 @@ std::istream& operator>>(std::istream& stream, CrossPuzzle& CP)
 		std::cout << "Hintlists:" << std::endl;
 	#endif
 	
-	for (unsigned i = 0; i < CP.numrows; i++)
+	for (unsigned i = 0; i < CP.numrows; ++i)
 	{
 		auto hintList = CrossPuzzle::getList(stream);
 		
@@ -476,7 +476,7 @@ std::istream& operator>>(std::istream& stream, CrossPuzzle& CP)
 		#endif
 	}
 	
-	for (unsigned i = 0; i < CP.numcols; i++)
+	for (unsigned i = 0; i < CP.numcols; ++i)
 	{
 		auto hintList = CrossPuzzle::getList(stream);
 		
@@ -571,12 +571,12 @@ BMP_24 CrossPuzzle::bitmap() const
 	BMP_24 soln(numrows, numcols);
 	
 	unsigned pos = 0;
-	for (unsigned i = 0; i < numrows; i++)
+	for (unsigned i = 0; i < numrows; ++i)
 	{
 		// The rows in a bitmap are flipped, so when writing,
 		// write to the opposite side.
 		unsigned rowNum = numrows - 1 - i;
-		for (unsigned j = 0; j < numcols; j++)
+		for (unsigned j = 0; j < numcols; ++j)
 		{
 			if (grid[pos] == cell_state::filled)
 			{

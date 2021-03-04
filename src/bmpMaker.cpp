@@ -27,7 +27,7 @@ BMP_24::BMP_24(int hgt, int wid, color_24 def) : width(wid), height(hgt),
 void BMP_24::writeLittleEndian(int e, std::ostream& out, int numBytes)
 {
 	int x = e;
-	for (int i = 0; i < numBytes; i++)
+	for (int i = 0; i < numBytes; ++i)
 	{
 		out << (char)(x % 256);
 		x /= 256;
@@ -104,9 +104,9 @@ std::ostream& operator<<(std::ostream& out, const BMP_24& bmp)
 	int padding = bmp.width % 4;
 	
 	// From the bottom left, going row by row.
-	for (int i = 0; i < bmp.height; i++)
+	for (int i = 0; i < bmp.height; ++i)
 	{
-		for (int j = 0; j < bmp.width; j++)
+		for (int j = 0; j < bmp.width; ++j)
 		{
 			out << bmp.grid[i][j];
 		}
