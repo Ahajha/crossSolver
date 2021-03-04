@@ -12,7 +12,7 @@ help:
 	@echo "\"make clean\" to remove all generated binary files"
 	@echo "\"make clear_puzzles\" to remove all solution image files from \"Puzzles\" folder"
 
-all: bin/crossSolve
+all: bin/crossSolve bin/crossSolveDebug
 
 run: bin/crossSolve
 	./bin/crossSolve $(file)
