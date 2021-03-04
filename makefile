@@ -1,14 +1,6 @@
-CFLAGS = --std=c++2a -g -Wall -Wextra -Wshadow -Wuninitialized -O3
-CC     = g++-10
-LINK   = g++-10
-
-CFILES = src/bmpMaker.cpp\
-         src/cpuzzle.cpp\
-         src/crossSolver.cpp
-
-OFILES = $(patsubst src/%.cpp,obj/%.o,$(CFILES))
-
-DEBUG_OFILES = $(patsubst src/%.cpp,obj/%Debug.o,$(CFILES))
+CFLAGS = --std=c++20 -g -Wall -Wextra -Wshadow -Wuninitialized -Wpedantic -O3
+CC     = g++
+LINK   = g++
 
 $(shell mkdir -p bin obj)
 
@@ -28,17 +20,21 @@ run: bin/crossSolve
 debug: bin/crossSolveDebug
 	./bin/crossSolveDebug $(file)
 
-bin/crossSolve: $(OFILES)
-	$(LINK) -o bin/crossSolve $(OFILES)
+bin/crossSolve: obj/cpuzzle.o obj/bmpMaker.o obj/crossSolver.o
+	$(LINK) -o bin/crossSolve $^
 
-bin/crossSolveDebug: $(DEBUG_OFILES)
-	$(LINK) -o bin/crossSolveDebug $(DEBUG_OFILES)
+bin/crossSolveDebug: obj/cpuzzleDebug.o obj/bmpMaker.o obj/crossSolver.o
+	$(LINK) -o bin/crossSolveDebug $^
 
-obj/%Debug.o: src/%.cpp
-	$(CC) $(CFLAGS) -D CPUZZLE_DEBUG -c $< -o $@
+obj/bmpMaker.o: src/bmpMaker.cpp src/bmpMaker.h
+obj/cpuzzle.o: src/cpuzzle.cpp src/cpuzzle.h
+obj/crossSolver.o: src/crossSolver.cpp
 
-obj/%.o: src/%.cpp
+obj/%.o:
 	$(CC) $(CFLAGS) -c $< -o $@
+
+obj/cpuzzleDebug.o: src/cpuzzle.cpp src/cpuzzle.h
+	$(CC) $(CFLAGS) -D CPUZZLE_DEBUG -c $< -o $@
       
 clean: 
 	rm -f bin/* obj/*
