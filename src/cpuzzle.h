@@ -57,7 +57,7 @@ class CrossPuzzle
 	// ...
 	std::vector<cell_state> grid;
 	
-	std::list<RoworColumn> lines;
+	std::vector<RoworColumn> lines;
 	
 	// Methods related to input
 	static std::list<unsigned> getList(std::istream& in);
