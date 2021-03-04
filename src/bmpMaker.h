@@ -8,17 +8,15 @@
 A color_24 is a 24 bit color. Contains BGR.
 -----------------------------------------*/
 
-#define DEFAULT_B 255
-#define DEFAULT_G 255
-#define DEFAULT_R 255
-
 struct color_24
 {
-	char B, G, R;
+	constexpr static uint8_t
+		DEFAULT_B = 255, DEFAULT_G = 255, DEFAULT_R = 255;
+	uint8_t B, G, R;
 	
 	color_24() : B(DEFAULT_B), G(DEFAULT_G), R(DEFAULT_R) {}
 	
-	color_24(char b, char g, char r) : B(b), G(g), R(r) {}
+	color_24(uint8_t b, uint8_t g, uint8_t r) : B(b), G(g), R(r) {}
 	
 	// Constants
 	static const color_24 white;
