@@ -1,5 +1,12 @@
 #include "cpuzzle.h"
 #include "bmpMaker.h"
+#include <numeric>
+
+CrossPuzzle::RoworColumn::fill::fill(unsigned fl, unsigned start, unsigned end)
+	: length(fl), candidates(end - start + 1)
+{
+	std::iota(candidates.begin(), candidates.end(), start);
+}
 
 /*----------------------------------------------------
 Constructs a RoworColumn of length 'siz', referencing

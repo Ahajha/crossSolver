@@ -28,13 +28,7 @@ class CrossPuzzle
 			unsigned length;
 			std::list<unsigned> candidates;
 			
-			fill(unsigned fl, unsigned start, unsigned end) : length(fl)
-			{
-				for (unsigned i = start; i <= end; i++)
-				{
-					candidates.push_back(i);
-				}
-			}
+			fill(unsigned fl, unsigned start, unsigned end);
 		};
 		std::vector<fill> fills;
 		
@@ -78,7 +72,7 @@ class CrossPuzzle
 	#endif
 	
 	// Methods related to solving
-	static void throwIfEmpty(const std::list<unsigned>& LL);
+	static void throwIfEmpty(const std::list<unsigned>& L);
 	void markInRange(std::vector<unsigned> gridReferences, unsigned start,
 		unsigned end, cell_state value, unsigned& changesMade);
 	
