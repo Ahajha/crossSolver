@@ -168,11 +168,11 @@ std::ostream& operator<<(std::ostream& stream, CrossPuzzle::cell_state cs)
 	switch (cs)
 	{
 		case CrossPuzzle::cell_state::unknown:
-			stream << "_ "; break;
+			stream << "? "; break;
 		case CrossPuzzle::cell_state::filled:
-			stream << "1 "; break;
+			stream << "X "; break;
 		case CrossPuzzle::cell_state::empty:
-			stream << "0 "; break;
+			stream << ". "; break;
 	}
 	return stream;
 }
