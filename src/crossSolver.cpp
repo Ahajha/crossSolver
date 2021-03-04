@@ -66,7 +66,7 @@ int main(int args, char* argv[])
 		std::cout << "Solution image written to file \""
 			<<  outFileName << "\"." << std::endl;
 	}
-	catch (CrossPuzzle::puzzle_error& e)
+	catch (CrossPuzzle::puzzle_error&)
 	{
 		std::cout << "No solution." << std::endl;
 		return 1;

@@ -551,7 +551,7 @@ void CrossPuzzle::solve()
 			std::swap(copy,*this);
 			return;
 		}
-		catch (CrossPuzzle::puzzle_error& e) {}
+		catch (CrossPuzzle::puzzle_error&) {}
 	}
 	
 	#ifdef CPUZZLE_DEBUG

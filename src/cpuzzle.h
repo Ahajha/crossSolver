@@ -92,13 +92,8 @@ class CrossPuzzle
 	
 	public:
 	
-	struct puzzle_error : public std::exception
-	{
-		virtual const char* what() const throw()
-		{
-			return "Puzzle is unsolvable";
-		}
-	};
+	// Thrown when a puzzle is unsolvable
+	struct puzzle_error : std::exception {};
 	
 	friend std::istream& operator>>(std::istream& stream, CrossPuzzle& CP);
 	
