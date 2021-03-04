@@ -1,4 +1,4 @@
-CFLAGS = --std=c++20 -g -Wall -Wextra -Wshadow -Wuninitialized -Wpedantic -O3
+CFLAGS = -std=c++20 -g -Wall -Wextra -Wshadow -Wuninitialized -Wpedantic -O3
 CC     = g++
 LINK   = g++
 
@@ -31,7 +31,7 @@ bin/crossSolveDebug: obj/cpuzzleDebug.o obj/bmpMaker.o obj/crossSolver.o
 
 obj/bmpMaker.o: src/bmpMaker.cpp src/bmpMaker.h
 obj/cpuzzle.o: src/cpuzzle.cpp src/cpuzzle.h
-obj/crossSolver.o: src/crossSolver.cpp
+obj/crossSolver.o: src/crossSolver.cpp src/bmpMaker.h src/cpuzzle.h
 
 obj/%.o:
 	$(CC) $(CFLAGS) -c $< -o $@
