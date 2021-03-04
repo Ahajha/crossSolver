@@ -17,6 +17,9 @@ all: bin/crossSolve bin/crossSolveDebug
 run: bin/crossSolve
 	./bin/crossSolve $(file)
 
+time: bin/crossSolve
+	time -f "\nreal: %E\nuser: %U" ./bin/crossSolve $(file)
+
 debug: bin/crossSolveDebug
 	./bin/crossSolveDebug $(file)
 
