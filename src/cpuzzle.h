@@ -13,7 +13,7 @@
 
 class CrossPuzzle
 {
-	private:
+	enum class cell_state : int { unknown, filled, empty };
 	
 	struct RoworColumn
 	{
@@ -55,7 +55,7 @@ class CrossPuzzle
 	// Row 0: 0 -> (numcols-1)
 	// Row 1: numcols -> (2*numcols-1)
 	// ...
-	std::vector<int> grid;
+	std::vector<cell_state> grid;
 	
 	std::list<RoworColumn> lines;
 	
@@ -81,7 +81,7 @@ class CrossPuzzle
 	// Methods related to solving
 	static void throwIfEmpty(const std::list<unsigned>& LL);
 	void markInRange(std::vector<unsigned> gridReferences, unsigned start,
-		unsigned end, int value, unsigned& changesMade);
+		unsigned end, cell_state value, unsigned& changesMade);
 	
 	bool isComplete(const RoworColumn& roc) const;
 	

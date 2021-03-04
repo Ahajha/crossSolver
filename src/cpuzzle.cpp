@@ -90,7 +90,7 @@ void CrossPuzzle::evaluateHintList(std::list<unsigned> hintList,
 	{
 		for (unsigned ref : references)
 		{
-			grid[ref] = 0;
+			grid[ref] = cell_state::empty;
 		}
 	}
 	else
@@ -116,10 +116,18 @@ void CrossPuzzle::printRoC(std::ostream& stream, const RoworColumn& roc) const
 	
 	for (unsigned i = 0; i < roc.grid.size(); i++)
 	{
-		if (grid[roc.grid[i]] == -1)
-			stream << "_ ";
-		else
-			stream << grid[roc.grid[i]] << " ";
+		switch (grid[roc.grid[i]])
+		{
+			case cell_state::unknown:
+				stream << "_ ";
+				break;
+			case cell_state::filled:
+				stream << "1 ";
+				break;
+			case cell_state::empty:
+				stream << "0 ";
+				break;
+		}
 	}
 	stream << std::endl;
 	
@@ -157,13 +165,17 @@ std::ostream& operator<<(std::ostream& stream, const CrossPuzzle& CP)
 	{
 		for (unsigned j = 0; j < CP.numcols; j++)
 		{
-			if (CP.grid[pos] == -1)
+			switch (CP.grid[pos])
 			{
-				stream << "_ ";
-			}
-			else
-			{
-				stream << CP.grid[pos] << " ";
+				case CrossPuzzle::cell_state::unknown:
+					stream << "_ ";
+					break;
+				case CrossPuzzle::cell_state::filled:
+					stream << "1 ";
+					break;
+				case CrossPuzzle::cell_state::empty:
+					stream << "0 ";
+					break;
 			}
 			++pos;
 		}
@@ -191,11 +203,11 @@ index end to 'value', and increments changesMade for each change made.
 --------------------------------------------------------------------*/
 
 void CrossPuzzle::markInRange(std::vector<unsigned> gridReferences,
-	unsigned start, unsigned end, int value, unsigned& changesMade)
+	unsigned start, unsigned end, cell_state value, unsigned& changesMade)
 {
 	for (unsigned i = start; i < end; i++)
 	{
-		if (grid[gridReferences[i]] == -1)
+		if (grid[gridReferences[i]] == cell_state::unknown)
 		{
 			grid[gridReferences[i]] = value;
 			changesMade++;
@@ -211,7 +223,7 @@ bool CrossPuzzle::isComplete(const RoworColumn& roc) const
 {
 	for (unsigned i = 0; i < roc.grid.size(); i++)
 	{
-		if (grid[roc.grid[i]] == -1)
+		if (grid[roc.grid[i]] == cell_state::unknown)
 		{
 			return false;
 		}
@@ -237,7 +249,7 @@ unsigned CrossPuzzle::removeIncompatible(RoworColumn& roc)
 	// Check each position for a space that has recently been marked
 	for (unsigned i = 0; i < roc.grid.size(); i++)
 	{
-		if (grid[roc.grid[i]] == 0)
+		if (grid[roc.grid[i]] == cell_state::empty)
 		{
 			// Remove due to empty spaces
 			for (auto& [length,positions] : roc.fillPosses)
@@ -253,7 +265,7 @@ unsigned CrossPuzzle::removeIncompatible(RoworColumn& roc)
 				throwIfEmpty(positions);
 			}
 		}
-		else if (grid[roc.grid[i]] == 1)
+		else if (grid[roc.grid[i]] == cell_state::filled)
 		{
 			// Remove due to filled spaces
 			for (auto& [length,positions] : roc.fillPosses)
@@ -355,7 +367,7 @@ unsigned CrossPuzzle::markConsistent(RoworColumn& roc)
 		// Mark every cell from the last possible start position of the fill
 		// to the first possible end position of the fill. This may not mark anything.
 		markInRange(roc.grid, positions.back(),
-			positions.front() + length, 1, changesMade);
+			positions.front() + length, cell_state::filled, changesMade);
 	}
 	
 	// Mark empty spaces
@@ -364,7 +376,7 @@ unsigned CrossPuzzle::markConsistent(RoworColumn& roc)
 	// fill as empty.
 	
 	markInRange(roc.grid, 0, roc.fillPosses[0].possiblePositions.front(),
-		0, changesMade);
+		cell_state::empty, changesMade);
 	
 	// Mark every cell that is after all possible end positions of the last
 	// fill as empty.
@@ -372,7 +384,7 @@ unsigned CrossPuzzle::markConsistent(RoworColumn& roc)
 	unsigned lastoflast = roc.fillPosses.back().possiblePositions.back()
 		+ roc.fillPosses.back().fillLength;
 	
-	markInRange(roc.grid, lastoflast, roc.grid.size(), 0, changesMade);
+	markInRange(roc.grid, lastoflast, roc.grid.size(), cell_state::empty, changesMade);
 	
 	// For each consecutive pair of fills, fill any gaps between
 	// the last possibility of the first and the first possibility
@@ -383,7 +395,7 @@ unsigned CrossPuzzle::markConsistent(RoworColumn& roc)
 			+ roc.fillPosses[i - 1].fillLength;
 		unsigned firstoflast = roc.fillPosses[i].possiblePositions.front();
 		
-		markInRange(roc.grid, lastoffirst, firstoflast, 0, changesMade);
+		markInRange(roc.grid, lastoffirst, firstoflast, cell_state::empty, changesMade);
 	}
 	
 	return changesMade;
@@ -443,9 +455,9 @@ std::istream& operator>>(std::istream& stream, CrossPuzzle& CP)
 		std::cout << "Rows: " << CP.numrows << ", Cols: " << CP.numcols << std::endl;
 	#endif
 	
-	// Create grid, fill with -1s
+	// Create grid, fill with "unknown"
 	CP.grid.resize(CP.numrows * CP.numcols);
-	std::fill(CP.grid.begin(), CP.grid.end(), -1);
+	std::fill(CP.grid.begin(), CP.grid.end(), CrossPuzzle::cell_state::unknown);
 	
 	#ifdef CPUZZLE_DEBUG
 		std::cout << "Hintlists:" << std::endl;
@@ -517,17 +529,18 @@ void CrossPuzzle::solve()
 	
 	// find position to brute force
 	unsigned pos = 0;
-	while (grid[pos] != -1) ++pos;
+	while (grid[pos] != cell_state::unknown) ++pos;
 	
-	// Guess 1 first, is significantly quicker on some puzzles.
-	for (int guess = 1; guess >= 0; guess--)
+	// Guess filled first, is significantly quicker on some puzzles.
+	for (auto guess : { cell_state::filled, cell_state::empty })
 	{
 		CrossPuzzle copy(*this);
 		
 		#ifdef CPUZZLE_DEBUG
-			std::cout << "Guessing " << guess << " at position "
-				<< pos << "(" << (pos/numrows) << "," << (pos%numrows)
-				<< ")" << std::endl;
+			std::cout << "Guessing "
+				<< (guess == cell_state::filled ? "filled" : "empty")
+				<< " at position " << pos << "(" << (pos / numrows) << ","
+				<< (pos % numrows) << ")" << std::endl;
 		#endif
 		
 		copy.grid[pos] = guess;
@@ -565,7 +578,7 @@ BMP_24 CrossPuzzle::bitmap() const
 		unsigned rowNum = numrows - 1 - i;
 		for (unsigned j = 0; j < numcols; j++)
 		{
-			if (grid[pos] == 1)
+			if (grid[pos] == cell_state::filled)
 			{
 				soln.position(rowNum, j) = color_24::black;
 			}
