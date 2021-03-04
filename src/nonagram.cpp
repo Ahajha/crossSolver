@@ -1,5 +1,4 @@
-#include "cpuzzle.h"
-#include "bmpMaker.h"
+#include "nonagram.hpp"
 #include <numeric>
 
 nonagram::line::fill::fill(unsigned fl, unsigned start, unsigned end)

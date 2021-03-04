@@ -1,4 +1,4 @@
-#include "bmpMaker.h"
+#include "bmp.hpp"
 
 const color_24 color_24::white (255,255,255);
 const color_24 color_24::light_gray (64,64,64);

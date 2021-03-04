@@ -20,7 +20,7 @@ column k clues
 
 #include <string>
 #include <fstream>
-#include "cpuzzle.h"
+#include "nonagram.hpp"
 
 std::string parseArgs(int args, char* argv[])
 {

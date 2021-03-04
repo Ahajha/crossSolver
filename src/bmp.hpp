@@ -1,5 +1,4 @@
-#ifndef BMP_MAKER_H
-#define BMP_MAKER_H
+#pragma once
 
 #include <fstream>
 #include <vector>
@@ -73,5 +72,3 @@ class BMP_24
 	
 	void write(const std::string& filename) const;
 };
-
-#endif

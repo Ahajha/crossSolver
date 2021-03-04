@@ -1,11 +1,10 @@
-#ifndef CPUZZLE_H
-#define CPUZZLE_H
+#pragma once
 
 #include <iostream>
 #include <exception>
 #include <vector>
 #include <list>
-#include "bmpMaker.h"
+#include "bmp.hpp"
 
 #ifdef CPUZZLE_DEBUG
 #include <string>
@@ -95,5 +94,3 @@ class nonagram
 	bool isComplete() const;
 	BMP_24 bitmap() const;
 };
-
-#endif

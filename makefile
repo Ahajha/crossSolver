@@ -12,39 +12,39 @@ help:
 	@echo "\"make clean\" to remove all generated binary files"
 	@echo "\"make clear_puzzles\" to remove all solution image files from \"Puzzles\" folder"
 
-all: bin/crossSolve bin/crossSolveDebug
+all: bin/solve bin/solveDebug
 
-run: bin/crossSolve
-	./bin/crossSolve $(file)
+run: bin/solve
+	./bin/solve $(file)
 
-time: bin/crossSolve
-	time -f "\nreal: %E\nuser: %U" ./bin/crossSolve $(file)
+time: bin/solve
+	time -f "\nreal: %E\nuser: %U" ./bin/solve $(file)
 
-debug: bin/crossSolveDebug
-	./bin/crossSolveDebug $(file)
+debug: bin/solveDebug
+	./bin/solveDebug $(file)
 
-bin/crossSolve: obj/cpuzzle.o obj/bmpMaker.o obj/crossSolver.o
-	$(LINK) -o bin/crossSolve $^
+bin/solve: obj/nonagram.o obj/bmp.o obj/solver.o
+	$(LINK) -o bin/solve $^
 
-bin/crossSolveDebug: obj/cpuzzleDebug.o obj/bmpMaker.o obj/crossSolver.o
-	$(LINK) -o bin/crossSolveDebug $^
+bin/solveDebug: obj/nonagramDebug.o obj/bmp.o obj/solver.o
+	$(LINK) -o bin/solveDebug $^
 
-obj/bmpMaker.o: src/bmpMaker.cpp src/bmpMaker.h
-obj/cpuzzle.o: src/cpuzzle.cpp src/cpuzzle.h
-obj/crossSolver.o: src/crossSolver.cpp src/bmpMaker.h src/cpuzzle.h
+obj/bmp.o: src/bmp.cpp src/bmp.hpp
+obj/nonagram.o: src/nonagram.cpp src/nonagram.hpp
+obj/solver.o: src/solver.cpp src/bmp.hpp src/nonagram.hpp
 
 obj/%.o:
 	$(CC) $(CFLAGS) -c $< -o $@
 
-obj/cpuzzleDebug.o: src/cpuzzle.cpp src/cpuzzle.h
+obj/nonagramDebug.o: src/nonagram.cpp src/nonagram.hpp
 	$(CC) $(CFLAGS) -D CPUZZLE_DEBUG -c $< -o $@
       
 clean: 
 	rm -f bin/* obj/*
 
-puzzles: bin/crossSolve
+puzzles: bin/solve
 	$(foreach puzzle_file, $(wildcard Puzzles/puzzle*.txt),\
-		./bin/crossSolve $(puzzle_file); \
+		./bin/solve $(puzzle_file);\
 	)
 
 clear_puzzles:
