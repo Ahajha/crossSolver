@@ -9,7 +9,7 @@ the items in grd, with a list of hints hintList.
 CrossPuzzle::RoworColumn::RoworColumn(std::vector<unsigned> grd,
 	const std::list<unsigned>& hintList) : grid(grd)
 {
-	fillPosses.reserve(hintList.size());
+	fills.reserve(hintList.size());
 	
 	unsigned sum = 0;
 	for (unsigned hint : hintList) sum += hint;
@@ -19,7 +19,7 @@ CrossPuzzle::RoworColumn::RoworColumn(std::vector<unsigned> grd,
 	unsigned minPos = 0;
 	for (unsigned hint : hintList)
 	{
-		fillPosses.emplace_back(hint, minPos, minPos + extraSpace);
+		fills.emplace_back(hint, minPos, minPos + extraSpace);
 		minPos += hint + 1;
 	}
 }
@@ -122,11 +122,11 @@ void CrossPuzzle::printRoC(std::ostream& stream, const RoworColumn& roc) const
 	
 	if (!isComplete(roc))
 	{
-		for (unsigned i = 0; i < roc.fillPosses.size(); ++i)
+		for (unsigned i = 0; i < roc.fills.size(); ++i)
 		{
-			stream << "Fill #" << i << ", length " << roc.fillPosses[i].fillLength << ": ";
+			stream << "Fill #" << i << ", length " << roc.fills[i].length << ": ";
 			
-			for (const auto x : roc.fillPosses[i].possiblePositions)
+			for (const auto x : roc.fills[i].candidates)
 			{
 				stream << x << ' ';
 			}
@@ -243,7 +243,7 @@ unsigned CrossPuzzle::removeIncompatible(RoworColumn& roc)
 		if (grid[roc.grid[i]] == cell_state::empty)
 		{
 			// Remove due to empty spaces
-			for (auto& [length,positions] : roc.fillPosses)
+			for (auto& [length,positions] : roc.fills)
 			{
 				// If the empty space is within the fill,
 				// remove the possibility.
@@ -259,7 +259,7 @@ unsigned CrossPuzzle::removeIncompatible(RoworColumn& roc)
 		else if (grid[roc.grid[i]] == cell_state::filled)
 		{
 			// Remove due to filled spaces
-			for (auto& [length,positions] : roc.fillPosses)
+			for (auto& [length,positions] : roc.fills)
 			{
 				// If the filled space is immediately before or after
 				// a possible fill, remove the possibility.
@@ -273,21 +273,21 @@ unsigned CrossPuzzle::removeIncompatible(RoworColumn& roc)
 			}
 			
 			// Filled space cannot fall between two adjacent fills
-			for (unsigned j = 0; j < roc.fillPosses.size(); ++j)
+			for (unsigned j = 0; j < roc.fills.size(); ++j)
 			{
 				// If the first fill comes after the filled space, or
 				// If the first of the two fills cannot reach the filled
 				// space, the second cannot start after it.
 				
-				if (j == 0 || roc.fillPosses[j - 1].possiblePositions.back() +
-					roc.fillPosses[j - 1].fillLength < i)
+				if (j == 0 || roc.fills[j - 1].candidates.back() +
+					roc.fills[j - 1].length < i)
 				{
 					// Delete all possibilites that start after the filled
 					// space.
-					while (i < roc.fillPosses[j].possiblePositions.back())
+					while (i < roc.fills[j].candidates.back())
 					{
-						roc.fillPosses[j].possiblePositions.pop_back();
-						throwIfEmpty(roc.fillPosses[j].possiblePositions);
+						roc.fills[j].candidates.pop_back();
+						throwIfEmpty(roc.fills[j].candidates);
 						++changesMade;
 					}
 				}
@@ -296,16 +296,16 @@ unsigned CrossPuzzle::removeIncompatible(RoworColumn& roc)
 				// If the second cannot reach it, the first cannot end
 				// before it.
 				
-				if (j == roc.fillPosses.size() - 1 ||
-					i < roc.fillPosses[j + 1].possiblePositions.front())
+				if (j == roc.fills.size() - 1 ||
+					i < roc.fills[j + 1].candidates.front())
 				{
 					// Delete all possibilites that end before the filled
 					// space.
-					while (roc.fillPosses[j].possiblePositions.front()
-						+ roc.fillPosses[j].fillLength < i)
+					while (roc.fills[j].candidates.front()
+						+ roc.fills[j].length < i)
 					{
-						roc.fillPosses[j].possiblePositions.pop_front();
-						throwIfEmpty(roc.fillPosses[j].possiblePositions);
+						roc.fills[j].candidates.pop_front();
+						throwIfEmpty(roc.fills[j].candidates);
 						++changesMade;
 					}
 				}
@@ -316,26 +316,26 @@ unsigned CrossPuzzle::removeIncompatible(RoworColumn& roc)
 	// Push back/Push forward correcting
 	
 	// Possible TODO: Combine this with last rule in markConsistent, or the rule above
-	for (unsigned i = 1; i < roc.fillPosses.size(); ++i)
+	for (unsigned i = 1; i < roc.fills.size(); ++i)
 	{
-		unsigned furthestback = roc.fillPosses[i - 1].possiblePositions.front() +
-			roc.fillPosses[i - 1].fillLength;
-		while (furthestback >= roc.fillPosses[i].possiblePositions.front())
+		unsigned furthestback = roc.fills[i - 1].candidates.front() +
+			roc.fills[i - 1].length;
+		while (furthestback >= roc.fills[i].candidates.front())
 		{
-			roc.fillPosses[i].possiblePositions.pop_front();
-			throwIfEmpty(roc.fillPosses[i].possiblePositions);
+			roc.fills[i].candidates.pop_front();
+			throwIfEmpty(roc.fills[i].candidates);
 			++changesMade;
 		}
 	}
 	
-	for (unsigned i = roc.fillPosses.size() - 1; i > 0; --i)
+	for (unsigned i = roc.fills.size() - 1; i > 0; --i)
 	{
-		unsigned furthestforward = roc.fillPosses[i].possiblePositions.back();
-		unsigned length = roc.fillPosses[i - 1].fillLength;
-		while (furthestforward <= roc.fillPosses[i - 1].possiblePositions.back() + length)
+		unsigned furthestforward = roc.fills[i].candidates.back();
+		unsigned length = roc.fills[i - 1].length;
+		while (furthestforward <= roc.fills[i - 1].candidates.back() + length)
 		{
-			roc.fillPosses[i - 1].possiblePositions.pop_back();
-			throwIfEmpty(roc.fillPosses[i - 1].possiblePositions);
+			roc.fills[i - 1].candidates.pop_back();
+			throwIfEmpty(roc.fills[i - 1].candidates);
 			++changesMade;
 		}
 	}
@@ -353,7 +353,7 @@ unsigned CrossPuzzle::markConsistent(RoworColumn& roc)
 	unsigned changesMade = 0;
 	
 	// Mark filled spaces
-	for (auto& [length,positions] : roc.fillPosses)
+	for (auto& [length,positions] : roc.fills)
 	{
 		// Mark every cell from the last possible start position of the fill
 		// to the first possible end position of the fill. This may not mark anything.
@@ -366,25 +366,25 @@ unsigned CrossPuzzle::markConsistent(RoworColumn& roc)
 	// Mark every cell that is before all possible start positions of the first
 	// fill as empty.
 	
-	markInRange(roc.grid, 0, roc.fillPosses[0].possiblePositions.front(),
+	markInRange(roc.grid, 0, roc.fills[0].candidates.front(),
 		cell_state::empty, changesMade);
 	
 	// Mark every cell that is after all possible end positions of the last
 	// fill as empty.
 	
-	unsigned lastoflast = roc.fillPosses.back().possiblePositions.back()
-		+ roc.fillPosses.back().fillLength;
+	unsigned lastoflast = roc.fills.back().candidates.back()
+		+ roc.fills.back().length;
 	
 	markInRange(roc.grid, lastoflast, roc.grid.size(), cell_state::empty, changesMade);
 	
 	// For each consecutive pair of fills, fill any gaps between
 	// the last possibility of the first and the first possibility
 	// of the second with empty space.
-	for (unsigned i = 1; i < roc.fillPosses.size(); ++i)
+	for (unsigned i = 1; i < roc.fills.size(); ++i)
 	{
-		unsigned lastoffirst = roc.fillPosses[i - 1].possiblePositions.back()
-			+ roc.fillPosses[i - 1].fillLength;
-		unsigned firstoflast = roc.fillPosses[i].possiblePositions.front();
+		unsigned lastoffirst = roc.fills[i - 1].candidates.back()
+			+ roc.fills[i - 1].length;
+		unsigned firstoflast = roc.fills[i].candidates.front();
 		
 		markInRange(roc.grid, lastoffirst, firstoflast, cell_state::empty, changesMade);
 	}

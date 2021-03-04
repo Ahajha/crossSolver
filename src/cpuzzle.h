@@ -19,26 +19,24 @@ class CrossPuzzle
 	{
 		std::vector<unsigned> grid;
 		
-		/*---------------------------------------------
-		A possibilityList contains the length of a fill
-		and all possible start positions of the fill.
-		---------------------------------------------*/
+		/*------------------------------------------------------------
+		A fill has a length and a set of candidate starting positions.
+		------------------------------------------------------------*/
 		
-		struct possibilityList
+		struct fill
 		{
-			unsigned fillLength;
-			std::list<unsigned> possiblePositions;
+			unsigned length;
+			std::list<unsigned> candidates;
 			
-			possibilityList(unsigned fl, unsigned start, unsigned end)
-				: fillLength(fl)
+			fill(unsigned fl, unsigned start, unsigned end) : length(fl)
 			{
 				for (unsigned i = start; i <= end; i++)
 				{
-					possiblePositions.push_back(i);
+					candidates.push_back(i);
 				}
 			}
 		};
-		std::vector<possibilityList> fillPosses;
+		std::vector<fill> fills;
 		
 		#ifdef CPUZZLE_DEBUG
 		std::string ID;
