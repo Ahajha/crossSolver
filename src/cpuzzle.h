@@ -15,7 +15,7 @@ class CrossPuzzle
 {
 	enum class cell_state : int { unknown, filled, empty };
 	
-	struct RoworColumn
+	struct line
 	{
 		std::vector<unsigned> grid;
 		
@@ -36,7 +36,7 @@ class CrossPuzzle
 		std::string ID;
 		#endif
 		
-		RoworColumn(std::vector<unsigned> grd,
+		line(std::vector<unsigned> grd,
 			const std::list<unsigned>& hintList);
 	};
 	
@@ -49,7 +49,7 @@ class CrossPuzzle
 	// ...
 	std::vector<cell_state> grid;
 	
-	std::vector<RoworColumn> lines;
+	std::vector<line> lines;
 	
 	// Methods related to input
 	static std::list<unsigned> getList(std::istream& in);
@@ -66,7 +66,7 @@ class CrossPuzzle
 	
 	// Debugging methods
 	#ifdef CPUZZLE_DEBUG
-	void printRoC(std::ostream& stream, const RoworColumn& roc) const;
+	void print_line(std::ostream& stream, const line& roc) const;
 	friend std::ostream& operator<<(std::ostream& stream, const CrossPuzzle& CP);
 	friend std::ostream& operator<<(std::ostream& stream, cell_state cs);
 	#endif
@@ -76,10 +76,10 @@ class CrossPuzzle
 	void markInRange(std::vector<unsigned> gridReferences, unsigned start,
 		unsigned end, cell_state value, unsigned& changesMade);
 	
-	bool isComplete(const RoworColumn& roc) const;
+	bool isComplete(const line& lin) const;
 	
-	unsigned removeIncompatible(RoworColumn& roc);
-	unsigned markConsistent(RoworColumn& roc);
+	unsigned removeIncompatible(line& lin);
+	unsigned markConsistent(line& lin);
 	
 	unsigned removeAndMark();
 	

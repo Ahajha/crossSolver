@@ -2,18 +2,18 @@
 #include "bmpMaker.h"
 #include <numeric>
 
-CrossPuzzle::RoworColumn::fill::fill(unsigned fl, unsigned start, unsigned end)
+CrossPuzzle::line::fill::fill(unsigned fl, unsigned start, unsigned end)
 	: length(fl), candidates(end - start + 1)
 {
 	std::iota(candidates.begin(), candidates.end(), start);
 }
 
-/*----------------------------------------------------
-Constructs a RoworColumn of length 'siz', referencing
+/*----------------------------------------------
+Constructs a line of length 'siz', referencing
 the items in grd, with a list of hints hintList.
-----------------------------------------------------*/
+----------------------------------------------*/
 
-CrossPuzzle::RoworColumn::RoworColumn(std::vector<unsigned> grd,
+CrossPuzzle::line::line(std::vector<unsigned> grd,
 	const std::list<unsigned>& hintList) : grid(grd)
 {
 	fills.reserve(hintList.size());
@@ -110,9 +110,9 @@ void CrossPuzzle::evaluateHintList(std::list<unsigned> hintList,
 }
 
 #ifdef CPUZZLE_DEBUG
-void CrossPuzzle::printRoC(std::ostream& stream, const RoworColumn& roc) const
+void CrossPuzzle::print_line(std::ostream& stream, const line& lin) const
 {
-	if(isComplete(roc))
+	if(isComplete(lin))
 	{
 		stream << "Complete. Grid:" << std::endl;
 	}
@@ -121,19 +121,19 @@ void CrossPuzzle::printRoC(std::ostream& stream, const RoworColumn& roc) const
 		stream << "Incomplete. Grid:" << std::endl;
 	}
 	
-	for (const auto ref : roc.grid)
+	for (const auto ref : lin.grid)
 	{
 		stream << grid[ref];
 	}
 	stream << std::endl;
 	
-	if (!isComplete(roc))
+	if (!isComplete(lin))
 	{
-		for (unsigned i = 0; i < roc.fills.size(); ++i)
+		for (unsigned i = 0; i < lin.fills.size(); ++i)
 		{
-			stream << "Fill #" << i << ", length " << roc.fills[i].length << ": ";
+			stream << "Fill #" << i << ", length " << lin.fills[i].length << ": ";
 			
-			for (const auto x : roc.fills[i].candidates)
+			for (const auto x : lin.fills[i].candidates)
 			{
 				stream << x << ' ';
 			}
@@ -150,10 +150,10 @@ std::ostream& operator<<(std::ostream& stream, const CrossPuzzle& CP)
 	stream << "Rows: " << CP.numrows << ", Columns: " << CP.numcols << std::endl << std::endl;
 	
 	// If CP is complete, this will print nothing
-	for (auto& roc : CP.lines)
+	for (auto& lin : CP.lines)
 	{
-		stream << roc.ID << ": ";
-		CP.printRoC(stream,roc);
+		stream << lin.ID << ": ";
+		CP.print_line(stream,lin);
 	}
 	
 	unsigned pos = 0;
@@ -217,9 +217,9 @@ void CrossPuzzle::markInRange(std::vector<unsigned> gridReferences,
 	}
 }
 
-bool CrossPuzzle::isComplete(const RoworColumn& roc) const
+bool CrossPuzzle::isComplete(const line& lin) const
 {
-	for (const auto ref : roc.grid)
+	for (const auto ref : lin.grid)
 	{
 		if (grid[ref] == cell_state::unknown)
 		{
@@ -229,28 +229,28 @@ bool CrossPuzzle::isComplete(const RoworColumn& roc) const
 	return true;
 }
 
-/*------------------------------------------------------
-Removes incompatible possibilites from a RoworColumn.
-If a fill has no more possibilites, throws puzzle_error,
-otherwise returns the number of possibilites removed.
-------------------------------------------------------*/
+/*-------------------------------------------------
+Removes incompatible candidates from a line. If a
+fill has no more candidates, throws a puzzle_error,
+otherwise returns the number of candidates removed.
+-------------------------------------------------*/
 
 // TODO: Some rules added for the first and last fills can be condensed by
 // making "empty" first and last fills (i.e. cell 0 to -1, length 0 for the
 // beginning). Need to double check, but it seems that all of the special
 // case rules would collapse into other rules.
 
-unsigned CrossPuzzle::removeIncompatible(RoworColumn& roc)
+unsigned CrossPuzzle::removeIncompatible(line& lin)
 {
 	unsigned changesMade = 0;
 	
 	// Check each position for a space that has recently been marked
-	for (unsigned i = 0; i < roc.grid.size(); ++i)
+	for (unsigned i = 0; i < lin.grid.size(); ++i)
 	{
-		if (grid[roc.grid[i]] == cell_state::empty)
+		if (grid[lin.grid[i]] == cell_state::empty)
 		{
 			// Remove due to empty spaces
-			for (auto& [length,positions] : roc.fills)
+			for (auto& [length,positions] : lin.fills)
 			{
 				// If the empty space is within the fill,
 				// remove the possibility.
@@ -263,10 +263,10 @@ unsigned CrossPuzzle::removeIncompatible(RoworColumn& roc)
 				throwIfEmpty(positions);
 			}
 		}
-		else if (grid[roc.grid[i]] == cell_state::filled)
+		else if (grid[lin.grid[i]] == cell_state::filled)
 		{
 			// Remove due to filled spaces
-			for (auto& [length,positions] : roc.fills)
+			for (auto& [length,positions] : lin.fills)
 			{
 				// If the filled space is immediately before or after
 				// a possible fill, remove the possibility.
@@ -280,21 +280,21 @@ unsigned CrossPuzzle::removeIncompatible(RoworColumn& roc)
 			}
 			
 			// Filled space cannot fall between two adjacent fills
-			for (unsigned j = 0; j < roc.fills.size(); ++j)
+			for (unsigned j = 0; j < lin.fills.size(); ++j)
 			{
 				// If the first fill comes after the filled space, or
 				// If the first of the two fills cannot reach the filled
 				// space, the second cannot start after it.
 				
-				if (j == 0 || roc.fills[j - 1].candidates.back() +
-					roc.fills[j - 1].length < i)
+				if (j == 0 || lin.fills[j - 1].candidates.back() +
+					lin.fills[j - 1].length < i)
 				{
 					// Delete all possibilites that start after the filled
 					// space.
-					while (i < roc.fills[j].candidates.back())
+					while (i < lin.fills[j].candidates.back())
 					{
-						roc.fills[j].candidates.pop_back();
-						throwIfEmpty(roc.fills[j].candidates);
+						lin.fills[j].candidates.pop_back();
+						throwIfEmpty(lin.fills[j].candidates);
 						++changesMade;
 					}
 				}
@@ -303,16 +303,16 @@ unsigned CrossPuzzle::removeIncompatible(RoworColumn& roc)
 				// If the second cannot reach it, the first cannot end
 				// before it.
 				
-				if (j == roc.fills.size() - 1 ||
-					i < roc.fills[j + 1].candidates.front())
+				if (j == lin.fills.size() - 1 ||
+					i < lin.fills[j + 1].candidates.front())
 				{
 					// Delete all possibilites that end before the filled
 					// space.
-					while (roc.fills[j].candidates.front()
-						+ roc.fills[j].length < i)
+					while (lin.fills[j].candidates.front()
+						+ lin.fills[j].length < i)
 					{
-						roc.fills[j].candidates.pop_front();
-						throwIfEmpty(roc.fills[j].candidates);
+						lin.fills[j].candidates.pop_front();
+						throwIfEmpty(lin.fills[j].candidates);
 						++changesMade;
 					}
 				}
@@ -323,26 +323,26 @@ unsigned CrossPuzzle::removeIncompatible(RoworColumn& roc)
 	// Push back/Push forward correcting
 	
 	// Possible TODO: Combine this with last rule in markConsistent, or the rule above
-	for (unsigned i = 1; i < roc.fills.size(); ++i)
+	for (unsigned i = 1; i < lin.fills.size(); ++i)
 	{
-		unsigned furthestback = roc.fills[i - 1].candidates.front() +
-			roc.fills[i - 1].length;
-		while (furthestback >= roc.fills[i].candidates.front())
+		unsigned furthestback = lin.fills[i - 1].candidates.front() +
+			lin.fills[i - 1].length;
+		while (furthestback >= lin.fills[i].candidates.front())
 		{
-			roc.fills[i].candidates.pop_front();
-			throwIfEmpty(roc.fills[i].candidates);
+			lin.fills[i].candidates.pop_front();
+			throwIfEmpty(lin.fills[i].candidates);
 			++changesMade;
 		}
 	}
 	
-	for (unsigned i = roc.fills.size() - 1; i > 0; --i)
+	for (unsigned i = lin.fills.size() - 1; i > 0; --i)
 	{
-		unsigned furthestforward = roc.fills[i].candidates.back();
-		unsigned length = roc.fills[i - 1].length;
-		while (furthestforward <= roc.fills[i - 1].candidates.back() + length)
+		unsigned furthestforward = lin.fills[i].candidates.back();
+		unsigned length = lin.fills[i - 1].length;
+		while (furthestforward <= lin.fills[i - 1].candidates.back() + length)
 		{
-			roc.fills[i - 1].candidates.pop_back();
-			throwIfEmpty(roc.fills[i - 1].candidates);
+			lin.fills[i - 1].candidates.pop_back();
+			throwIfEmpty(lin.fills[i - 1].candidates);
 			++changesMade;
 		}
 	}
@@ -352,19 +352,19 @@ unsigned CrossPuzzle::removeIncompatible(RoworColumn& roc)
 
 /*-----------------------------------------
 Marks items in the grid that are consistent
-with all possibilites in a RoworColumn.
+with all possibilites in a line.
 -----------------------------------------*/
 
-unsigned CrossPuzzle::markConsistent(RoworColumn& roc)
+unsigned CrossPuzzle::markConsistent(line& lin)
 {
 	unsigned changesMade = 0;
 	
 	// Mark filled spaces
-	for (auto& [length,positions] : roc.fills)
+	for (auto& [length,positions] : lin.fills)
 	{
 		// Mark every cell from the last possible start position of the fill
 		// to the first possible end position of the fill. This may not mark anything.
-		markInRange(roc.grid, positions.back(),
+		markInRange(lin.grid, positions.back(),
 			positions.front() + length, cell_state::filled, changesMade);
 	}
 	
@@ -373,37 +373,37 @@ unsigned CrossPuzzle::markConsistent(RoworColumn& roc)
 	// Mark every cell that is before all possible start positions of the first
 	// fill as empty.
 	
-	markInRange(roc.grid, 0, roc.fills[0].candidates.front(),
+	markInRange(lin.grid, 0, lin.fills[0].candidates.front(),
 		cell_state::empty, changesMade);
 	
 	// Mark every cell that is after all possible end positions of the last
 	// fill as empty.
 	
-	unsigned lastoflast = roc.fills.back().candidates.back()
-		+ roc.fills.back().length;
+	unsigned lastoflast = lin.fills.back().candidates.back()
+		+ lin.fills.back().length;
 	
-	markInRange(roc.grid, lastoflast, roc.grid.size(), cell_state::empty, changesMade);
+	markInRange(lin.grid, lastoflast, lin.grid.size(), cell_state::empty, changesMade);
 	
 	// For each consecutive pair of fills, fill any gaps between
 	// the last possibility of the first and the first possibility
 	// of the second with empty space.
-	for (unsigned i = 1; i < roc.fills.size(); ++i)
+	for (unsigned i = 1; i < lin.fills.size(); ++i)
 	{
-		unsigned lastoffirst = roc.fills[i - 1].candidates.back()
-			+ roc.fills[i - 1].length;
-		unsigned firstoflast = roc.fills[i].candidates.front();
+		unsigned lastoffirst = lin.fills[i - 1].candidates.back()
+			+ lin.fills[i - 1].length;
+		unsigned firstoflast = lin.fills[i].candidates.front();
 		
-		markInRange(roc.grid, lastoffirst, firstoflast, cell_state::empty, changesMade);
+		markInRange(lin.grid, lastoffirst, firstoflast, cell_state::empty, changesMade);
 	}
 	
 	return changesMade;
 }
 
-/*--------------------------------------------------------------
-Calls removeIncompatible() and markConsistent(), in that order,
-on each RoworColumn in lines. Returns number of changes made, or
-throws puzzle_error if any RoworColumn in lines is unsolvable.
---------------------------------------------------------------*/
+/*-----------------------------------------------------------
+Calls removeIncompatible() and markConsistent(), in that
+order, on each line in lines. Returns number of changes made,
+or throws puzzle_error if any line in lines is unsolvable.
+-----------------------------------------------------------*/
 
 unsigned CrossPuzzle::removeAndMark()
 {
@@ -412,15 +412,15 @@ unsigned CrossPuzzle::removeAndMark()
 	#endif
 	
 	unsigned changesMade = 0;
-	std::erase_if(lines, [&](RoworColumn& roc)
+	std::erase_if(lines, [&](line& lin)
 	{
-		unsigned numremoved = removeIncompatible(roc);
-		unsigned nummarked  = markConsistent(roc);
+		unsigned numremoved = removeIncompatible(lin);
+		unsigned nummarked  = markConsistent(lin);
 		
 		#ifdef CPUZZLE_DEBUG
 			if (numremoved || nummarked)
 			{
-				std::cout << roc.ID << ":" << std::endl;
+				std::cout << lin.ID << ":" << std::endl;
 				if (numremoved)
 				{
 					std::cout << "Removed " << numremoved << " possibilities." << std::endl;
@@ -429,13 +429,13 @@ unsigned CrossPuzzle::removeAndMark()
 				{
 					std::cout << "Marked " << nummarked << " cells." << std::endl;
 				}
-				printRoC(std::cout,roc);
+				print_line(std::cout,lin);
 			}
 		#endif
 		
 		changesMade += (numremoved + nummarked);
 		
-		return isComplete(roc);
+		return isComplete(lin);
 	});
 	
 	return changesMade;
