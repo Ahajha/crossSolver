@@ -35,7 +35,7 @@ class nonagram
 		std::string ID;
 		#endif
 		
-		line(std::vector<unsigned> grd,
+		line(std::vector<unsigned>&& grd,
 			const std::list<unsigned>& hintList);
 	};
 	
@@ -56,11 +56,11 @@ class nonagram
 	std::vector<unsigned> createGridReferenceLine(unsigned size,
 		unsigned start, unsigned increment);
 	
-	void evaluateHintList(std::list<unsigned> hintList,
+	void evaluateHintList(const std::list<unsigned>& hintList,
 	#ifndef CPUZZLE_DEBUG
-		std::vector<unsigned> references);
+		std::vector<unsigned>&& references);
 	#else
-		std::vector<unsigned> references, std::string ID);
+		std::vector<unsigned>&& references, std::string&& ID);
 	#endif
 	
 	// Debugging methods
@@ -72,7 +72,7 @@ class nonagram
 	
 	// Methods related to solving
 	static void throwIfEmpty(const std::list<unsigned>& L);
-	void markInRange(std::vector<unsigned> gridReferences, unsigned start,
+	void markInRange(const std::vector<unsigned>& gridReferences, unsigned start,
 		unsigned end, cell_state value, unsigned& changesMade);
 	
 	bool isComplete(const line& lin) const;

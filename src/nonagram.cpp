@@ -12,8 +12,8 @@ Constructs a line of length 'siz', referencing
 the items in grd, with a list of hints hintList.
 ----------------------------------------------*/
 
-nonagram::line::line(std::vector<unsigned> grd,
-	const std::list<unsigned>& hintList) : grid(grd)
+nonagram::line::line(std::vector<unsigned>&& grd,
+	const std::list<unsigned>& hintList) : grid(std::move(grd))
 {
 	fills.reserve(hintList.size());
 	
@@ -79,11 +79,11 @@ std::vector<unsigned> nonagram::createGridReferenceLine(unsigned size,
 	return tempgrid;
 }
 
-void nonagram::evaluateHintList(std::list<unsigned> hintList,
+void nonagram::evaluateHintList(const std::list<unsigned>& hintList,
 #ifndef CPUZZLE_DEBUG
-	std::vector<unsigned> references)
+	std::vector<unsigned>&& references)
 #else
-	std::vector<unsigned> references, std::string ID)
+	std::vector<unsigned>&& references, std::string&& ID)
 #endif
 {
 	#ifdef CPUZZLE_DEBUG
@@ -101,9 +101,9 @@ void nonagram::evaluateHintList(std::list<unsigned> hintList,
 	}
 	else
 	{
-		lines.emplace_back(references, hintList);
+		lines.emplace_back(std::move(references), hintList);
 		#ifdef CPUZZLE_DEBUG
-		lines.back().ID = ID;
+		lines.back().ID = std::move(ID);
 		#endif
 	}
 }
@@ -199,7 +199,7 @@ Marks each cell in grid starting at index start and stopping before
 index end to 'value', and increments changesMade for each change made.
 --------------------------------------------------------------------*/
 
-void nonagram::markInRange(std::vector<unsigned> gridReferences,
+void nonagram::markInRange(const std::vector<unsigned>& gridReferences,
 	unsigned start, unsigned end, cell_state value, unsigned& changesMade)
 {
 	for (unsigned i = start; i < end; ++i)
@@ -467,9 +467,10 @@ std::istream& operator>>(std::istream& stream, nonagram& CP)
 		auto references = CP.createGridReferenceLine(CP.numcols,CP.numcols * i,1);
 		
 		#ifndef CPUZZLE_DEBUG
-		CP.evaluateHintList(hintList, references);
+		CP.evaluateHintList(hintList, std::move(references));
 		#else
-		CP.evaluateHintList(hintList, references, std::string("Row ") + std::to_string(i));
+		CP.evaluateHintList(hintList, std::move(references),
+			std::string("Row ") + std::to_string(i));
 		#endif
 	}
 	
@@ -480,9 +481,10 @@ std::istream& operator>>(std::istream& stream, nonagram& CP)
 		auto references = CP.createGridReferenceLine(CP.numrows,i,CP.numcols);
 		
 		#ifndef CPUZZLE_DEBUG
-		CP.evaluateHintList(hintList, references);
+		CP.evaluateHintList(hintList, std::move(references));
 		#else
-		CP.evaluateHintList(hintList, references, std::string("Column ") + std::to_string(i));
+		CP.evaluateHintList(hintList, std::move(references),
+			std::string("Column ") + std::to_string(i));
 		#endif
 	}
 	
