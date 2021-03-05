@@ -12,9 +12,14 @@ Constructs a line of length 'siz', referencing
 the items in grd, with a list of hints hintList.
 ----------------------------------------------*/
 
-nonagram::line::line(std::vector<unsigned>&& grd,
-	const std::list<unsigned>& hintList) : grid(std::move(grd))
+nonagram::line::line(const std::vector<unsigned>& grd,
+	const std::list<unsigned>& hintList) : grid(grd.size())
 {
+	for (unsigned i = 0; i < grd.size(); ++i)
+	{
+		grid[i] = { grd[i], false };
+	}
+	
 	fills.reserve(hintList.size());
 	
 	unsigned sum = 0;
@@ -122,7 +127,7 @@ void nonagram::print_line(std::ostream& stream, const line& lin) const
 	
 	for (const auto ref : lin.grid)
 	{
-		stream << grid[ref];
+		stream << grid[ref.first];
 	}
 	stream << std::endl;
 	
@@ -199,17 +204,17 @@ Marks each cell in grid starting at index start and stopping before
 index end to 'value', and increments changesMade for each change made.
 --------------------------------------------------------------------*/
 
-void nonagram::markInRange(const std::vector<unsigned>& gridReferences,
+void nonagram::markInRange(const std::vector<std::pair<unsigned,bool>>& gridReferences,
 	unsigned start, unsigned end, cell_state value, unsigned& changesMade)
 {
 	for (unsigned i = start; i < end; ++i)
 	{
-		if (grid[gridReferences[i]] == cell_state::unknown)
+		if (grid[gridReferences[i].first] == cell_state::unknown)
 		{
-			grid[gridReferences[i]] = value;
+			grid[gridReferences[i].first] = value;
 			++changesMade;
 		}
-		else if (grid[gridReferences[i]] != value)
+		else if (grid[gridReferences[i].first] != value)
 		{
 			throw nonagram::puzzle_error();
 		}
@@ -218,9 +223,9 @@ void nonagram::markInRange(const std::vector<unsigned>& gridReferences,
 
 bool nonagram::isComplete(const line& lin) const
 {
-	for (const auto ref : lin.grid)
+	for (const auto& ref : lin.grid)
 	{
-		if (grid[ref] == cell_state::unknown)
+		if (grid[ref.first] == cell_state::unknown)
 		{
 			return false;
 		}
@@ -246,37 +251,51 @@ unsigned nonagram::removeIncompatible(line& lin)
 	// Check each position for a space that has recently been marked
 	for (unsigned i = 0; i < lin.grid.size(); ++i)
 	{
-		if (grid[lin.grid[i]] == cell_state::empty)
+		if (grid[lin.grid[i].first] == cell_state::empty)
 		{
-			// Remove due to empty spaces
-			for (auto& [length,positions] : lin.fills)
+			// If this rule has not been applied yet, do so.
+			if (!lin.grid[i].second)
 			{
-				// If the empty space is within the fill,
-				// remove the possibility.
+				lin.grid[i].second = true;
 				
-				changesMade += std::erase_if(positions, [i,length](unsigned start)
+				// Remove due to empty spaces
+				for (auto& [length,positions] : lin.fills)
 				{
-					return (start <= i) && (i < start + length);
-				});
-				
-				throwIfEmpty(positions);
+					// If the empty space is within the fill,
+					// remove the possibility.
+					
+					changesMade += std::erase_if(positions, [i,length](unsigned start)
+					{
+						return (start <= i) && (i < start + length);
+					});
+					
+					throwIfEmpty(positions);
+				}
 			}
 		}
-		else if (grid[lin.grid[i]] == cell_state::filled)
+		else if (grid[lin.grid[i].first] == cell_state::filled)
 		{
-			// Remove due to filled spaces
-			for (auto& [length,positions] : lin.fills)
+			// If this rule has not been applied yet, do so.
+			if (!lin.grid[i].second)
 			{
-				// If the filled space is immediately before or after
-				// a possible fill, remove the possibility.
+				lin.grid[i].second = true;
 				
-				changesMade += std::erase_if(positions, [i,length](unsigned start)
+				// Remove due to filled spaces
+				for (auto& [length,positions] : lin.fills)
 				{
-					return (start == i + 1) || (start + length == i);
-				});
-				
-				throwIfEmpty(positions);
+					// If the filled space is immediately before or after
+					// a possible fill, remove the possibility.
+					
+					changesMade += std::erase_if(positions, [i,length](unsigned start)
+					{
+						return (start == i + 1) || (start + length == i);
+					});
+					
+					throwIfEmpty(positions);
+				}
 			}
+			
+			// These rules should be done regardless, as they may change over time.
 			
 			// Filled space cannot fall between two adjacent fills
 			for (unsigned j = 0; j < lin.fills.size(); ++j)

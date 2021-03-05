@@ -16,7 +16,10 @@ class nonagram
 	
 	struct line
 	{
-		std::vector<unsigned> grid;
+		// The first in the pair is the index in the host nonagram's grid to
+		// this refers, the second is a flag that indicates whether a certain
+		// set of rules have been used by this cell.
+		std::vector<std::pair<unsigned, bool>> grid;
 		
 		/*------------------------------------------------------------
 		A fill has a length and a set of candidate starting positions.
@@ -35,7 +38,7 @@ class nonagram
 		std::string ID;
 		#endif
 		
-		line(std::vector<unsigned>&& grd,
+		line(const std::vector<unsigned>& grd,
 			const std::list<unsigned>& hintList);
 	};
 	
@@ -72,8 +75,8 @@ class nonagram
 	
 	// Methods related to solving
 	static void throwIfEmpty(const std::list<unsigned>& L);
-	void markInRange(const std::vector<unsigned>& gridReferences, unsigned start,
-		unsigned end, cell_state value, unsigned& changesMade);
+	void markInRange(const std::vector<std::pair<unsigned,bool>>& gridReferences,
+		unsigned start, unsigned end, cell_state value, unsigned& changesMade);
 	
 	bool isComplete(const line& lin) const;
 	
