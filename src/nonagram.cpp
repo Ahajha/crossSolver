@@ -94,7 +94,7 @@ void nonagram::evaluateHintList(const std::list<unsigned>& hintList,
 	#ifdef CPUZZLE_DEBUG
 		std::cout << "    " << ID << ": ";
 		for (unsigned hint : hintList) std::cout << hint << ' ';
-		std::cout << std::endl;
+		std::cout << '\n';
 	#endif
 	
 	if (hintList.empty())
@@ -118,18 +118,18 @@ void nonagram::print_line(std::ostream& stream, const line& lin) const
 {
 	if(isComplete(lin))
 	{
-		stream << "Complete. Grid:" << std::endl;
+		stream << "Complete. Grid:\n";
 	}
 	else
 	{
-		stream << "Incomplete. Grid:" << std::endl;
+		stream << "Incomplete. Grid:\n";
 	}
 	
 	for (const auto ref : lin.grid)
 	{
 		stream << grid[ref.first];
 	}
-	stream << std::endl;
+	stream << '\n';
 	
 	if (!isComplete(lin))
 	{
@@ -142,16 +142,16 @@ void nonagram::print_line(std::ostream& stream, const line& lin) const
 				stream << x << ' ';
 			}
 			
-			stream << std::endl;
+			stream << '\n';
 		}
 	}
-	stream << std::endl;
+	stream << '\n';
 }
 
 std::ostream& operator<<(std::ostream& stream, const nonagram& CP)
 {
-	stream << "===========================================================" << std::endl;
-	stream << "Rows: " << CP.numrows << ", Columns: " << CP.numcols << std::endl << std::endl;
+	stream << "===========================================================\n";
+	stream << "Rows: " << CP.numrows << ", Columns: " << CP.numcols << "\n\n";
 	
 	// If CP is complete, this will print nothing
 	for (auto& lin : CP.lines)
@@ -167,10 +167,10 @@ std::ostream& operator<<(std::ostream& stream, const nonagram& CP)
 		{
 			stream << CP.grid[pos++];
 		}
-		stream << std::endl;
+		stream << '\n';
 	}
 	
-	stream << "===========================================================" << std::endl;
+	stream << "===========================================================" << '\n';
 	return stream;
 }
 
@@ -426,7 +426,7 @@ or throws puzzle_error if any line in lines is unsolvable.
 unsigned nonagram::removeAndMark()
 {
 	#ifdef CPUZZLE_DEBUG
-		std::cout << "Remove and mark:" << std::endl;
+		std::cout << "Remove and mark:\n";
 	#endif
 	
 	unsigned changesMade = 0;
@@ -438,14 +438,14 @@ unsigned nonagram::removeAndMark()
 		#ifdef CPUZZLE_DEBUG
 			if (numremoved || nummarked)
 			{
-				std::cout << lin.ID << ":" << std::endl;
+				std::cout << lin.ID << ":\n";
 				if (numremoved)
 				{
-					std::cout << "Removed " << numremoved << " possibilities." << std::endl;
+					std::cout << "Removed " << numremoved << " possibilities.\n";
 				}
 				if (nummarked)
 				{
-					std::cout << "Marked " << nummarked << " cells." << std::endl;
+					std::cout << "Marked " << nummarked << " cells.\n";
 				}
 				print_line(std::cout,lin);
 			}
@@ -468,7 +468,7 @@ std::istream& operator>>(std::istream& stream, nonagram& CP)
 	stream >> CP.numcols >> CP.numrows;
 	
 	#ifdef CPUZZLE_DEBUG
-		std::cout << "Rows: " << CP.numrows << ", Cols: " << CP.numcols << std::endl;
+		std::cout << "Rows: " << CP.numrows << ", Cols: " << CP.numcols << '\n';
 	#endif
 	
 	// Create grid, fill with "unknown"
@@ -476,7 +476,7 @@ std::istream& operator>>(std::istream& stream, nonagram& CP)
 	std::fill(CP.grid.begin(), CP.grid.end(), nonagram::cell_state::unknown);
 	
 	#ifdef CPUZZLE_DEBUG
-		std::cout << "Hintlists:" << std::endl;
+		std::cout << "Hintlists:\n";
 	#endif
 	
 	for (unsigned i = 0; i < CP.numrows; ++i)
@@ -508,8 +508,7 @@ std::istream& operator>>(std::istream& stream, nonagram& CP)
 	}
 	
 	#ifdef CPUZZLE_DEBUG
-		std::cout << "Successfully read from file." << std::endl
-			<< std::endl << "Puzzle:" << std::endl << CP;
+		std::cout << "Successfully read from file.\n\nPuzzle:\n" << CP;
 	#endif
 	
 	return stream;
@@ -522,26 +521,26 @@ Solves this, or throws a nonagram::puzzle_error if unsolvable.
 void nonagram::solve()
 {
 	#ifdef CPUZZLE_DEBUG
-		std::cout << "Entering solve:" << std::endl << "Puzzle:" << std::endl << *this;
+		std::cout << "Entering solve:\nPuzzle:\n" << *this;
 	#endif
 	
 	while(removeAndMark() && !isComplete()) {}
 	
 	#ifdef CPUZZLE_DEBUG
-		std::cout << "Done with logical rules:" << std::endl;
+		std::cout << "Done with logical rules:\n";
 	#endif
 	
 	if (isComplete())
 	{
 		#ifdef CPUZZLE_DEBUG
-			std::cout << "Puzzle complete:" << std::endl << *this;
+			std::cout << "Puzzle complete:\n" << *this;
 		#endif
 		
 		return;
 	}
 	
 	#ifdef CPUZZLE_DEBUG
-		std::cout << "\nUsing brute force:\n" << std::endl;
+		std::cout << "\nUsing brute force:\n\n";
 	#endif
 	
 	// find position to brute force
@@ -557,7 +556,7 @@ void nonagram::solve()
 			std::cout << "Guessing "
 				<< (guess == cell_state::filled ? "filled" : "empty")
 				<< " at position " << pos << "(" << (pos / numrows) << ","
-				<< (pos % numrows) << ")" << std::endl;
+				<< (pos % numrows) << ")\n";
 		#endif
 		
 		copy.grid[pos] = guess;
@@ -572,7 +571,7 @@ void nonagram::solve()
 	}
 	
 	#ifdef CPUZZLE_DEBUG
-		std::cout << "No solution." << std::endl;
+		std::cout << "No solution.\n";
 	#endif
 	
 	throw puzzle_error();

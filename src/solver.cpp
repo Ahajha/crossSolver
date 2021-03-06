@@ -26,7 +26,7 @@ std::string parseArgs(int args, char* argv[])
 {
 	if (args != 2)
 	{
-		std::cout << "Input format: " << argv[0] << " inputFileName" << std::endl;
+		std::cerr << "Input format: " << argv[0] << " inputFileName\n";
 		exit(1);
 	}
 	return argv[1];
@@ -47,7 +47,7 @@ int main(int args, char* argv[])
 	
 	if (!ifs.is_open())
 	{
-		std::cout << "Could not open file \"" << inFileName << "\" for reading." << std::endl;
+		std::cerr << "Could not open file \"" << inFileName << "\" for reading.\n";
 		return 1;
 	}
 	
@@ -68,7 +68,7 @@ int main(int args, char* argv[])
 	}
 	catch (nonagram::puzzle_error&)
 	{
-		std::cout << "No solution." << std::endl;
+		std::cerr << "No solution.\n";
 		return 1;
 	}
 }
