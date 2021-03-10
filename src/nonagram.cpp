@@ -187,7 +187,7 @@ std::ostream& operator<<(std::ostream& stream, nonagram::cell_state cs)
 Throws a puzzle_error if L is empty.
 ----------------------------------*/
 
-void nonagram::throwIfEmpty(const std::list<unsigned>& L)
+void nonagram::throwIfEmpty(const std::deque<unsigned>& L)
 {
 	if (L.empty()) throw puzzle_error();
 }

@@ -4,6 +4,7 @@
 #include <exception>
 #include <vector>
 #include <list>
+#include <deque>
 #include "bmp.hpp"
 
 #ifdef CPUZZLE_DEBUG
@@ -28,7 +29,7 @@ class nonagram
 		struct fill
 		{
 			unsigned length;
-			std::list<unsigned> candidates;
+			std::deque<unsigned> candidates;
 			
 			fill(unsigned fl, unsigned start, unsigned end);
 		};
@@ -74,7 +75,7 @@ class nonagram
 	#endif
 	
 	// Methods related to solving
-	static void throwIfEmpty(const std::list<unsigned>& L);
+	static void throwIfEmpty(const std::deque<unsigned>& L);
 	void markInRange(const std::vector<std::pair<unsigned,bool>>& gridReferences,
 		unsigned start, unsigned end, cell_state value, unsigned& changesMade);
 	
