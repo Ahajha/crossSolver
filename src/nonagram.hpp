@@ -39,7 +39,7 @@ class nonagram
 		#endif
 		
 		line(const std::vector<unsigned>& grd,
-			const std::list<unsigned>& hintList);
+			const std::vector<unsigned>& hintList);
 	};
 	
 	// Variables
@@ -54,12 +54,12 @@ class nonagram
 	std::vector<line> lines;
 	
 	// Methods related to input
-	static std::list<unsigned> getList(std::istream& in);
+	static std::vector<unsigned> getList(std::istream& in);
 	
 	std::vector<unsigned> createGridReferenceLine(unsigned size,
 		unsigned start, unsigned increment);
 	
-	void evaluateHintList(const std::list<unsigned>& hintList,
+	void evaluateHintList(const std::vector<unsigned>& hintList,
 	#ifndef CPUZZLE_DEBUG
 		std::vector<unsigned>&& references);
 	#else

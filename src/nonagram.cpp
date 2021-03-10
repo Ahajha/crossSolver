@@ -13,7 +13,7 @@ the items in grd, with a list of hints hintList.
 ----------------------------------------------*/
 
 nonagram::line::line(const std::vector<unsigned>& grd,
-	const std::list<unsigned>& hintList) : grid(grd.size())
+	const std::vector<unsigned>& hintList) : grid(grd.size())
 {
 	for (unsigned i = 0; i < grd.size(); ++i)
 	{
@@ -39,14 +39,14 @@ nonagram::line::line(const std::vector<unsigned>& grd,
 GetList returns a list containing one line of ints read from in.
 --------------------------------------------------------------*/
 
-std::list<unsigned> nonagram::getList(std::istream& in)
+std::vector<unsigned> nonagram::getList(std::istream& in)
 {
 	unsigned temp;
-	std::list<unsigned> L;
+	std::vector<unsigned> L;
 	
 	// There will always be at least one number
 	in >> temp;
-	L.push_front(temp);
+	L.push_back(temp);
 	
 	for (int c = in.peek(); c != '\n' && !in.eof(); c = in.peek())
 	{
@@ -64,7 +64,7 @@ std::list<unsigned> nonagram::getList(std::istream& in)
 	// If the list is just 0, let it be an empty list
 	if (L.size() == 1 && L.front() == 0)
 	{
-		L.pop_front();
+		L.pop_back();
 	}
 	
 	return L;
@@ -84,7 +84,7 @@ std::vector<unsigned> nonagram::createGridReferenceLine(unsigned size,
 	return tempgrid;
 }
 
-void nonagram::evaluateHintList(const std::list<unsigned>& hintList,
+void nonagram::evaluateHintList(const std::vector<unsigned>& hintList,
 #ifndef CPUZZLE_DEBUG
 	std::vector<unsigned>&& references)
 #else
