@@ -116,14 +116,7 @@ void nonagram::evaluateHintList(const std::list<unsigned>& hintList,
 #ifdef CPUZZLE_DEBUG
 void nonagram::print_line(std::ostream& stream, const line& lin) const
 {
-	if(isComplete(lin))
-	{
-		stream << "Complete. Grid:\n";
-	}
-	else
-	{
-		stream << "Incomplete. Grid:\n";
-	}
+	stream << (isComplete(lin) ? "Complete." : "Incomplete.") << " Grid:\n";
 	
 	for (const auto ref : lin.grid)
 	{
