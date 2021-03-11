@@ -224,19 +224,11 @@ bool nonagram::isComplete(const line& lin) const
 
 /*-------------------------------------------------
 Removes incompatible candidates from a line. If a
-fill has no more candidates, throws a puzzle_error,
-otherwise returns the number of candidates removed.
+fill has no more candidates, throws a puzzle_error.
 -------------------------------------------------*/
 
-// TODO: Some rules added for the first and last fills can be condensed by
-// making "empty" first and last fills (i.e. cell 0 to -1, length 0 for the
-// beginning). Need to double check, but it seems that all of the special
-// case rules would collapse into other rules.
-
-unsigned nonagram::removeIncompatible(line& lin)
+void nonagram::removeIncompatible(line& lin)
 {
-	unsigned changesMade = 0;
-	
 	// Check each position for a space that has recently been marked
 	for (unsigned i = 0; i < lin.grid.size(); ++i)
 	{
@@ -253,7 +245,7 @@ unsigned nonagram::removeIncompatible(line& lin)
 					// If the empty space is within the fill,
 					// remove the possibility.
 					
-					changesMade += std::erase_if(positions, [i,length](unsigned start)
+					std::erase_if(positions, [i,length](unsigned start)
 					{
 						return (start <= i) && (i < start + length);
 					});
@@ -275,7 +267,7 @@ unsigned nonagram::removeIncompatible(line& lin)
 					// If the filled space is immediately before or after
 					// a possible fill, remove the possibility.
 					
-					changesMade += std::erase_if(positions, [i,length](unsigned start)
+					std::erase_if(positions, [i,length](unsigned start)
 					{
 						return (start == i + 1) || (start + length == i);
 					});
@@ -302,7 +294,6 @@ unsigned nonagram::removeIncompatible(line& lin)
 					{
 						lin.fills[j].candidates.pop_back();
 						throwIfEmpty(lin.fills[j].candidates);
-						++changesMade;
 					}
 				}
 				
@@ -320,7 +311,6 @@ unsigned nonagram::removeIncompatible(line& lin)
 					{
 						lin.fills[j].candidates.pop_front();
 						throwIfEmpty(lin.fills[j].candidates);
-						++changesMade;
 					}
 				}
 			}
@@ -348,7 +338,6 @@ unsigned nonagram::removeIncompatible(line& lin)
 		{
 			lin.fills[i].candidates.pop_front();
 			throwIfEmpty(lin.fills[i].candidates);
-			++changesMade;
 		}
 	}
 	
@@ -375,11 +364,8 @@ unsigned nonagram::removeIncompatible(line& lin)
 		{
 			lin.fills[i - 1].candidates.pop_back();
 			throwIfEmpty(lin.fills[i - 1].candidates);
-			++changesMade;
 		}
 	}
-	
-	return changesMade;
 }
 
 /*-----------------------------------------
@@ -465,26 +451,19 @@ unsigned nonagram::removeAndMark()
 	{
 		if (!lin) continue;
 		
-		unsigned numremoved = removeIncompatible(*lin);
-		unsigned nummarked  = markConsistent(*lin);
+		removeIncompatible(*lin);
+		const unsigned nummarked = markConsistent(*lin);
 		
 		#ifdef CPUZZLE_DEBUG
-			if (numremoved || nummarked)
+			if (nummarked)
 			{
-				std::cout << lin->ID << ":\n";
-				if (numremoved)
-				{
-					std::cout << "Removed " << numremoved << " possibilities.\n";
-				}
-				if (nummarked)
-				{
-					std::cout << "Marked " << nummarked << " cells.\n";
-				}
+				std::cout << lin->ID << ": Marked " << nummarked << " cells.\n";
+				
 				print_line(std::cout,*lin);
 			}
 		#endif
 		
-		changesMade += (numremoved + nummarked);
+		changesMade += nummarked;
 		
 		// If the line is solved, remove it and reduce the number of
 		// remaining lines to solve.

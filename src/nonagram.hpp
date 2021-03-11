@@ -81,7 +81,7 @@ class nonagram
 	
 	bool isComplete(const line& lin) const;
 	
-	unsigned removeIncompatible(line& lin);
+	void removeIncompatible(line& lin);
 	unsigned markConsistent(line& lin);
 	
 	unsigned removeAndMark();
