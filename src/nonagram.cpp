@@ -331,14 +331,24 @@ unsigned nonagram::removeIncompatible(line& lin)
 		}
 	}
 	
-	// Push back/Push forward correcting
+	// Possible TODO: Combine these with last rule in markConsistent, or the rule above
 	
-	// Possible TODO: Combine this with last rule in markConsistent, or the rule above
+	// Push-forward correcting. This loop goes forwards, since pushing a fill
+	// forward can affect fills later down the line.
 	for (unsigned i = 1; i < lin.fills.size(); ++i)
 	{
-		unsigned furthestback = lin.fills[i - 1].candidates.front() +
+		// Suppose a given fill is placed in the first available position. Any
+		// cells it occupies cannot possibly be filled by the next fill, or the
+		// cell immediately after, since there must be an empty space.
+		
+		// The cell immediately after the fill in its first available position.
+		const unsigned pos_after = lin.fills[i - 1].candidates.front() +
 			lin.fills[i - 1].length;
-		while (furthestback >= lin.fills[i].candidates.front())
+		
+		// This can be tested efficiently, since pos_after must be strictly
+		// before the starting cell of the next fill, so remove candidates of
+		// the next fill that start before or on the pos_after cell.
+		while (pos_after >= lin.fills[i].candidates.front())
 		{
 			lin.fills[i].candidates.pop_front();
 			throwIfEmpty(lin.fills[i].candidates);
@@ -346,11 +356,26 @@ unsigned nonagram::removeIncompatible(line& lin)
 		}
 	}
 	
+	// Push-back correcting. This loop goes backwards, since pushing a fill
+	// backwards can affect fills before it.
 	for (unsigned i = lin.fills.size() - 1; i > 0; --i)
 	{
-		unsigned furthestforward = lin.fills[i].candidates.back();
-		unsigned length = lin.fills[i - 1].length;
-		while (furthestforward <= lin.fills[i - 1].candidates.back() + length)
+		// Suppose a given fill is placed in the last available position. Any
+		// cells it occupies cannot possibly be filled by the previous fill, or
+		// the cell immediately before, since there must be an empty space.
+		
+		// The first cell of the fill in its last available position.
+		const unsigned first_cell = lin.fills[i].candidates.back();
+		
+		// Value grabbed for brevity
+		const unsigned length = lin.fills[i - 1].length;
+		
+		// This can be tested efficiently, since first_cell must be strictly
+		// after the cell that is one past the end of the previous fill (the
+		// value computed by the right-hand side of the following inequality).
+		// Remove candidates of the previous fill that end on or after the
+		// first_cell cell.
+		while (first_cell <= lin.fills[i - 1].candidates.back() + length)
 		{
 			lin.fills[i - 1].candidates.pop_back();
 			throwIfEmpty(lin.fills[i - 1].candidates);
