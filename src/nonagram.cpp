@@ -8,17 +8,20 @@ nonagram::line::fill::fill(unsigned fl, unsigned start, unsigned end)
 	std::iota(candidates.begin(), candidates.end(), start);
 }
 
-/*---------------------------------------------------
-Constructs a line of with length grd.size(),
-referencing the items in grd, with a given hint list.
----------------------------------------------------*/
+/*------------------------------------------------------
+Constructs a line of with length grd.size(), referencing
+the items in grd, with a given hint list. Offset is the
+offset of the index to the opposite line, should be 0 if
+this line is a column, as it referencing rows, and
+numrows if this line is a row, as it references columns.
+------------------------------------------------------*/
 
-nonagram::line::line(auto&& grd, const std::vector<unsigned>& hintList)
-	: grid(grd.size())
+nonagram::line::line(auto&& grd, const std::vector<unsigned>& hintList,
+	unsigned offset) : grid(grd.size())
 {
 	for (unsigned i = 0; i < grd.size(); ++i)
 	{
-		grid[i] = { grd[i], false };
+		grid[i] = { grd[i], i + offset, false };
 	}
 	
 	fills.reserve(hintList.size());
@@ -76,9 +79,9 @@ std::vector<unsigned> nonagram::getList(std::istream& in)
 // to the indexes in grid to which this line would refer to.
 void nonagram::evaluateHintList(const std::vector<unsigned>& hintList,
 #ifndef CPUZZLE_DEBUG
-	auto&& references, unsigned idx)
+	auto&& references, unsigned idx, unsigned offset)
 #else
-	auto&& references, unsigned idx, std::string&& ID)
+	auto&& references, unsigned idx, unsigned offset, std::string&& ID)
 #endif
 {
 	#ifdef CPUZZLE_DEBUG
@@ -99,7 +102,7 @@ void nonagram::evaluateHintList(const std::vector<unsigned>& hintList,
 	}
 	else
 	{
-		lines[idx].emplace(references, hintList);
+		lines[idx].emplace(references, hintList, offset);
 		#ifdef CPUZZLE_DEBUG
 		lines[idx]->ID = std::move(ID);
 		#endif
@@ -113,7 +116,7 @@ void nonagram::print_line(std::ostream& stream, const line& lin) const
 	
 	for (const auto ref : lin.grid)
 	{
-		stream << grid[ref.first];
+		stream << grid[ref.ref_index];
 	}
 	stream << '\n';
 	
@@ -193,17 +196,17 @@ Marks each cell in grid starting at index start and stopping before
 index end to 'value', and increments changesMade for each change made.
 --------------------------------------------------------------------*/
 
-void nonagram::markInRange(const std::vector<std::pair<unsigned,bool>>& gridReferences,
+void nonagram::markInRange(const std::vector<line::cell>& gridReferences,
 	unsigned start, unsigned end, cell_state value, unsigned& changesMade)
 {
 	for (unsigned i = start; i < end; ++i)
 	{
-		if (grid[gridReferences[i].first] == cell_state::unknown)
+		if (grid[gridReferences[i].ref_index] == cell_state::unknown)
 		{
-			grid[gridReferences[i].first] = value;
+			grid[gridReferences[i].ref_index] = value;
 			++changesMade;
 		}
-		else if (grid[gridReferences[i].first] != value)
+		else if (grid[gridReferences[i].ref_index] != value)
 		{
 			throw nonagram::puzzle_error();
 		}
@@ -214,7 +217,7 @@ bool nonagram::isComplete(const line& lin) const
 {
 	for (const auto& ref : lin.grid)
 	{
-		if (grid[ref.first] == cell_state::unknown)
+		if (grid[ref.ref_index] == cell_state::unknown)
 		{
 			return false;
 		}
@@ -232,12 +235,12 @@ void nonagram::removeIncompatible(line& lin)
 	// Check each position for a space that has recently been marked
 	for (unsigned i = 0; i < lin.grid.size(); ++i)
 	{
-		if (grid[lin.grid[i].first] == cell_state::empty)
+		if (grid[lin.grid[i].ref_index] == cell_state::empty)
 		{
 			// If this rule has not been applied yet, do so.
-			if (!lin.grid[i].second)
+			if (!lin.grid[i].rules_used)
 			{
-				lin.grid[i].second = true;
+				lin.grid[i].rules_used = true;
 				
 				// Remove due to empty spaces
 				for (auto& [length,positions] : lin.fills)
@@ -254,12 +257,12 @@ void nonagram::removeIncompatible(line& lin)
 				}
 			}
 		}
-		else if (grid[lin.grid[i].first] == cell_state::filled)
+		else if (grid[lin.grid[i].ref_index] == cell_state::filled)
 		{
 			// If this rule has not been applied yet, do so.
-			if (!lin.grid[i].second)
+			if (!lin.grid[i].rules_used)
 			{
-				lin.grid[i].second = true;
+				lin.grid[i].rules_used = true;
 				
 				// Remove due to filled spaces
 				for (auto& [length,positions] : lin.fills)
@@ -519,9 +522,9 @@ std::istream& operator>>(std::istream& stream, nonagram& CP)
 			| std::views::transform(ref_creator{CP.numcols * i, 1});
 		
 		#ifndef CPUZZLE_DEBUG
-		CP.evaluateHintList(hintList, references, i);
+		CP.evaluateHintList(hintList, references, i, CP.numrows);
 		#else
-		CP.evaluateHintList(hintList, references, i,
+		CP.evaluateHintList(hintList, references, i, CP.numrows,
 			std::string("Row ") + std::to_string(i));
 		#endif
 	}
@@ -534,9 +537,9 @@ std::istream& operator>>(std::istream& stream, nonagram& CP)
 			| std::views::transform(ref_creator{i, CP.numcols});
 		
 		#ifndef CPUZZLE_DEBUG
-		CP.evaluateHintList(hintList, references, CP.numrows + i);
+		CP.evaluateHintList(hintList, references, CP.numrows + i, 0);
 		#else
-		CP.evaluateHintList(hintList, references, CP.numrows + i,
+		CP.evaluateHintList(hintList, references, CP.numrows + i, 0,
 			std::string("Column ") + std::to_string(i));
 		#endif
 	}

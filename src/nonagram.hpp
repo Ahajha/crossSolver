@@ -17,10 +17,21 @@ class nonagram
 	
 	struct line
 	{
-		// The first in the pair is the index in the host nonagram's grid to
-		// this refers, the second is a flag that indicates whether a certain
-		// set of rules have been used by this cell.
-		std::vector<std::pair<unsigned, bool>> grid;
+		struct cell
+		{
+			// The index in the host nonogram's grid to which this refers.
+			unsigned ref_index;
+			
+			// If this cell represents row x, column y, then if this line is
+			// a row, then this is y, and for a column, x.
+			unsigned opposite_line;
+			
+			// True if a certain set of rules (in removeIncompatible) have
+			// been used with this cell.
+			bool rules_used;
+		};
+		
+		std::vector<cell> grid;
 		
 		/*------------------------------------------------------------
 		A fill has a length and a set of candidate starting positions.
@@ -39,7 +50,7 @@ class nonagram
 		std::string ID;
 		#endif
 		
-		line(auto&& grd, const std::vector<unsigned>& hintList);
+		line(auto&& grd, const std::vector<unsigned>& hintList, unsigned offset);
 	};
 	
 	// Variables
@@ -62,9 +73,9 @@ class nonagram
 	
 	void evaluateHintList(const std::vector<unsigned>& hintList,
 	#ifndef CPUZZLE_DEBUG
-		auto&& references, unsigned idx);
+		auto&& references, unsigned idx, unsigned offset);
 	#else
-		auto&& references, unsigned idx, std::string&& ID);
+		auto&& references, unsigned idx, unsigned offset, std::string&& ID);
 	#endif
 	
 	// Debugging methods
@@ -76,7 +87,7 @@ class nonagram
 	
 	// Methods related to solving
 	static void throwIfEmpty(const std::deque<unsigned>& L);
-	void markInRange(const std::vector<std::pair<unsigned,bool>>& gridReferences,
+	void markInRange(const std::vector<line::cell>& gridReferences,
 		unsigned start, unsigned end, cell_state value, unsigned& changesMade);
 	
 	bool isComplete(const line& lin) const;
