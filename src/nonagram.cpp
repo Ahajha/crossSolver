@@ -591,40 +591,40 @@ void nonagram::solve()
 	unsigned pos = 0;
 	while (grid[pos] != cell_state::unknown) ++pos;
 	
-	// Mark the row as needing line solving
+	// Mark the affected row and column, respectfully, as needing line solving.
 	lines[pos / numcols]->needs_line_solving = true;
-	
-	// Mark the column as needing line solving
 	lines[numrows + pos % numcols]->needs_line_solving = true;
 	
-	// Guess filled first, is significantly quicker on some puzzles.
-	for (auto guess : { cell_state::filled, cell_state::empty })
-	{
-		nonagram copy(*this);
-		
-		#ifdef CPUZZLE_DEBUG
-			std::cout << "Guessing "
-				<< (guess == cell_state::filled ? "filled" : "empty")
-				<< " at position " << pos << "(" << (pos / numrows) << ","
-				<< (pos % numrows) << ")\n";
-		#endif
-		
-		copy.grid[pos] = guess;
-		
-		try
-		{
-			copy.solve();
-			std::swap(copy,*this);
-			return;
-		}
-		catch (puzzle_error&) {}
-	}
+	// For now, naively guess filled. This guess will be improved in the future.
+	auto guess = cell_state::filled;
+	
+	nonagram copy(*this);
 	
 	#ifdef CPUZZLE_DEBUG
-		std::cout << "No solution.\n";
+		std::cout << "Guessing "
+			<< (guess == cell_state::filled ? "filled" : "empty")
+			<< " at position " << pos << "(" << (pos / numrows) << ","
+			<< (pos % numrows) << ")\n";
 	#endif
 	
-	throw puzzle_error();
+	copy.grid[pos] = guess;
+	
+	try
+	{
+		copy.solve();
+		std::swap(copy,*this);
+		return;
+	}
+	catch (puzzle_error&) {}
+	
+	guess = (guess == cell_state::filled) ? cell_state::empty : cell_state::filled;
+	
+	// No need to use the copy anymore, if this solves the puzzle the solution
+	// is already in place, if not, the puzzle is "junk" anyways.
+	grid[pos] = guess;
+	
+	// Since this is the last attempt, if this throws, let the error escalate.
+	solve();
 }
 
 bool nonagram::isComplete() const
