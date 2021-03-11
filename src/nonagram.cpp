@@ -113,31 +113,23 @@ void nonagram::evaluateHintList(const std::vector<unsigned>& hintList,
 }
 
 #ifdef CPUZZLE_DEBUG
-void nonagram::print_line(std::ostream& stream, const line& lin) const
+std::ostream& operator<<(std::ostream& stream, const nonagram::line& lin)
 {
-	stream << (isComplete(lin) ? "Complete." : "Incomplete.") << " Grid:\n";
+	stream << lin.ID << ". Fills:\n";
 	
-	for (const auto ref : lin.grid)
+	for (const auto& [length, candidates] : lin.fills)
 	{
-		stream << grid[ref.ref_index];
-	}
-	stream << '\n';
-	
-	if (!isComplete(lin))
-	{
-		for (unsigned i = 0; i < lin.fills.size(); ++i)
+		stream << "length " << length << ": ";
+		
+		for (const auto x : candidates)
 		{
-			stream << "Fill #" << i << ", length " << lin.fills[i].length << ": ";
-			
-			for (const auto x : lin.fills[i].candidates)
-			{
-				stream << x << ' ';
-			}
-			
-			stream << '\n';
+			stream << x << ' ';
 		}
+		
+		stream << '\n';
 	}
-	stream << '\n';
+	
+	return stream << '\n';
 }
 
 std::ostream& operator<<(std::ostream& stream, const nonagram& CP)
@@ -150,8 +142,7 @@ std::ostream& operator<<(std::ostream& stream, const nonagram& CP)
 	{
 		if (lin)
 		{
-			stream << lin->ID << ": ";
-			CP.print_line(stream,*lin);
+			stream << *lin;
 		}
 	}
 	
@@ -165,7 +156,7 @@ std::ostream& operator<<(std::ostream& stream, const nonagram& CP)
 		stream << '\n';
 	}
 	
-	stream << "===========================================================" << '\n';
+	stream << "===========================================================\n";
 	return stream;
 }
 
@@ -534,7 +525,7 @@ std::istream& operator>>(std::istream& stream, nonagram& CP)
 	}
 	
 	#ifdef CPUZZLE_DEBUG
-		std::cout << "Successfully read from file.\n\nPuzzle:\n" << CP;
+		std::cout << "Successfully read from file.\n";
 	#endif
 	
 	return stream;
@@ -593,6 +584,13 @@ void nonagram::solve()
 	catch (puzzle_error&) {}
 	
 	guess = (guess == cell_state::filled) ? cell_state::empty : cell_state::filled;
+	
+	#ifdef CPUZZLE_DEBUG
+		std::cout << "Guess at position " << pos << "(" << (pos / numrows)
+			<< "," << (pos % numrows) << ") was incorrect, trying "
+			<< (guess == cell_state::filled ? "filled" : "empty")
+			<< " instead\n";
+	#endif
 	
 	// No need to use the copy anymore, if this solves the puzzle the solution
 	// is already in place, if not, the puzzle is "junk" anyways.

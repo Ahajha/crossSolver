@@ -79,7 +79,7 @@ class nonagram
 	
 	// Debugging methods
 	#ifdef CPUZZLE_DEBUG
-	void print_line(std::ostream& stream, const line& roc) const;
+	friend std::ostream& operator<<(std::ostream& stream, const line& lin);
 	friend std::ostream& operator<<(std::ostream& stream, const nonagram& CP);
 	friend std::ostream& operator<<(std::ostream& stream, cell_state cs);
 	#endif
