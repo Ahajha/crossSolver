@@ -84,11 +84,14 @@ std::vector<unsigned> nonagram::createGridReferenceLine(unsigned size,
 	return tempgrid;
 }
 
+// If hintList is empty, fills in the respective line with empty cells.
+// Otherwise, constructs a line object at index idx. References refers
+// to the indexes in grid to which this line would refer to.
 void nonagram::evaluateHintList(const std::vector<unsigned>& hintList,
 #ifndef CPUZZLE_DEBUG
-	std::vector<unsigned>&& references)
+	std::vector<unsigned>&& references, unsigned idx)
 #else
-	std::vector<unsigned>&& references, std::string&& ID)
+	std::vector<unsigned>&& references, unsigned idx, std::string&& ID)
 #endif
 {
 	#ifdef CPUZZLE_DEBUG
@@ -103,12 +106,15 @@ void nonagram::evaluateHintList(const std::vector<unsigned>& hintList,
 		{
 			grid[ref] = cell_state::empty;
 		}
+		
+		// Go ahead and report this line as solved
+		--lines_to_solve;
 	}
 	else
 	{
-		lines.emplace_back(std::move(references), hintList);
+		lines[idx].emplace(std::move(references), hintList);
 		#ifdef CPUZZLE_DEBUG
-		lines.back().ID = std::move(ID);
+		lines[idx]->ID = std::move(ID);
 		#endif
 	}
 }
@@ -149,8 +155,11 @@ std::ostream& operator<<(std::ostream& stream, const nonagram& CP)
 	// If CP is complete, this will print nothing
 	for (auto& lin : CP.lines)
 	{
-		stream << lin.ID << ": ";
-		CP.print_line(stream,lin);
+		if (lin)
+		{
+			stream << lin->ID << ": ";
+			CP.print_line(stream,*lin);
+		}
 	}
 	
 	unsigned pos = 0;
@@ -448,15 +457,17 @@ unsigned nonagram::removeAndMark()
 	#endif
 	
 	unsigned changesMade = 0;
-	std::erase_if(lines, [&](line& lin)
+	for (std::optional<line>& lin : lines)
 	{
-		unsigned numremoved = removeIncompatible(lin);
-		unsigned nummarked  = markConsistent(lin);
+		if (!lin) continue;
+		
+		unsigned numremoved = removeIncompatible(*lin);
+		unsigned nummarked  = markConsistent(*lin);
 		
 		#ifdef CPUZZLE_DEBUG
 			if (numremoved || nummarked)
 			{
-				std::cout << lin.ID << ":\n";
+				std::cout << lin->ID << ":\n";
 				if (numremoved)
 				{
 					std::cout << "Removed " << numremoved << " possibilities.\n";
@@ -465,14 +476,20 @@ unsigned nonagram::removeAndMark()
 				{
 					std::cout << "Marked " << nummarked << " cells.\n";
 				}
-				print_line(std::cout,lin);
+				print_line(std::cout,*lin);
 			}
 		#endif
 		
 		changesMade += (numremoved + nummarked);
 		
-		return isComplete(lin);
-	});
+		// If the line is solved, remove it and reduce the number of
+		// remaining lines to solve.
+		if (isComplete(*lin))
+		{
+			lin.reset();
+			--lines_to_solve;
+		}
+	}
 	
 	return changesMade;
 }
@@ -489,6 +506,8 @@ std::istream& operator>>(std::istream& stream, nonagram& CP)
 		std::cout << "Rows: " << CP.numrows << ", Cols: " << CP.numcols << '\n';
 	#endif
 	
+	CP.lines.resize(CP.lines_to_solve = CP.numcols + CP.numrows);
+	
 	// Create grid, fill with "unknown"
 	CP.grid.resize(CP.numrows * CP.numcols);
 	std::fill(CP.grid.begin(), CP.grid.end(), nonagram::cell_state::unknown);
@@ -504,9 +523,9 @@ std::istream& operator>>(std::istream& stream, nonagram& CP)
 		auto references = CP.createGridReferenceLine(CP.numcols,CP.numcols * i,1);
 		
 		#ifndef CPUZZLE_DEBUG
-		CP.evaluateHintList(hintList, std::move(references));
+		CP.evaluateHintList(hintList, std::move(references), i);
 		#else
-		CP.evaluateHintList(hintList, std::move(references),
+		CP.evaluateHintList(hintList, std::move(references), i,
 			std::string("Row ") + std::to_string(i));
 		#endif
 	}
@@ -518,9 +537,9 @@ std::istream& operator>>(std::istream& stream, nonagram& CP)
 		auto references = CP.createGridReferenceLine(CP.numrows,i,CP.numcols);
 		
 		#ifndef CPUZZLE_DEBUG
-		CP.evaluateHintList(hintList, std::move(references));
+		CP.evaluateHintList(hintList, std::move(references), CP.numrows + i);
 		#else
-		CP.evaluateHintList(hintList, std::move(references),
+		CP.evaluateHintList(hintList, std::move(references), CP.numrows + i,
 			std::string("Column ") + std::to_string(i));
 		#endif
 	}
@@ -558,7 +577,8 @@ void nonagram::solve()
 	}
 	
 	#ifdef CPUZZLE_DEBUG
-		std::cout << "\nUsing brute force:\n\n";
+		std::cout << "\nUsing brute force, " << lines_to_solve << " lines left"
+			" to solve:\n\n";
 	#endif
 	
 	// find position to brute force
@@ -597,7 +617,7 @@ void nonagram::solve()
 
 bool nonagram::isComplete() const
 {
-	return lines.empty();
+	return lines_to_solve == 0;
 }
 
 BMP_24 nonagram::bitmap() const

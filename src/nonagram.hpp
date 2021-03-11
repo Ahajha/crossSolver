@@ -3,7 +3,7 @@
 #include <iostream>
 #include <exception>
 #include <vector>
-#include <list>
+#include <optional>
 #include <deque>
 #include "bmp.hpp"
 
@@ -52,7 +52,11 @@ class nonagram
 	// ...
 	std::vector<cell_state> grid;
 	
-	std::vector<line> lines;
+	// Element is empty if the line has been solved
+	std::vector<std::optional<line>> lines;
+	
+	// Keeps track of the number of lines left to solve.
+	unsigned lines_to_solve;
 	
 	// Methods related to input
 	static std::vector<unsigned> getList(std::istream& in);
@@ -62,9 +66,9 @@ class nonagram
 	
 	void evaluateHintList(const std::vector<unsigned>& hintList,
 	#ifndef CPUZZLE_DEBUG
-		std::vector<unsigned>&& references);
+		std::vector<unsigned>&& references, unsigned idx);
 	#else
-		std::vector<unsigned>&& references, std::string&& ID);
+		std::vector<unsigned>&& references, unsigned idx, std::string&& ID);
 	#endif
 	
 	// Debugging methods
