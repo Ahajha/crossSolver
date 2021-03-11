@@ -210,7 +210,7 @@ void nonagram::markInRange(const std::vector<line::cell>& gridReferences,
 		}
 		else if (grid[gridReferences[i].ref_index] != value)
 		{
-			throw nonagram::puzzle_error();
+			throw puzzle_error();
 		}
 	}
 }
@@ -557,9 +557,9 @@ std::istream& operator>>(std::istream& stream, nonagram& CP)
 	return stream;
 }
 
-/*------------------------------------------------------------
-Solves this, or throws a nonagram::puzzle_error if unsolvable.
-------------------------------------------------------------*/
+/*--------------------------------------------------
+Solves this, or throws a puzzle_error if unsolvable.
+--------------------------------------------------*/
 
 void nonagram::solve()
 {
