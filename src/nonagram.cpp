@@ -198,7 +198,7 @@ index end to 'value', and increments changesMade for each change made.
 --------------------------------------------------------------------*/
 
 void nonagram::markInRange(const std::vector<line::cell>& gridReferences,
-	unsigned start, unsigned end, cell_state value, unsigned& changesMade)
+	unsigned start, unsigned end, cell_state value)
 {
 	for (unsigned i = start; i < end; ++i)
 	{
@@ -206,7 +206,6 @@ void nonagram::markInRange(const std::vector<line::cell>& gridReferences,
 		{
 			grid[gridReferences[i].ref_index] = value;
 			lines[gridReferences[i].opposite_line]->needs_line_solving = true;
-			++changesMade;
 		}
 		else if (grid[gridReferences[i].ref_index] != value)
 		{
@@ -383,10 +382,8 @@ no need to call removeIncompatible after
 markConsistent is called).
 -----------------------------------------*/
 
-unsigned nonagram::markConsistent(line& lin)
+void nonagram::markConsistent(line& lin)
 {
-	unsigned changesMade = 0;
-	
 	// Mark filled spaces
 	
 	// This rule does satisfy the mentioned property, however it isn't obvious.
@@ -400,8 +397,8 @@ unsigned nonagram::markConsistent(line& lin)
 	{
 		// Mark every cell from the last possible start position of the fill
 		// to the first possible end position of the fill. This may not mark anything.
-		markInRange(lin.grid, positions.back(),
-			positions.front() + length, cell_state::filled, changesMade);
+		markInRange(lin.grid, positions.back(), positions.front() + length,
+			cell_state::filled);
 	}
 	
 	// Mark empty spaces
@@ -413,8 +410,7 @@ unsigned nonagram::markConsistent(line& lin)
 	// Mark every cell that is before all possible start positions of the first
 	// fill as empty.
 	
-	markInRange(lin.grid, 0, lin.fills[0].candidates.front(),
-		cell_state::empty, changesMade);
+	markInRange(lin.grid, 0, lin.fills[0].candidates.front(), cell_state::empty);
 	
 	// Mark every cell that is after all possible end positions of the last
 	// fill as empty.
@@ -422,7 +418,7 @@ unsigned nonagram::markConsistent(line& lin)
 	unsigned lastoflast = lin.fills.back().candidates.back()
 		+ lin.fills.back().length;
 	
-	markInRange(lin.grid, lastoflast, lin.grid.size(), cell_state::empty, changesMade);
+	markInRange(lin.grid, lastoflast, lin.grid.size(), cell_state::empty);
 	
 	// For each consecutive pair of fills, fill any gaps between
 	// the last possibility of the first and the first possibility
@@ -433,57 +429,49 @@ unsigned nonagram::markConsistent(line& lin)
 			+ lin.fills[i - 1].length;
 		unsigned firstoflast = lin.fills[i].candidates.front();
 		
-		markInRange(lin.grid, lastoffirst, firstoflast, cell_state::empty, changesMade);
+		markInRange(lin.grid, lastoffirst, firstoflast, cell_state::empty);
 	}
-	
-	return changesMade;
 }
 
-/*-----------------------------------------------------------
-Calls removeIncompatible() and markConsistent(), in that
-order, on each line in lines. Returns number of changes made,
-or throws puzzle_error if any line in lines is unsolvable.
------------------------------------------------------------*/
+/*-------------------------------------------------------------
+Calls removeIncompatible() and markConsistent(), in that order,
+on each line. Throws puzzle_error if any line is unsolvable.
+-------------------------------------------------------------*/
 
-unsigned nonagram::removeAndMark()
+void nonagram::line_solve()
 {
-	#ifdef CPUZZLE_DEBUG
-		std::cout << "Remove and mark:\n";
-	#endif
-	
-	unsigned changesMade = 0;
-	for (std::optional<line>& lin : lines)
+	// Index of the last line that was line solved in this method call,
+	// starts as an unreachable value. It is assumed that at least one line
+	// is marked for line solving.
+	unsigned last_solved = lines.size();
+	while (true)
 	{
-		if (!lin || !lin->needs_line_solving) continue;
-		
-		removeIncompatible(*lin);
-		const unsigned nummarked = markConsistent(*lin);
-		
-		#ifdef CPUZZLE_DEBUG
-			if (nummarked)
+		for (unsigned i = 0; i < lines.size(); ++i)
+		{
+			if (i == last_solved) return;
+			
+			auto& lin = lines[i];
+			
+			if (!lin || !lin->needs_line_solving) continue;
+			
+			removeIncompatible(*lin);
+			markConsistent(*lin);
+			
+			// If the line is solved, remove it and reduce the number of
+			// remaining lines to solve.
+			if (isComplete(*lin))
 			{
-				std::cout << lin->ID << ": Marked " << nummarked << " cells.\n";
-				
-				print_line(std::cout,*lin);
+				lin.reset();
+				--lines_to_solve;
 			}
-		#endif
-		
-		changesMade += nummarked;
-		
-		// If the line is solved, remove it and reduce the number of
-		// remaining lines to solve.
-		if (isComplete(*lin))
-		{
-			lin.reset();
-			--lines_to_solve;
-		}
-		else
-		{
-			lin->needs_line_solving = false;
+			else
+			{
+				lin->needs_line_solving = false;
+			}
+			
+			last_solved = i;
 		}
 	}
-	
-	return changesMade;
 }
 
 /*-----------------------------------------------------------------
@@ -564,14 +552,10 @@ Solves this, or throws a puzzle_error if unsolvable.
 void nonagram::solve()
 {
 	#ifdef CPUZZLE_DEBUG
-		std::cout << "Entering solve:\nPuzzle:\n" << *this;
+		std::cout << "Entering solve:\nPuzzle:\n" << *this << "Line solving:\n";
 	#endif
 	
-	while(removeAndMark() && !isComplete()) {}
-	
-	#ifdef CPUZZLE_DEBUG
-		std::cout << "Done with logical rules:\n";
-	#endif
+	line_solve();
 	
 	if (isComplete())
 	{

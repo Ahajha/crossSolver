@@ -90,14 +90,14 @@ class nonagram
 	// Methods related to solving
 	static void throwIfEmpty(const std::deque<unsigned>& L);
 	void markInRange(const std::vector<line::cell>& gridReferences,
-		unsigned start, unsigned end, cell_state value, unsigned& changesMade);
+		unsigned start, unsigned end, cell_state value);
 	
 	bool isComplete(const line& lin) const;
 	
 	void removeIncompatible(line& lin);
-	unsigned markConsistent(line& lin);
+	void markConsistent(line& lin);
 	
-	unsigned removeAndMark();
+	void line_solve();
 	
 	public:
 	
