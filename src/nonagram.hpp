@@ -39,8 +39,7 @@ class nonagram
 		std::string ID;
 		#endif
 		
-		line(const std::vector<unsigned>& grd,
-			const std::vector<unsigned>& hintList);
+		line(auto&& grd, const std::vector<unsigned>& hintList);
 	};
 	
 	// Variables
@@ -61,14 +60,11 @@ class nonagram
 	// Methods related to input
 	static std::vector<unsigned> getList(std::istream& in);
 	
-	std::vector<unsigned> createGridReferenceLine(unsigned size,
-		unsigned start, unsigned increment);
-	
 	void evaluateHintList(const std::vector<unsigned>& hintList,
 	#ifndef CPUZZLE_DEBUG
-		std::vector<unsigned>&& references, unsigned idx);
+		auto&& references, unsigned idx);
 	#else
-		std::vector<unsigned>&& references, unsigned idx, std::string&& ID);
+		auto&& references, unsigned idx, std::string&& ID);
 	#endif
 	
 	// Debugging methods

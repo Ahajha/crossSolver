@@ -1,5 +1,6 @@
 #include "nonagram.hpp"
 #include <numeric>
+#include <ranges>
 
 nonagram::line::fill::fill(unsigned fl, unsigned start, unsigned end)
 	: length(fl), candidates(end - start + 1)
@@ -7,13 +8,13 @@ nonagram::line::fill::fill(unsigned fl, unsigned start, unsigned end)
 	std::iota(candidates.begin(), candidates.end(), start);
 }
 
-/*----------------------------------------------
-Constructs a line of length 'siz', referencing
-the items in grd, with a list of hints hintList.
-----------------------------------------------*/
+/*---------------------------------------------------
+Constructs a line of with length grd.size(),
+referencing the items in grd, with a given hint list.
+---------------------------------------------------*/
 
-nonagram::line::line(const std::vector<unsigned>& grd,
-	const std::vector<unsigned>& hintList) : grid(grd.size())
+nonagram::line::line(auto&& grd, const std::vector<unsigned>& hintList)
+	: grid(grd.size())
 {
 	for (unsigned i = 0; i < grd.size(); ++i)
 	{
@@ -70,28 +71,14 @@ std::vector<unsigned> nonagram::getList(std::istream& in)
 	return L;
 }
 
-std::vector<unsigned> nonagram::createGridReferenceLine(unsigned size,
-	unsigned start, unsigned increment)
-{
-	std::vector<unsigned> tempgrid(size);
-	
-	unsigned pos = start;
-	for (auto& item : tempgrid)
-	{
-		item = pos;
-		pos += increment;
-	}
-	return tempgrid;
-}
-
 // If hintList is empty, fills in the respective line with empty cells.
 // Otherwise, constructs a line object at index idx. References refers
 // to the indexes in grid to which this line would refer to.
 void nonagram::evaluateHintList(const std::vector<unsigned>& hintList,
 #ifndef CPUZZLE_DEBUG
-	std::vector<unsigned>&& references, unsigned idx)
+	auto&& references, unsigned idx)
 #else
-	std::vector<unsigned>&& references, unsigned idx, std::string&& ID)
+	auto&& references, unsigned idx, std::string&& ID)
 #endif
 {
 	#ifdef CPUZZLE_DEBUG
@@ -112,7 +99,7 @@ void nonagram::evaluateHintList(const std::vector<unsigned>& hintList,
 	}
 	else
 	{
-		lines[idx].emplace(std::move(references), hintList);
+		lines[idx].emplace(references, hintList);
 		#ifdef CPUZZLE_DEBUG
 		lines[idx]->ID = std::move(ID);
 		#endif
@@ -520,12 +507,16 @@ std::istream& operator>>(std::istream& stream, nonagram& CP)
 	{
 		auto hintList = nonagram::getList(stream);
 		
-		auto references = CP.createGridReferenceLine(CP.numcols,CP.numcols * i,1);
+		auto references = std::ranges::iota_view(0u,CP.numcols)
+			| std::views::transform([offset = CP.numcols * i](unsigned x)
+			{
+				return x + offset;
+			});
 		
 		#ifndef CPUZZLE_DEBUG
-		CP.evaluateHintList(hintList, std::move(references), i);
+		CP.evaluateHintList(hintList, references, i);
 		#else
-		CP.evaluateHintList(hintList, std::move(references), i,
+		CP.evaluateHintList(hintList, references, i,
 			std::string("Row ") + std::to_string(i));
 		#endif
 	}
@@ -534,12 +525,16 @@ std::istream& operator>>(std::istream& stream, nonagram& CP)
 	{
 		auto hintList = nonagram::getList(stream);
 		
-		auto references = CP.createGridReferenceLine(CP.numrows,i,CP.numcols);
+		auto references = std::ranges::iota_view(0u,CP.numrows)
+			| std::views::transform([offset = i, inc = CP.numcols](unsigned x)
+			{
+				return x * inc + offset;
+			});
 		
 		#ifndef CPUZZLE_DEBUG
-		CP.evaluateHintList(hintList, std::move(references), CP.numrows + i);
+		CP.evaluateHintList(hintList, references, CP.numrows + i);
 		#else
-		CP.evaluateHintList(hintList, std::move(references), CP.numrows + i,
+		CP.evaluateHintList(hintList, references, CP.numrows + i,
 			std::string("Column ") + std::to_string(i));
 		#endif
 	}
