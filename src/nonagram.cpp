@@ -385,6 +385,11 @@ unsigned nonagram::removeIncompatible(line& lin)
 /*-----------------------------------------
 Marks items in the grid that are consistent
 with all possibilites in a line.
+Important property: No cells marked will
+cause any fill candidates within this line
+to be invalidated (in other words, there is
+no need to call removeIncompatible after
+markConsistent is called).
 -----------------------------------------*/
 
 unsigned nonagram::markConsistent(line& lin)
@@ -392,6 +397,14 @@ unsigned nonagram::markConsistent(line& lin)
 	unsigned changesMade = 0;
 	
 	// Mark filled spaces
+	
+	// This rule does satisfy the mentioned property, however it isn't obvious.
+	// First note that all marked cells are between the last position of the
+	// first possible location, and the first position of the last possible
+	// location. There will certainly not be a candidate from this fill that
+	// gets removed, and there cannot be a candidate removed from an adjacent
+	// fill, due to push back/forward correcting (it should be obvious from
+	// this point that no other fills can be modified).
 	for (auto& [length,positions] : lin.fills)
 	{
 		// Mark every cell from the last possible start position of the fill
@@ -401,6 +414,10 @@ unsigned nonagram::markConsistent(line& lin)
 	}
 	
 	// Mark empty spaces
+	
+	// These rules obviously satisfy the stated property, as no candidates in
+	// any of these touch the cells being marked, which is why they are being
+	// marked as empty in the first place.
 	
 	// Mark every cell that is before all possible start positions of the first
 	// fill as empty.
