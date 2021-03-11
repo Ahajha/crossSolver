@@ -1,6 +1,7 @@
 #include "nonagram.hpp"
 #include <numeric>
 #include <ranges>
+#include <algorithm>
 
 nonagram::line::fill::fill(unsigned fl, unsigned start, unsigned end)
 	: length(fl), candidates(end - start + 1)
@@ -17,7 +18,7 @@ numrows if this line is a row, as it references columns.
 ------------------------------------------------------*/
 
 nonagram::line::line(auto&& grd, const std::vector<unsigned>& hintList,
-	unsigned offset) : grid(grd.size())
+	unsigned offset) : grid(grd.size()), needs_line_solving(true)
 {
 	for (unsigned i = 0; i < grd.size(); ++i)
 	{
@@ -204,6 +205,7 @@ void nonagram::markInRange(const std::vector<line::cell>& gridReferences,
 		if (grid[gridReferences[i].ref_index] == cell_state::unknown)
 		{
 			grid[gridReferences[i].ref_index] = value;
+			lines[gridReferences[i].opposite_line]->needs_line_solving = true;
 			++changesMade;
 		}
 		else if (grid[gridReferences[i].ref_index] != value)
@@ -452,7 +454,7 @@ unsigned nonagram::removeAndMark()
 	unsigned changesMade = 0;
 	for (std::optional<line>& lin : lines)
 	{
-		if (!lin) continue;
+		if (!lin || !lin->needs_line_solving) continue;
 		
 		removeIncompatible(*lin);
 		const unsigned nummarked = markConsistent(*lin);
@@ -475,6 +477,10 @@ unsigned nonagram::removeAndMark()
 			lin.reset();
 			--lines_to_solve;
 		}
+		else
+		{
+			lin->needs_line_solving = false;
+		}
 	}
 	
 	return changesMade;
@@ -496,7 +502,7 @@ std::istream& operator>>(std::istream& stream, nonagram& CP)
 	
 	// Create grid, fill with "unknown"
 	CP.grid.resize(CP.numrows * CP.numcols);
-	std::fill(CP.grid.begin(), CP.grid.end(), nonagram::cell_state::unknown);
+	std::ranges::fill(CP.grid, nonagram::cell_state::unknown);
 	
 	#ifdef CPUZZLE_DEBUG
 		std::cout << "Hintlists:\n";
@@ -584,6 +590,12 @@ void nonagram::solve()
 	// find position to brute force
 	unsigned pos = 0;
 	while (grid[pos] != cell_state::unknown) ++pos;
+	
+	// Mark the row as needing line solving
+	lines[pos / numcols]->needs_line_solving = true;
+	
+	// Mark the column as needing line solving
+	lines[numrows + pos % numcols]->needs_line_solving = true;
 	
 	// Guess filled first, is significantly quicker on some puzzles.
 	for (auto guess : { cell_state::filled, cell_state::empty })

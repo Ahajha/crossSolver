@@ -46,6 +46,8 @@ class nonagram
 		};
 		std::vector<fill> fills;
 		
+		bool needs_line_solving;
+		
 		#ifdef CPUZZLE_DEBUG
 		std::string ID;
 		#endif
