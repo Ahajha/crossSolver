@@ -33,10 +33,7 @@ class nonagram
 		
 		std::vector<cell> grid;
 		
-		/*------------------------------------------------------------
-		A fill has a length and a set of candidate starting positions.
-		------------------------------------------------------------*/
-		
+		// A fill has a length and a set of candidate starting positions.
 		struct fill
 		{
 			unsigned length;
@@ -104,10 +101,17 @@ class nonagram
 	// Thrown when a puzzle is unsolvable
 	struct puzzle_error : std::exception {};
 	
+	// Reads in a nonagram puzzle from an input stream.
 	friend std::istream& operator>>(std::istream& stream, nonagram& CP);
 	
+	// Solves the puzzle, or throws a puzzle_error if unsolvable.
 	void solve();
 	
+	// Returns true if the puzzle is solved. If solve() does not throw, this
+	// will return true.
 	bool isComplete() const;
+	
+	// Creates a bitmap of the solution to this puzzle.
+	// Assumes the puzzle is solved.
 	BMP_24 bitmap() const;
 };

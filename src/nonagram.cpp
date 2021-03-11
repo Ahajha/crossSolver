@@ -9,13 +9,12 @@ nonagram::line::fill::fill(unsigned fl, unsigned start, unsigned end)
 	std::iota(candidates.begin(), candidates.end(), start);
 }
 
-/*------------------------------------------------------
-Constructs a line of with length grd.size(), referencing
-the items in grd, with a given hint list. Offset is the
-offset of the index to the opposite line, should be 0 if
-this line is a column, as it referencing rows, and
-numrows if this line is a row, as it references columns.
-------------------------------------------------------*/
+/*--------------------------------------------------------------------
+Constructs a line of with length grd.size(), referencing the items in
+grd, with a given hint list. Offset is the offset of the index to the
+opposite line, should be 0 if this line is a column, as it referencing
+rows, and numrows if this line is a row, as it references columns.
+--------------------------------------------------------------------*/
 
 nonagram::line::line(auto&& grd, const std::vector<unsigned>& hintList,
 	unsigned offset) : grid(grd.size()), needs_line_solving(true)
@@ -40,9 +39,9 @@ nonagram::line::line(auto&& grd, const std::vector<unsigned>& hintList,
 	}
 }
 
-/*--------------------------------------------------------------
-GetList returns a list containing one line of ints read from in.
---------------------------------------------------------------*/
+/*-------------------------------------------------
+Returns one line of unsigned integers read from in.
+-------------------------------------------------*/
 
 std::vector<unsigned> nonagram::getList(std::istream& in)
 {
@@ -75,9 +74,12 @@ std::vector<unsigned> nonagram::getList(std::istream& in)
 	return L;
 }
 
-// If hintList is empty, fills in the respective line with empty cells.
-// Otherwise, constructs a line object at index idx. References refers
-// to the indexes in grid to which this line would refer to.
+/*-----------------------------------------------------------------
+If hintList is empty, fills in the respective line with empty
+cells. Otherwise, constructs a line object at index idx. References
+refers to the indexes in grid to which this line would refer to.
+-----------------------------------------------------------------*/
+
 void nonagram::evaluateHintList(const std::vector<unsigned>& hintList,
 #ifndef CPUZZLE_DEBUG
 	auto&& references, unsigned idx, unsigned offset)
@@ -180,7 +182,6 @@ std::ostream& operator<<(std::ostream& stream, nonagram::cell_state cs)
 	}
 	return stream;
 }
-
 #endif
 
 /*----------------------------------
@@ -192,10 +193,11 @@ void nonagram::throwIfEmpty(const std::deque<unsigned>& L)
 	if (L.empty()) throw puzzle_error();
 }
 
-/*--------------------------------------------------------------------
-Marks each cell in grid starting at index start and stopping before
-index end to 'value', and increments changesMade for each change made.
---------------------------------------------------------------------*/
+/*---------------------------------------------------------
+Marks each cell in grid starting at index start and
+stopping before index end to 'value'. Throws a puzzle_error
+if any change is inconsistent with the existing value.
+---------------------------------------------------------*/
 
 void nonagram::markInRange(const std::vector<line::cell>& gridReferences,
 	unsigned start, unsigned end, cell_state value)
@@ -372,15 +374,12 @@ void nonagram::removeIncompatible(line& lin)
 	}
 }
 
-/*-----------------------------------------
-Marks items in the grid that are consistent
-with all possibilites in a line.
-Important property: No cells marked will
-cause any fill candidates within this line
-to be invalidated (in other words, there is
-no need to call removeIncompatible after
-markConsistent is called).
------------------------------------------*/
+/*--------------------------------------------------------------------
+Marks items in the grid that are consistent with all possibilites in
+a line. Important property: No cells marked will cause any fill
+candidates within this line to be invalidated (in other words, there
+is no need to call removeIncompatible after markConsistent is called).
+--------------------------------------------------------------------*/
 
 void nonagram::markConsistent(line& lin)
 {
@@ -395,8 +394,8 @@ void nonagram::markConsistent(line& lin)
 	// this point that no other fills can be modified).
 	for (auto& [length,positions] : lin.fills)
 	{
-		// Mark every cell from the last possible start position of the fill
-		// to the first possible end position of the fill. This may not mark anything.
+		// Mark every cell from the last possible start position of the fill to
+		// the first possible end position of the fill. This may not mark anything.
 		markInRange(lin.grid, positions.back(), positions.front() + length,
 			cell_state::filled);
 	}
@@ -435,7 +434,7 @@ void nonagram::markConsistent(line& lin)
 
 /*-------------------------------------------------------------
 Calls removeIncompatible() and markConsistent(), in that order,
-on each line. Throws puzzle_error if any line is unsolvable.
+on each line. Throws a puzzle_error if any line is unsolvable.
 -------------------------------------------------------------*/
 
 void nonagram::line_solve()
@@ -473,10 +472,6 @@ void nonagram::line_solve()
 		}
 	}
 }
-
-/*-----------------------------------------------------------------
-Creates a nonagram from information in an input file, named infile.
------------------------------------------------------------------*/
 
 std::istream& operator>>(std::istream& stream, nonagram& CP)
 {
@@ -544,10 +539,6 @@ std::istream& operator>>(std::istream& stream, nonagram& CP)
 	
 	return stream;
 }
-
-/*--------------------------------------------------
-Solves this, or throws a puzzle_error if unsolvable.
---------------------------------------------------*/
 
 void nonagram::solve()
 {
