@@ -503,15 +503,24 @@ std::istream& operator>>(std::istream& stream, nonagram& CP)
 		std::cout << "Hintlists:\n";
 	#endif
 	
+	// Used to help create views of indexes. Each item in an iota_view
+	// will be mapped to an index, such that all indexes in the view
+	// represent a row or a column, based on what offset and inc are.
+	// A functor is a bit cleaner here, since the formula is the same, and
+	// avoids having to create two very similar lambdas.
+	struct ref_creator
+	{
+		unsigned offset, inc;
+		
+		unsigned operator()(unsigned x) const { return x * inc + offset; }
+	};
+	
 	for (unsigned i = 0; i < CP.numrows; ++i)
 	{
 		auto hintList = nonagram::getList(stream);
 		
 		auto references = std::ranges::iota_view(0u,CP.numcols)
-			| std::views::transform([offset = CP.numcols * i](unsigned x)
-			{
-				return x + offset;
-			});
+			| std::views::transform(ref_creator{CP.numcols * i, 1});
 		
 		#ifndef CPUZZLE_DEBUG
 		CP.evaluateHintList(hintList, references, i);
@@ -526,10 +535,7 @@ std::istream& operator>>(std::istream& stream, nonagram& CP)
 		auto hintList = nonagram::getList(stream);
 		
 		auto references = std::ranges::iota_view(0u,CP.numrows)
-			| std::views::transform([offset = i, inc = CP.numcols](unsigned x)
-			{
-				return x * inc + offset;
-			});
+			| std::views::transform(ref_creator{i, CP.numcols});
 		
 		#ifndef CPUZZLE_DEBUG
 		CP.evaluateHintList(hintList, references, CP.numrows + i);
