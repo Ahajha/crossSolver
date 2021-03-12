@@ -17,7 +17,7 @@ help:
 	@echo "\"make clean\" to remove all generated binary files"
 	@echo "\"make clear_puzzles\" to remove all solution image files from \"Puzzles\" folder"
 
-all: bin/solve bin/solveDebug
+all: bin/solve bin/solveDebug bin/batch_solve
 
 run: bin/solve
 	./bin/solve $(in) $(out)
