@@ -17,6 +17,9 @@ all: bin/solve bin/solveDebug
 run: bin/solve
 	./bin/solve $(file)
 
+batch: bin/batch_solve
+	./bin/batch_solve $(file)
+
 time: bin/solve
 	time -f "\nreal: %E\nuser: %U" ./bin/solve $(file)
 
@@ -24,14 +27,18 @@ debug: bin/solveDebug
 	./bin/solveDebug $(file)
 
 bin/solve: obj/nonagram.o obj/bmp.o obj/solver.o
-	$(LINK) -o bin/solve $^
-
 bin/solveDebug: obj/nonagramDebug.o obj/bmp.o obj/solver.o
-	$(LINK) -o bin/solveDebug $^
+
+bin/%:
+	$(LINK) -o $@ $^
+	
+bin/batch_solve: obj/nonagram.o obj/bmp.o obj/batch_solver.o
+	$(LINK) -pthread -o $@ $^
 
 obj/bmp.o: src/bmp.cpp src/bmp.hpp
 obj/nonagram.o: src/nonagram.cpp src/nonagram.hpp
 obj/solver.o: src/solver.cpp src/bmp.hpp src/nonagram.hpp
+obj/batch_solver.o: src/batch_solver.cpp src/bmp.hpp src/nonagram.hpp
 
 obj/%.o:
 	$(CC) $(CFLAGS) -c $< -o $@
