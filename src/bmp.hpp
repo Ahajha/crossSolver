@@ -45,28 +45,21 @@ BMP_24 can be used to make or modify 24-bit BMP files.
 
 class BMP_24
 {
-	private:
-	
-	int width;
-	int height;
+	unsigned width, height;
 	
 	// Row 0 is the bottom row, column 0 is the left
-	std::vector<std::vector<color_24>> grid;
+	std::vector<color_24> grid;
 	
-	static void writeLittleEndian(int e, std::ostream& out, int numBytes);
+	static void writeLittleEndian(unsigned e, std::ostream& out, unsigned numBytes);
 	
 	public:
 	
-	// Creates a bitmap of specified size (default white)
-	BMP_24(int hgt, int wid);
+	// Creates a bitmap of specified size and base color.
+	// Base color defaults to white.
+	BMP_24(unsigned hgt, unsigned wid, color_24 def = color_24{});
 	
-	// Creates a bitmap of specified size and default color
-	BMP_24(int hgt, int wid, color_24 def);
-	
-	// Loads a bitmap from a file
-	// BMP_24(const char* file);
-
-	color_24& position(int x, int y);
+	color_24& operator()(unsigned x, unsigned y);
+	color_24  operator()(unsigned x, unsigned y) const;
 	
 	friend std::ostream& operator<<(std::ostream& out, const BMP_24& bmp);
 	

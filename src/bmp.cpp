@@ -18,16 +18,13 @@ const color_24 color_24::orange (255,165,0);
 const color_24 color_24::light_brown (181,101,29);
 const color_24 color_24::magenta (255,0,255);
 
-BMP_24::BMP_24 (int hgt, int wid) : width(wid), height(hgt),
-	grid(height,std::vector<color_24>(width)) {}
+BMP_24::BMP_24(unsigned h, unsigned w, color_24 def) : width(w), height(h),
+	grid(w * h, def) {}
 
-BMP_24::BMP_24(int hgt, int wid, color_24 def) : width(wid), height(hgt),
-	grid(height,std::vector<color_24>(width,def)) {}
-
-void BMP_24::writeLittleEndian(int e, std::ostream& out, int numBytes)
+void BMP_24::writeLittleEndian(unsigned e, std::ostream& out, unsigned numBytes)
 {
-	int x = e;
-	for (int i = 0; i < numBytes; ++i)
+	unsigned x = e;
+	for (unsigned i = 0; i < numBytes; ++i)
 	{
 		out << (char)(x % 256);
 		x /= 256;
@@ -35,9 +32,14 @@ void BMP_24::writeLittleEndian(int e, std::ostream& out, int numBytes)
 }
 
 // X is row #
-color_24& BMP_24::position(int x, int y)
+color_24 BMP_24::operator()(unsigned x, unsigned y) const
 {
-	return grid[x][y];
+	return grid[x * width + y];
+}
+
+color_24& BMP_24::operator()(unsigned x, unsigned y)
+{
+	return grid[x * width + y];
 }
 
 void BMP_24::write(const std::string& filename) const
@@ -51,7 +53,8 @@ std::ostream& operator<<(std::ostream& out, const BMP_24& bmp)
 	out << "BM";
 	
 	// Size of the bitmap data, in bytes, including padding. Used twice
-	int bitmapSize = bmp.height*((bmp.width*3)/4)*4 + ((bmp.width%4 != 0) * 4);
+	const unsigned bitmapSize =
+		bmp.height*((bmp.width*3)/4)*4 + ((bmp.width%4 != 0) * 4);
 
 	// Size of the file // Used, only pixel size and amount will change this
 	BMP_24::writeLittleEndian(54 + bitmapSize, out, 4);
@@ -101,14 +104,15 @@ std::ostream& operator<<(std::ostream& out, const BMP_24& bmp)
 	
 	/* Pixel Array */
 	
-	int padding = bmp.width % 4;
+	const unsigned padding = bmp.width % 4;
 	
 	// From the bottom left, going row by row.
-	for (int i = 0; i < bmp.height; ++i)
+	unsigned pos = 0;
+	for (unsigned i = 0; i < bmp.height; ++i)
 	{
-		for (int j = 0; j < bmp.width; ++j)
+		for (unsigned j = 0; j < bmp.width; ++j)
 		{
-			out << bmp.grid[i][j];
+			out << bmp.grid[pos++];
 		}
 		BMP_24::writeLittleEndian(0, out, padding);
 	}
