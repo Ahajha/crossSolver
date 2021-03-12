@@ -20,6 +20,7 @@ column k clues
 
 #include <string>
 #include <fstream>
+#include <filesystem>
 #include "nonagram.hpp"
 
 void parseArgs(int argc, char* argv[])
@@ -29,14 +30,6 @@ void parseArgs(int argc, char* argv[])
 		std::cerr << "usage: " << argv[0] << " infile [outfile]\n";
 		exit(1);
 	}
-}
-
-// Replaces the file extension, if it exists, with ".bmp". If there is no
-// file extension, appends ".bmp". For sake of simplicity, does not work
-// if a file has no extension and a folder in the path has a . in its name.
-std::string getOutFileName(const std::string& inFileName)
-{
-	return std::string(inFileName,0,inFileName.find_last_of('.')) + ".bmp";
 }
 
 int main(int argc, char* argv[])
@@ -71,7 +64,8 @@ int main(int argc, char* argv[])
 	// If the output file name is not given, generate one.
 	// by appending/replacing
 	// the file extention with ".bmp".
-	std::string outFileName = (argc == 3) ? argv[2] : getOutFileName(inFileName);
+	std::string outFileName = (argc == 3) ? argv[2] :
+		std::filesystem::path(inFileName).replace_extension(".bmp");
 	
 	// Make .bmp file
 	puzzle.bitmap().write(outFileName);
