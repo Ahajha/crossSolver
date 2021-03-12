@@ -5,9 +5,14 @@ LINK   = g++
 $(shell mkdir -p bin obj)
 
 help:
-	@echo "\"make all\" to compile"
-	@echo "\"make run file=<filename>\" to compile and run on a given file"
-	@echo "\"make debug file=<filename>\" to compile with debugging and run on a given file"
+	@echo "\"make all\" to compile all executables"
+	@echo "\"make run in=<filename> [out=<filename>]\" to compile and run on a"\
+		"given file, optionally specifying the output file"
+	@echo "\"make debug in=<filename> [out=<filename>]\" to compile with debugging"\
+		"and run on a given file, optionally specifying the output file"
+	@echo "\"make batch in=<foldername> [out=<foldername>]\" to compile and run"\
+		"on all files in a given folder, optionally specifying the folder to"\
+		"place the solution files"
 	@echo "\"make puzzles\" to compile and run on all puzzles in \"Puzzles\" folder"
 	@echo "\"make clean\" to remove all generated binary files"
 	@echo "\"make clear_puzzles\" to remove all solution image files from \"Puzzles\" folder"
@@ -15,16 +20,16 @@ help:
 all: bin/solve bin/solveDebug
 
 run: bin/solve
-	./bin/solve $(file)
+	./bin/solve $(in) $(out)
 
 batch: bin/batch_solve
-	./bin/batch_solve $(file)
+	./bin/batch_solve $(in) $(out)
 
 time: bin/solve
-	time -f "\nreal: %E\nuser: %U" ./bin/solve $(file)
+	time -f "\nreal: %E\nuser: %U" ./bin/solve $(in) $(out)
 
 debug: bin/solveDebug
-	./bin/solveDebug $(file)
+	./bin/solveDebug $(in) $(out)
 
 bin/solve: obj/nonagram.o obj/bmp.o obj/solver.o
 bin/solveDebug: obj/nonagramDebug.o obj/bmp.o obj/solver.o
