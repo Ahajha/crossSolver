@@ -619,7 +619,7 @@ BMP_24 nonagram::bitmap() const
 		{
 			if (grid[pos] == cell_state::filled)
 			{
-				soln(rowNum, j) = color_24::black;
+				soln(rowNum, j) = color_24_consts::black;
 			}
 			// base color is white
 			

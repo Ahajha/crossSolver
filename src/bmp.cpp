@@ -1,23 +1,5 @@
 #include "bmp.hpp"
 
-const color_24 color_24::white (255,255,255);
-const color_24 color_24::light_gray (64,64,64);
-const color_24 color_24::gray (127,127,127);
-const color_24 color_24::dark_gray (192,192,192);
-const color_24 color_24::black (0,0,0);
-
-const color_24 color_24::red (0,0,255);
-const color_24 color_24::blue (255,0,0);
-const color_24 color_24::green (0,255,0);
-
-const color_24 color_24::yellow (255,255,0);
-const color_24 color_24::pink (255,192,203);
-const color_24 color_24::light_blue (173,216,230);
-const color_24 color_24::light_green (144,238,144);
-const color_24 color_24::orange (255,165,0);
-const color_24 color_24::light_brown (181,101,29);
-const color_24 color_24::magenta (255,0,255);
-
 BMP_24::BMP_24(unsigned h, unsigned w, color_24 def) : width(w), height(h),
 	grid(w * h, def) {}
 
