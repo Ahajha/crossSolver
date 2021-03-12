@@ -22,24 +22,27 @@ column k clues
 #include <fstream>
 #include "nonagram.hpp"
 
-std::string parseArgs(int args, char* argv[])
+void parseArgs(int argc, char* argv[])
 {
-	if (args != 2)
+	if (argc < 2 || 3 < argc)
 	{
-		std::cerr << "Input format: " << argv[0] << " inputFileName\n";
+		std::cerr << "usage: " << argv[0] << " infile [outfile]\n";
 		exit(1);
 	}
-	return argv[1];
 }
 
+// Replaces the file extension, if it exists, with ".bmp". If there is no
+// file extension, appends ".bmp". For sake of simplicity, does not work
+// if a file has no extension and a folder in the path has a . in its name.
 std::string getOutFileName(const std::string& inFileName)
 {
 	return std::string(inFileName,0,inFileName.find_last_of('.')) + ".bmp";
 }
 
-int main(int args, char* argv[])
+int main(int argc, char* argv[])
 {
-	std::string inFileName = parseArgs(args, argv);
+	parseArgs(argc, argv);
+	const auto inFileName = argv[1];
 	
 	nonagram puzzle;
 	
@@ -58,17 +61,21 @@ int main(int args, char* argv[])
 	try
 	{
 		puzzle.solve();
-		
-		// Make .bmp file
-		std::string outFileName = getOutFileName(inFileName);
-		puzzle.bitmap().write(outFileName);
-		
-		std::cout << "Solution image written to file \""
-			<<  outFileName << "\"." << std::endl;
 	}
 	catch (nonagram::puzzle_error&)
 	{
 		std::cerr << "No solution.\n";
 		return 1;
 	}
+	
+	// If the output file name is not given, generate one.
+	// by appending/replacing
+	// the file extention with ".bmp".
+	std::string outFileName = (argc == 3) ? argv[2] : getOutFileName(inFileName);
+	
+	// Make .bmp file
+	puzzle.bitmap().write(outFileName);
+	
+	std::cout << "Solution image written to file \""
+		<<  outFileName << "\"." << std::endl;
 }
