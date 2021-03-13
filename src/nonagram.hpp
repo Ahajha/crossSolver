@@ -68,7 +68,7 @@ class nonagram
 	unsigned lines_to_solve;
 	
 	// Methods related to input
-	static std::vector<unsigned> getList(std::istream& in);
+	static void getList(std::istream& in, std::vector<unsigned>& L);
 	
 	void evaluateHintList(const std::vector<unsigned>& hintList,
 	#ifndef CPUZZLE_DEBUG

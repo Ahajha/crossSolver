@@ -43,10 +43,9 @@ nonagram::line::line(auto&& grd, const std::vector<unsigned>& hintList,
 Returns one line of unsigned integers read from in.
 -------------------------------------------------*/
 
-std::vector<unsigned> nonagram::getList(std::istream& in)
+void nonagram::getList(std::istream& in, std::vector<unsigned>& L)
 {
 	unsigned temp;
-	std::vector<unsigned> L;
 	
 	// There will always be at least one number
 	in >> temp;
@@ -70,8 +69,6 @@ std::vector<unsigned> nonagram::getList(std::istream& in)
 	{
 		L.pop_back();
 	}
-	
-	return L;
 }
 
 /*-----------------------------------------------------------------
@@ -494,9 +491,10 @@ std::istream& operator>>(std::istream& stream, nonagram& CP)
 		unsigned operator()(unsigned x) const { return x * inc + offset; }
 	};
 	
+	std::vector<unsigned> hintList;
 	for (unsigned i = 0; i < CP.numrows; ++i)
 	{
-		auto hintList = nonagram::getList(stream);
+		nonagram::getList(stream, hintList);
 		
 		auto references = std::ranges::iota_view(0u,CP.numcols)
 			| std::views::transform(ref_creator{CP.numcols * i, 1});
@@ -507,11 +505,13 @@ std::istream& operator>>(std::istream& stream, nonagram& CP)
 		CP.evaluateHintList(hintList, references, i, CP.numrows,
 			std::string("Row ") + std::to_string(i));
 		#endif
+		
+		hintList.clear();
 	}
 	
 	for (unsigned i = 0; i < CP.numcols; ++i)
 	{
-		auto hintList = nonagram::getList(stream);
+		nonagram::getList(stream, hintList);
 		
 		auto references = std::ranges::iota_view(0u,CP.numrows)
 			| std::views::transform(ref_creator{i, CP.numcols});
@@ -522,6 +522,8 @@ std::istream& operator>>(std::istream& stream, nonagram& CP)
 		CP.evaluateHintList(hintList, references, CP.numrows + i, 0,
 			std::string("Column ") + std::to_string(i));
 		#endif
+		
+		hintList.clear();
 	}
 	
 	#ifdef CPUZZLE_DEBUG
