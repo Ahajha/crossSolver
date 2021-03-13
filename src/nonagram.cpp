@@ -48,14 +48,22 @@ void nonagram::getList(std::istream& in, std::vector<unsigned>& L)
 	unsigned temp;
 	
 	// There will always be at least one number
-	in >> temp;
+	if (!(in >> temp))
+	{
+		in.setstate(std::ios_base::failbit);
+		return;
+	}
 	L.push_back(temp);
 	
-	for (int c = in.peek(); c != '\n' && !in.eof(); c = in.peek())
+	for (int c; (c = in.peek()) != '\n' && in;)
 	{
 		if ('0' <= c && c <= '9')
 		{
-			in >> temp;
+			if (!(in >> temp))
+			{
+				in.setstate(std::ios_base::failbit);
+				return;
+			}
 			L.push_back(temp);
 		}
 		else
