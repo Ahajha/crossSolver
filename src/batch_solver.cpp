@@ -9,9 +9,9 @@ namespace stdfs = std::filesystem;
 
 void parseArgs(int argc, const char* argv[])
 {
-	if (argc < 2 || 3 < argc)
+	if (argc != 3)
 	{
-		std::cerr << "usage: " << argv[0] << " infolder [outfolder]\n";
+		std::cerr << "usage: " << argv[0] << " infolder outfolder\n";
 		exit(1);
 	}
 }
@@ -84,12 +84,9 @@ void solve(const stdfs::path infile, const stdfs::path outfile)
 int main(int argc, const char* argv[])
 {
 	parseArgs(argc,argv);
-	stdfs::path infolder(argv[1]);
+	stdfs::path infolder(argv[1]), outfolder(argv[2]);
 	
 	ctpl::thread_pool pool;
-	
-	// The default output path by default is a subfolder called "solutions".
-	auto outfolder = (argc == 2) ? infolder/"solutions" : stdfs::path(argv[2]);
 	
 	stdfs::create_directories(outfolder);
 	

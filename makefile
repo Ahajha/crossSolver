@@ -10,9 +10,9 @@ help:
 		"given file, optionally specifying the output file"
 	@echo "\"make debug in=<filename> [out=<filename>]\" to compile with debugging"\
 		"and run on a given file, optionally specifying the output file"
-	@echo "\"make batch in=<foldername> [out=<foldername>]\" to compile and run"\
-		"on all files in a given folder, optionally specifying the folder to"\
-		"place the solution files"
+	@echo "\"make batch in=<foldername> out=<foldername>\" to compile and run"\
+		"on all files in a given folder, placing all solutions in a second"\
+		"given folder"
 	@echo "\"make puzzles\" to compile and run on all puzzles in \"Puzzles\" folder"
 	@echo "\"make clean\" to remove all generated binary files"
 	@echo "\"make clear_puzzles\" to remove all solution image files from \"Puzzles\" folder"
