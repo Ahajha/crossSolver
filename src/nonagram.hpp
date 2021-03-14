@@ -7,10 +7,6 @@
 #include <deque>
 #include "bmp.hpp"
 
-#ifdef CPUZZLE_DEBUG
-#include <string>
-#endif
-
 class nonagram
 {
 	enum class cell_state : int { unknown, filled, empty };
@@ -45,10 +41,6 @@ class nonagram
 		
 		bool needs_line_solving;
 		
-		#ifdef CPUZZLE_DEBUG
-		std::string ID;
-		#endif
-		
 		line(auto&& grd, const std::vector<unsigned>& hintList, unsigned offset);
 	};
 	
@@ -71,11 +63,7 @@ class nonagram
 	static void getList(std::istream& in, std::vector<unsigned>& L);
 	
 	void evaluateHintList(const std::vector<unsigned>& hintList,
-	#ifndef CPUZZLE_DEBUG
 		auto&& references, unsigned idx, unsigned offset);
-	#else
-		auto&& references, unsigned idx, unsigned offset, std::string&& ID);
-	#endif
 	
 	// Debugging methods
 	#ifdef CPUZZLE_DEBUG

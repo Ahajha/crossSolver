@@ -78,14 +78,9 @@ refers to the indexes in grid to which this line would refer to.
 -----------------------------------------------------------------*/
 
 void nonagram::evaluateHintList(const std::vector<unsigned>& hintList,
-#ifndef CPUZZLE_DEBUG
 	auto&& references, unsigned idx, unsigned offset)
-#else
-	auto&& references, unsigned idx, unsigned offset, std::string&& ID)
-#endif
 {
 	#ifdef CPUZZLE_DEBUG
-		std::cout << "    " << ID << ": ";
 		for (unsigned hint : hintList) std::cout << hint << ' ';
 		std::cout << '\n';
 	#endif
@@ -103,16 +98,13 @@ void nonagram::evaluateHintList(const std::vector<unsigned>& hintList,
 	else
 	{
 		lines[idx].emplace(references, hintList, offset);
-		#ifdef CPUZZLE_DEBUG
-		lines[idx]->ID = std::move(ID);
-		#endif
 	}
 }
 
 #ifdef CPUZZLE_DEBUG
 std::ostream& operator<<(std::ostream& stream, const nonagram::line& lin)
 {
-	stream << lin.ID << ". Fills:\n";
+	stream << " Fills:\n";
 	
 	for (const auto& [length, candidates] : lin.fills)
 	{
@@ -135,11 +127,19 @@ std::ostream& operator<<(std::ostream& stream, const nonagram& CP)
 	stream << "Rows: " << CP.numrows << ", Columns: " << CP.numcols << "\n\n";
 	
 	// If CP is complete, this will print nothing
-	for (auto& lin : CP.lines)
+	for (unsigned i = 0; i < CP.numrows; ++i)
 	{
-		if (lin)
+		if (CP.lines[i])
 		{
-			stream << *lin;
+			stream << "Row " << i << ":" << *(CP.lines[i]);
+		}
+	}
+	
+	for (unsigned i = CP.numrows; i < CP.lines.size(); ++i)
+	{
+		if (CP.lines[i])
+		{
+			stream << "Column " << (i - CP.numrows) << ":" << *(CP.lines[i]);
 		}
 	}
 	
@@ -499,12 +499,11 @@ std::istream& operator>>(std::istream& stream, nonagram& CP)
 		auto references = std::ranges::iota_view(0u,CP.numcols)
 			| std::views::transform(ref_creator{CP.numcols * i, 1});
 		
-		#ifndef CPUZZLE_DEBUG
-		CP.evaluateHintList(hintList, references, i, CP.numrows);
-		#else
-		CP.evaluateHintList(hintList, references, i, CP.numrows,
-			std::string("Row ") + std::to_string(i));
+		#ifdef CPUZZLE_DEBUG
+			std::cout << "    Row " << i << ": ";
 		#endif
+		
+		CP.evaluateHintList(hintList, references, i, CP.numrows);
 		
 		hintList.clear();
 	}
@@ -516,12 +515,11 @@ std::istream& operator>>(std::istream& stream, nonagram& CP)
 		auto references = std::ranges::iota_view(0u,CP.numrows)
 			| std::views::transform(ref_creator{i, CP.numcols});
 		
-		#ifndef CPUZZLE_DEBUG
-		CP.evaluateHintList(hintList, references, CP.numrows + i, 0);
-		#else
-		CP.evaluateHintList(hintList, references, CP.numrows + i, 0,
-			std::string("Column ") + std::to_string(i));
+		#ifdef CPUZZLE_DEBUG
+			std::cout << "    Column " << i << ": ";
 		#endif
+		
+		CP.evaluateHintList(hintList, references, CP.numrows + i, 0);
 		
 		hintList.clear();
 	}
