@@ -54,10 +54,5 @@ obj/nonagramDebug.o: src/nonagram.cpp src/nonagram.hpp
 clean: 
 	rm -f bin/* obj/*
 
-puzzles: bin/solve
-	$(foreach puzzle_file, $(wildcard Puzzles/puzzle*.txt),\
-		./bin/solve $(puzzle_file);\
-	)
-
-clear_puzzles:
-	rm Puzzles/*.bmp
+puzzles: bin/batch_solve
+	./bin/batch_solve puzzles solutions
