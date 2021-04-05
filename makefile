@@ -1,4 +1,4 @@
-CFLAGS = -std=c++20 -g -Wall -Wextra -Wshadow -Wuninitialized -Wpedantic -O3
+CFLAGS = -std=c++20 -g -Wall -Wextra -Wshadow -Wpedantic -O3
 CC     = g++
 LINK   = g++
 
