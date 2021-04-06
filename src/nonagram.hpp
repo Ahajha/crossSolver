@@ -74,7 +74,7 @@ class nonagram
 	
 	// Methods related to solving
 	static void throwIfEmpty(const std::deque<unsigned>& L);
-	void markInRange(const std::vector<line::cell>& gridReferences,
+	void markInRange(std::vector<line::cell>& gridReferences,
 		unsigned start, unsigned end, cell_state value);
 	
 	bool isComplete(const line& lin) const;

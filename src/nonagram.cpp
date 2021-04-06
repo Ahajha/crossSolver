@@ -187,7 +187,7 @@ stopping before index end to 'value'. Throws a puzzle_error
 if any change is inconsistent with the existing value.
 ---------------------------------------------------------*/
 
-void nonagram::markInRange(const std::vector<line::cell>& gridReferences,
+void nonagram::markInRange(std::vector<line::cell>& gridReferences,
 	unsigned start, unsigned end, cell_state value)
 {
 	for (unsigned i = start; i < end; ++i)
@@ -196,6 +196,10 @@ void nonagram::markInRange(const std::vector<line::cell>& gridReferences,
 		{
 			grid[gridReferences[i].ref_index] = value;
 			lines[gridReferences[i].opposite_line]->needs_line_solving = true;
+			
+			// As proven below, marking cells cannot cause incompatible fills,
+			// so we can mark cells in this fill as already having the rule done.
+			gridReferences[i].rules_used = true;
 		}
 		else if (grid[gridReferences[i].ref_index] != value)
 		{
