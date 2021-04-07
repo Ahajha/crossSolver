@@ -17,11 +17,11 @@ rows, and numrows if this line is a row, as it references columns.
 --------------------------------------------------------------------*/
 
 nonagram::line::line(auto&& grd, const std::vector<unsigned>& hintList,
-	unsigned offset) : grid(grd.size()), needs_line_solving(true)
+	bool is_r) : grid(grd.size()), needs_line_solving(true), is_row(is_r)
 {
 	for (unsigned i = 0; i < grd.size(); ++i)
 	{
-		grid[i] = { grd[i], i + offset, false };
+		grid[i] = { grd[i] };
 	}
 	
 	fills.reserve(hintList.size());
@@ -187,23 +187,63 @@ stopping before index end to 'value'. Throws a puzzle_error
 if any change is inconsistent with the existing value.
 ---------------------------------------------------------*/
 
-void nonagram::markInRange(std::vector<line::cell>& gridReferences,
+void nonagram::markInRange(line& lin,
 	unsigned start, unsigned end, cell_state value)
 {
 	for (unsigned i = start; i < end; ++i)
 	{
-		if (grid[gridReferences[i].ref_index] == cell_state::unknown)
+		const unsigned ref_index = lin.grid[i].ref_index;
+		if (grid[ref_index] == cell_state::unknown)
 		{
-			grid[gridReferences[i].ref_index] = value;
-			lines[gridReferences[i].opposite_line]->needs_line_solving = true;
+			grid[ref_index] = value;
 			
-			// As proven below, marking cells cannot cause incompatible fills,
-			// so we can mark cells in this fill as already having the rule done.
-			gridReferences[i].rules_used = true;
+			const unsigned opposite_index = lin.is_row
+				? (ref_index / numcols) : (ref_index % numcols);
+			
+			const unsigned opposite_line = lin.is_row
+				? (ref_index % numcols + numrows) : (ref_index / numcols);
+			
+			lines[opposite_line]->needs_line_solving = true;
+			
+			performSingleCellRules(value, opposite_line, opposite_index);
 		}
-		else if (grid[gridReferences[i].ref_index] != value)
+		else if (grid[ref_index] != value)
 		{
 			throw puzzle_error();
+		}
+	}
+}
+
+void nonagram::performSingleCellRules(cell_state value, unsigned lin, unsigned idx)
+{
+	if (value == cell_state::filled)
+	{
+		for (auto& [length,positions] : lines[lin]->fills)
+		{
+			// If the filled space is immediately before or after
+			// a possible fill, remove the possibility.
+			
+			std::erase_if(positions, [idx,length](unsigned start)
+			{
+				return (start == idx + 1) || (start + length == idx);
+			});
+			
+			throwIfEmpty(positions);
+		}
+	}
+	else
+	{
+		for (auto& [length,positions] : lines[lin]->fills)
+		{
+			// If the empty space is within the fill,
+			// remove the possibility.
+			
+			std::erase_if(positions, [idx,length](unsigned start)
+			{
+				return (start <= idx) && (idx < start + length);
+			});
+			
+			throwIfEmpty(positions);
 		}
 	}
 }
@@ -230,50 +270,8 @@ void nonagram::removeIncompatible(line& lin)
 	// Check each position for a space that has recently been marked
 	for (unsigned i = 0; i < lin.grid.size(); ++i)
 	{
-		if (grid[lin.grid[i].ref_index] == cell_state::empty)
+		if (grid[lin.grid[i].ref_index] == cell_state::filled)
 		{
-			// If this rule has not been applied yet, do so.
-			if (!lin.grid[i].rules_used)
-			{
-				lin.grid[i].rules_used = true;
-				
-				// Remove due to empty spaces
-				for (auto& [length,positions] : lin.fills)
-				{
-					// If the empty space is within the fill,
-					// remove the possibility.
-					
-					std::erase_if(positions, [i,length](unsigned start)
-					{
-						return (start <= i) && (i < start + length);
-					});
-					
-					throwIfEmpty(positions);
-				}
-			}
-		}
-		else if (grid[lin.grid[i].ref_index] == cell_state::filled)
-		{
-			// If this rule has not been applied yet, do so.
-			if (!lin.grid[i].rules_used)
-			{
-				lin.grid[i].rules_used = true;
-				
-				// Remove due to filled spaces
-				for (auto& [length,positions] : lin.fills)
-				{
-					// If the filled space is immediately before or after
-					// a possible fill, remove the possibility.
-					
-					std::erase_if(positions, [i,length](unsigned start)
-					{
-						return (start == i + 1) || (start + length == i);
-					});
-					
-					throwIfEmpty(positions);
-				}
-			}
-			
 			// These rules should be done regardless, as they may change over time.
 			
 			// Filled space cannot fall between two adjacent fills
@@ -388,7 +386,7 @@ void nonagram::markConsistent(line& lin)
 	{
 		// Mark every cell from the last possible start position of the fill to
 		// the first possible end position of the fill. This may not mark anything.
-		markInRange(lin.grid, positions.back(), positions.front() + length,
+		markInRange(lin, positions.back(), positions.front() + length,
 			cell_state::filled);
 	}
 	
@@ -401,7 +399,7 @@ void nonagram::markConsistent(line& lin)
 	// Mark every cell that is before all possible start positions of the first
 	// fill as empty.
 	
-	markInRange(lin.grid, 0, lin.fills[0].candidates.front(), cell_state::empty);
+	markInRange(lin, 0, lin.fills[0].candidates.front(), cell_state::empty);
 	
 	// Mark every cell that is after all possible end positions of the last
 	// fill as empty.
@@ -409,7 +407,7 @@ void nonagram::markConsistent(line& lin)
 	unsigned lastoflast = lin.fills.back().candidates.back()
 		+ lin.fills.back().length;
 	
-	markInRange(lin.grid, lastoflast, lin.grid.size(), cell_state::empty);
+	markInRange(lin, lastoflast, lin.grid.size(), cell_state::empty);
 	
 	// For each consecutive pair of fills, fill any gaps between
 	// the last possibility of the first and the first possibility
@@ -420,7 +418,7 @@ void nonagram::markConsistent(line& lin)
 			+ lin.fills[i - 1].length;
 		unsigned firstoflast = lin.fills[i].candidates.front();
 		
-		markInRange(lin.grid, lastoffirst, firstoflast, cell_state::empty);
+		markInRange(lin, lastoffirst, firstoflast, cell_state::empty);
 	}
 }
 
@@ -507,7 +505,7 @@ std::istream& operator>>(std::istream& stream, nonagram& CP)
 			std::cout << "    Row " << i << ": ";
 		#endif
 		
-		CP.evaluateHintList(hintList, references, i, CP.numrows);
+		CP.evaluateHintList(hintList, references, i, true);
 		
 		hintList.clear();
 	}
@@ -523,7 +521,7 @@ std::istream& operator>>(std::istream& stream, nonagram& CP)
 			std::cout << "    Column " << i << ": ";
 		#endif
 		
-		CP.evaluateHintList(hintList, references, CP.numrows + i, 0);
+		CP.evaluateHintList(hintList, references, CP.numrows + i, false);
 		
 		hintList.clear();
 	}
@@ -561,9 +559,11 @@ void nonagram::solve()
 	unsigned pos = 0;
 	while (grid[pos] != cell_state::unknown) ++pos;
 	
+	const unsigned rownum = pos / numcols, colnum = pos % numcols;
+	
 	// Mark the affected row and column, respectfully, as needing line solving.
-	lines[pos / numcols]->needs_line_solving = true;
-	lines[numrows + pos % numcols]->needs_line_solving = true;
+	lines[rownum]->needs_line_solving = true;
+	lines[numrows + colnum]->needs_line_solving = true;
 	
 	// For now, naively guess filled. This guess will be improved in the future.
 	auto guess = cell_state::filled;
@@ -581,6 +581,10 @@ void nonagram::solve()
 	
 	try
 	{
+		// Perform single cell rules on row, then column.
+		copy.performSingleCellRules(guess, rownum, colnum);
+		copy.performSingleCellRules(guess, numrows + colnum, rownum);
+		
 		copy.solve();
 		std::swap(copy,*this);
 		return;
@@ -599,6 +603,10 @@ void nonagram::solve()
 	// No need to use the copy anymore, if this solves the puzzle the solution
 	// is already in place, if not, the puzzle is "junk" anyways.
 	grid[pos] = guess;
+	
+	// Perform single cell rules on row, then column.
+	performSingleCellRules(guess, rownum, colnum);
+	performSingleCellRules(guess, colnum + numrows, rownum);
 	
 	// Since this is the last attempt, if this throws, let the error escalate.
 	solve();

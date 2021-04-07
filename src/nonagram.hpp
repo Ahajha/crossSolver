@@ -17,14 +17,6 @@ class nonagram
 		{
 			// The index in the host nonogram's grid to which this refers.
 			unsigned ref_index;
-			
-			// If this cell represents row x, column y, then if this line is
-			// a row, then this is y, and for a column, x.
-			unsigned opposite_line;
-			
-			// True if a certain set of rules (in removeIncompatible) have
-			// been used with this cell.
-			bool rules_used;
 		};
 		
 		std::vector<cell> grid;
@@ -39,9 +31,9 @@ class nonagram
 		};
 		std::vector<fill> fills;
 		
-		bool needs_line_solving;
+		bool needs_line_solving, is_row;
 		
-		line(auto&& grd, const std::vector<unsigned>& hintList, unsigned offset);
+		line(auto&& grd, const std::vector<unsigned>& hintList, bool is_r);
 	};
 	
 	// Variables
@@ -74,8 +66,10 @@ class nonagram
 	
 	// Methods related to solving
 	static void throwIfEmpty(const std::deque<unsigned>& L);
-	void markInRange(std::vector<line::cell>& gridReferences,
+	void markInRange(line& lin,
 		unsigned start, unsigned end, cell_state value);
+	
+	void performSingleCellRules(cell_state value, unsigned lin, unsigned idx);
 	
 	bool isComplete(const line& lin) const;
 	
