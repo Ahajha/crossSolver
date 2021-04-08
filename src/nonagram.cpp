@@ -16,14 +16,9 @@ opposite line, should be 0 if this line is a column, as it referencing
 rows, and numrows if this line is a row, as it references columns.
 --------------------------------------------------------------------*/
 
-nonagram::line::line(auto&& grd, const std::vector<unsigned>& hintList,
-	bool is_r) : grid(grd.size()), needs_line_solving(true), is_row(is_r)
+nonagram::line::line(index_generator<>&& refs, const std::vector<unsigned>& hintList,
+	bool is_r) : grid(refs), needs_line_solving(true), is_row(is_r)
 {
-	for (unsigned i = 0; i < grd.size(); ++i)
-	{
-		grid[i] = { grd[i] };
-	}
-	
 	fills.reserve(hintList.size());
 	
 	unsigned sum = 0;
@@ -77,8 +72,8 @@ cells. Otherwise, constructs a line object at index idx. References
 refers to the indexes in grid to which this line would refer to.
 -----------------------------------------------------------------*/
 
-void nonagram::evaluateHintList(const std::vector<unsigned>& hintList,
-	auto&& references, unsigned idx, unsigned offset)
+void nonagram::evaluateHintList(index_generator<>&& refs,
+		const std::vector<unsigned>& hintList, unsigned idx, bool is_r)
 {
 	#ifdef CPUZZLE_DEBUG
 		for (unsigned hint : hintList) std::cout << hint << ' ';
@@ -87,7 +82,7 @@ void nonagram::evaluateHintList(const std::vector<unsigned>& hintList,
 	
 	if (hintList.empty())
 	{
-		for (unsigned ref : references)
+		for (unsigned ref : refs)
 		{
 			grid[ref] = cell_state::empty;
 		}
@@ -97,7 +92,7 @@ void nonagram::evaluateHintList(const std::vector<unsigned>& hintList,
 	}
 	else
 	{
-		lines[idx].emplace(references, hintList, offset);
+		lines[idx].emplace(std::forward<index_generator<>>(refs), hintList, is_r);
 	}
 }
 
@@ -190,9 +185,10 @@ if any change is inconsistent with the existing value.
 void nonagram::markInRange(line& lin,
 	unsigned start, unsigned end, cell_state value)
 {
-	for (unsigned i = start; i < end; ++i)
+	const auto end_iter = lin.grid.begin() + end;
+	for (auto iter = lin.grid.begin() + start; iter < end_iter; ++iter)
 	{
-		const unsigned ref_index = lin.grid[i].ref_index;
+		const unsigned ref_index = *iter;
 		if (grid[ref_index] == cell_state::unknown)
 		{
 			grid[ref_index] = value;
@@ -250,9 +246,9 @@ void nonagram::performSingleCellRules(cell_state value, unsigned lin, unsigned i
 
 bool nonagram::isComplete(const line& lin) const
 {
-	for (const auto& ref : lin.grid)
+	for (const auto ref : lin.grid)
 	{
-		if (grid[ref.ref_index] == cell_state::unknown)
+		if (grid[ref] == cell_state::unknown)
 		{
 			return false;
 		}
@@ -270,7 +266,7 @@ void nonagram::removeIncompatible(line& lin)
 	// Check each position for a space that has recently been marked
 	for (unsigned i = 0; i < lin.grid.size(); ++i)
 	{
-		if (grid[lin.grid[i].ref_index] == cell_state::filled)
+		if (grid[lin.grid[i]] == cell_state::filled)
 		{
 			// These rules should be done regardless, as they may change over time.
 			
@@ -481,31 +477,17 @@ std::istream& operator>>(std::istream& stream, nonagram& CP)
 		std::cout << "Hintlists:\n";
 	#endif
 	
-	// Used to help create views of indexes. Each item in an iota_view
-	// will be mapped to an index, such that all indexes in the view
-	// represent a row or a column, based on what offset and inc are.
-	// A functor is a bit cleaner here, since the formula is the same, and
-	// avoids having to create two very similar lambdas.
-	struct ref_creator
-	{
-		unsigned offset, inc;
-		
-		unsigned operator()(unsigned x) const { return x * inc + offset; }
-	};
-	
 	std::vector<unsigned> hintList;
 	for (unsigned i = 0; i < CP.numrows; ++i)
 	{
 		nonagram::getList(stream, hintList);
 		
-		auto references = std::ranges::iota_view(0u,CP.numcols)
-			| std::views::transform(ref_creator{CP.numcols * i, 1});
-		
 		#ifdef CPUZZLE_DEBUG
 			std::cout << "    Row " << i << ": ";
 		#endif
 		
-		CP.evaluateHintList(hintList, references, i, true);
+		CP.evaluateHintList(index_generator(CP.numcols * i, 1u, CP.numcols),
+			hintList, i, true);
 		
 		hintList.clear();
 	}
@@ -514,14 +496,12 @@ std::istream& operator>>(std::istream& stream, nonagram& CP)
 	{
 		nonagram::getList(stream, hintList);
 		
-		auto references = std::ranges::iota_view(0u,CP.numrows)
-			| std::views::transform(ref_creator{i, CP.numcols});
-		
 		#ifdef CPUZZLE_DEBUG
 			std::cout << "    Column " << i << ": ";
 		#endif
 		
-		CP.evaluateHintList(hintList, references, CP.numrows + i, false);
+		CP.evaluateHintList(index_generator(i, CP.numcols, CP.numrows),
+			hintList, CP.numrows + i, false);
 		
 		hintList.clear();
 	}

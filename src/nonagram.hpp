@@ -6,6 +6,7 @@
 #include <optional>
 #include <deque>
 #include "bmp.hpp"
+#include "index_generator.hpp"
 
 class nonagram
 {
@@ -13,13 +14,7 @@ class nonagram
 	
 	struct line
 	{
-		struct cell
-		{
-			// The index in the host nonogram's grid to which this refers.
-			unsigned ref_index;
-		};
-		
-		std::vector<cell> grid;
+		const index_generator<> grid;
 		
 		// A fill has a length and a set of candidate starting positions.
 		struct fill
@@ -33,7 +28,7 @@ class nonagram
 		
 		bool needs_line_solving, is_row;
 		
-		line(auto&& grd, const std::vector<unsigned>& hintList, bool is_r);
+		line(index_generator<>&& refs, const std::vector<unsigned>& hintList, bool is_r);
 	};
 	
 	// Variables
@@ -54,8 +49,8 @@ class nonagram
 	// Methods related to input
 	static void getList(std::istream& in, std::vector<unsigned>& L);
 	
-	void evaluateHintList(const std::vector<unsigned>& hintList,
-		auto&& references, unsigned idx, unsigned offset);
+	void evaluateHintList(index_generator<>&& refs,
+		const std::vector<unsigned>& hintList, unsigned idx, bool is_r);
 	
 	// Debugging methods
 	#ifdef CPUZZLE_DEBUG
