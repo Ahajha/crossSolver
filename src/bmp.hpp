@@ -2,6 +2,7 @@
 
 #include <fstream>
 #include <vector>
+#include <cstdint>
 
 /*-----------------------------------------
 A color_24 is a 24 bit color. Contains BGR.
@@ -9,7 +10,7 @@ A color_24 is a 24 bit color. Contains BGR.
 
 struct color_24
 {
-	uint8_t B, G, R;
+	std::uint8_t B, G, R;
 	
 	friend std::ostream& operator<<(std::ostream& out, const color_24& col);
 };

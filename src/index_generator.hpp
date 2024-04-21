@@ -59,12 +59,12 @@ class index_generator
 		constexpr iterator& operator-=(std::integral auto shift_amount) noexcept
 			{ value -= (shift_amount * inc_amount); return *this; }
 		
-		[[nodiscard]] constexpr bool operator==(const iterator& other) noexcept
+		[[nodiscard]] constexpr bool operator==(const iterator& other) const noexcept
 		{
 			return value == other.value;
 		}
 		
-		[[nodiscard]] constexpr std::strong_ordering operator<=>(const iterator& other) noexcept
+		[[nodiscard]] constexpr std::strong_ordering operator<=>(const iterator& other) const noexcept
 		{
 			return value <=> other.value;
 		}

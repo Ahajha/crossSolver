@@ -24,7 +24,7 @@ nonagram::line::line(index_generator<>&& refs, const std::vector<unsigned>& hint
 	unsigned sum = 0;
 	for (unsigned hint : hintList) sum += hint;
 	
-	unsigned extraSpace = grid.size() - (sum + hintList.size() - 1);
+	unsigned extraSpace = grid.size() - (sum + static_cast<unsigned>(hintList.size()) - 1);
 	
 	unsigned minPos = 0;
 	for (unsigned hint : hintList)
@@ -335,7 +335,7 @@ void nonagram::removeIncompatible(line& lin)
 	
 	// Push-back correcting. This loop goes backwards, since pushing a fill
 	// backwards can affect fills before it.
-	for (unsigned i = lin.fills.size() - 1; i > 0; --i)
+	for (unsigned i = static_cast<unsigned>(lin.fills.size()) - 1; i > 0; --i)
 	{
 		// Suppose a given fill is placed in the last available position. Any
 		// cells it occupies cannot possibly be filled by the previous fill, or
@@ -428,7 +428,7 @@ void nonagram::line_solve()
 	// Index of the last line that was line solved in this method call,
 	// starts as an unreachable value. It is assumed that at least one line
 	// is marked for line solving.
-	unsigned last_solved = lines.size();
+	unsigned last_solved = static_cast<unsigned>(lines.size());
 	while (true)
 	{
 		for (unsigned i = 0; i < lines.size(); ++i)
