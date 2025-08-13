@@ -1,0 +1,30 @@
+load("@rules_cc//cc:cc_binary.bzl", "cc_binary")
+load("@rules_cc//cc:cc_library.bzl", "cc_library")
+
+cc_library(
+    name = "nonagram",
+    srcs = [
+        "src/bmp.cpp",
+        "src/nonagram.cpp",
+    ],
+    hdrs = [
+        "src/bmp.hpp",
+        "src/index_generator.hpp",
+        "src/nonagram.hpp",
+    ],
+)
+
+cc_binary(
+    name = "batch_solver",
+    srcs = ["src/batch_solver.cpp"],
+    deps = [
+        ":nonagram",
+        "@ctpl",
+    ],
+)
+
+cc_binary(
+    name = "solver",
+    srcs = ["src/solver.cpp"],
+    deps = [":nonagram"],
+)

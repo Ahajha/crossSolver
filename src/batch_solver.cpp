@@ -3,7 +3,7 @@
 #include <filesystem>
 #include <chrono>
 #include "nonagram.hpp"
-#include "../CTPL/ctpl_stl.h"
+#include "ctpl_stl.h"
 
 namespace stdfs = std::filesystem;
 

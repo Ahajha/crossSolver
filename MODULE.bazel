@@ -1,0 +1,19 @@
+"""Nonagram solver"""
+
+bazel_dep(name = "rules_cc", version = "0.2.0")
+
+http_archive = use_repo_rule("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+
+http_archive(
+    name = "ctpl",
+    build_file_content = """
+cc_library(
+    name = "ctpl",
+    hdrs = ["ctpl_stl.h", "tpp/ctpl_stl.tpp"],
+    visibility = ["//visibility:public"],
+)
+""",
+    strip_prefix = "CTPL-a93cc7caa0c27760e74bf8eb493e80bb27a781de",
+    sha256 = "00ea87d80dc97c9509737ecdf82d66260874fb099815d8ebcf01c00d16fb631c",
+    url = "https://github.com/Ahajha/CTPL/archive/a93cc7caa0c27760e74bf8eb493e80bb27a781de.tar.gz",
+)
