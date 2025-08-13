@@ -16,19 +16,6 @@ void parseArgs(int argc, const char* argv[])
 	}
 }
 
-struct solve_status
-{
-	struct time_block
-	{
-		std::chrono::duration<double, std::milli> input_time;
-		std::chrono::duration<double, std::ratio<1>> solve_time;
-		std::chrono::duration<double, std::milli> output_time;
-		std::chrono::duration<double, std::ratio<1>> total_time;
-	};
-	
-	std::optional<time_block> times;
-};
-
 void solve(const stdfs::path infile, const stdfs::path outfile)
 {
 	static std::mutex iomut;
