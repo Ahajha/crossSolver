@@ -167,22 +167,13 @@ std::ostream& operator<<(std::ostream& stream, nonagram::cell_state cs)
 }
 #endif
 
-/*----------------------------------
-Throws a puzzle_error if L is empty.
-----------------------------------*/
-
-void nonagram::throwIfEmpty(const std::deque<unsigned>& L)
-{
-	if (L.empty()) throw puzzle_error();
-}
-
 /*---------------------------------------------------------
 Marks each cell in grid starting at index start and
-stopping before index end to 'value'. Throws a puzzle_error
+stopping before index end to 'value'. Returns false
 if any change is inconsistent with the existing value.
 ---------------------------------------------------------*/
 
-void nonagram::markInRange(line& lin,
+bool nonagram::markInRange(line& lin,
 	unsigned start, unsigned end, cell_state value)
 {
 	const auto end_iter = lin.grid.begin() + end;
@@ -201,16 +192,17 @@ void nonagram::markInRange(line& lin,
 			
 			lines[opposite_line]->needs_line_solving = true;
 			
-			performSingleCellRules(value, opposite_line, opposite_index);
+			if (!performSingleCellRules(value, opposite_line, opposite_index)) return false;
 		}
 		else if (grid[ref_index] != value)
 		{
-			throw puzzle_error();
+			return false;
 		}
 	}
+    return true;
 }
 
-void nonagram::performSingleCellRules(cell_state value, unsigned lin, unsigned idx)
+bool nonagram::performSingleCellRules(cell_state value, unsigned lin, unsigned idx)
 {
 	if (value == cell_state::filled)
 	{
@@ -224,7 +216,7 @@ void nonagram::performSingleCellRules(cell_state value, unsigned lin, unsigned i
 				return (start == idx + 1) || (start + length == idx);
 			});
 			
-			throwIfEmpty(positions);
+			if (positions.empty()) return false;
 		}
 	}
 	else
@@ -239,9 +231,10 @@ void nonagram::performSingleCellRules(cell_state value, unsigned lin, unsigned i
 				return (start <= idx) && (idx < start + length);
 			});
 			
-			throwIfEmpty(positions);
+			if (positions.empty()) return false;
 		}
 	}
+    return true;
 }
 
 bool nonagram::isComplete(const line& lin) const
@@ -258,10 +251,10 @@ bool nonagram::isComplete(const line& lin) const
 
 /*-------------------------------------------------
 Removes incompatible candidates from a line. If a
-fill has no more candidates, throws a puzzle_error.
+fill has no more candidates, returns false.
 -------------------------------------------------*/
 
-void nonagram::removeIncompatible(line& lin)
+bool nonagram::removeIncompatible(line& lin)
 {
 	// Check each position for a space that has recently been marked
 	for (unsigned i = 0; i < lin.grid.size(); ++i)
@@ -285,7 +278,7 @@ void nonagram::removeIncompatible(line& lin)
 					while (i < lin.fills[j].candidates.back())
 					{
 						lin.fills[j].candidates.pop_back();
-						throwIfEmpty(lin.fills[j].candidates);
+						if (lin.fills[j].candidates.empty()) return false;
 					}
 				}
 				
@@ -302,7 +295,7 @@ void nonagram::removeIncompatible(line& lin)
 						+ lin.fills[j].length < i)
 					{
 						lin.fills[j].candidates.pop_front();
-						throwIfEmpty(lin.fills[j].candidates);
+						if (lin.fills[j].candidates.empty()) return false;
 					}
 				}
 			}
@@ -329,7 +322,7 @@ void nonagram::removeIncompatible(line& lin)
 		while (pos_after >= lin.fills[i].candidates.front())
 		{
 			lin.fills[i].candidates.pop_front();
-			throwIfEmpty(lin.fills[i].candidates);
+			if (lin.fills[i].candidates.empty()) return false;
 		}
 	}
 	
@@ -355,9 +348,10 @@ void nonagram::removeIncompatible(line& lin)
 		while (first_cell <= lin.fills[i - 1].candidates.back() + length)
 		{
 			lin.fills[i - 1].candidates.pop_back();
-			throwIfEmpty(lin.fills[i - 1].candidates);
+			if (lin.fills[i - 1].candidates.empty()) return false;
 		}
 	}
+    return true;
 }
 
 /*--------------------------------------------------------------------
@@ -367,7 +361,7 @@ candidates within this line to be invalidated (in other words, there
 is no need to call removeIncompatible after markConsistent is called).
 --------------------------------------------------------------------*/
 
-void nonagram::markConsistent(line& lin)
+bool nonagram::markConsistent(line& lin)
 {
 	// Mark filled spaces
 	
@@ -382,8 +376,8 @@ void nonagram::markConsistent(line& lin)
 	{
 		// Mark every cell from the last possible start position of the fill to
 		// the first possible end position of the fill. This may not mark anything.
-		markInRange(lin, positions.back(), positions.front() + length,
-			cell_state::filled);
+		if (!markInRange(lin, positions.back(), positions.front() + length,
+			cell_state::filled)) return false;
 	}
 	
 	// Mark empty spaces
@@ -395,7 +389,7 @@ void nonagram::markConsistent(line& lin)
 	// Mark every cell that is before all possible start positions of the first
 	// fill as empty.
 	
-	markInRange(lin, 0, lin.fills[0].candidates.front(), cell_state::empty);
+	if (!markInRange(lin, 0, lin.fills[0].candidates.front(), cell_state::empty)) return false;
 	
 	// Mark every cell that is after all possible end positions of the last
 	// fill as empty.
@@ -403,7 +397,7 @@ void nonagram::markConsistent(line& lin)
 	unsigned lastoflast = lin.fills.back().candidates.back()
 		+ lin.fills.back().length;
 	
-	markInRange(lin, lastoflast, lin.grid.size(), cell_state::empty);
+	if (!markInRange(lin, lastoflast, lin.grid.size(), cell_state::empty)) return false;
 	
 	// For each consecutive pair of fills, fill any gaps between
 	// the last possibility of the first and the first possibility
@@ -414,16 +408,17 @@ void nonagram::markConsistent(line& lin)
 			+ lin.fills[i - 1].length;
 		unsigned firstoflast = lin.fills[i].candidates.front();
 		
-		markInRange(lin, lastoffirst, firstoflast, cell_state::empty);
+		if (!markInRange(lin, lastoffirst, firstoflast, cell_state::empty)) return false;
 	}
+    return true;
 }
 
 /*-------------------------------------------------------------
 Calls removeIncompatible() and markConsistent(), in that order,
-on each line. Throws a puzzle_error if any line is unsolvable.
+on each line. Returns false if any line is unsolvable.
 -------------------------------------------------------------*/
 
-void nonagram::line_solve()
+bool nonagram::line_solve()
 {
 	// Index of the last line that was line solved in this method call,
 	// starts as an unreachable value. It is assumed that at least one line
@@ -433,14 +428,14 @@ void nonagram::line_solve()
 	{
 		for (unsigned i = 0; i < lines.size(); ++i)
 		{
-			if (i == last_solved) return;
+			if (i == last_solved) return true;
 			
 			auto& lin = lines[i];
 			
 			if (!lin || !lin->needs_line_solving) continue;
 			
-			removeIncompatible(*lin);
-			markConsistent(*lin);
+			if (!removeIncompatible(*lin)) return false;
+			if (!markConsistent(*lin)) return false;
 			
 			// If the line is solved, remove it and reduce the number of
 			// remaining lines to solve.
@@ -513,13 +508,13 @@ std::istream& operator>>(std::istream& stream, nonagram& CP)
 	return stream;
 }
 
-void nonagram::solve()
+bool nonagram::solve()
 {
 	#ifdef CPUZZLE_DEBUG
 		std::cout << "Entering solve:\nPuzzle:\n" << *this << "Line solving:\n";
 	#endif
 	
-	line_solve();
+	if (!line_solve()) return false;
 	
 	if (isComplete())
 	{
@@ -527,7 +522,7 @@ void nonagram::solve()
 			std::cout << "Puzzle complete:\n" << *this;
 		#endif
 		
-		return;
+		return true;
 	}
 	
 	#ifdef CPUZZLE_DEBUG
@@ -559,17 +554,16 @@ void nonagram::solve()
 	
 	copy.grid[pos] = guess;
 	
-	try
-	{
-		// Perform single cell rules on row, then column.
-		copy.performSingleCellRules(guess, rownum, colnum);
-		copy.performSingleCellRules(guess, numrows + colnum, rownum);
-		
-		copy.solve();
-		std::swap(copy,*this);
-		return;
-	}
-	catch (puzzle_error&) {}
+    // Perform single cell rules on row, then column.
+    if (copy.performSingleCellRules(guess, rownum, colnum) &&
+        copy.performSingleCellRules(guess, numrows + colnum, rownum))
+    {
+		if (copy.solve())
+        {
+            std::swap(copy,*this);
+            return true;
+        }
+    }
 	
 	guess = (guess == cell_state::filled) ? cell_state::empty : cell_state::filled;
 	
@@ -585,11 +579,11 @@ void nonagram::solve()
 	grid[pos] = guess;
 	
 	// Perform single cell rules on row, then column.
-	performSingleCellRules(guess, rownum, colnum);
-	performSingleCellRules(guess, colnum + numrows, rownum);
+	if (!performSingleCellRules(guess, rownum, colnum)) return false;
+	if (!performSingleCellRules(guess, colnum + numrows, rownum)) return false;
 	
-	// Since this is the last attempt, if this throws, let the error escalate.
-	solve();
+	// Since this is the last attempt, let the result escalate.
+	return solve();
 }
 
 bool nonagram::isComplete() const

@@ -51,11 +51,7 @@ int main(int argc, char* argv[])
 	
 	ifs.close();
 	
-	try
-	{
-		puzzle.solve();
-	}
-	catch (nonagram::puzzle_error&)
+    if (!puzzle.solve())
 	{
 		std::cerr << "No solution.\n";
 		return 1;

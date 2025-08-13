@@ -51,11 +51,7 @@ void solve(const stdfs::path infile, const stdfs::path outfile)
 	
 	auto input_done = std::chrono::steady_clock::now();
 	
-	try
-	{
-		puzzle.solve();
-	}
-	catch (nonagram::puzzle_error&)
+    if (!puzzle.solve())
 	{
 		std::lock_guard lock(iomut);
 		std::cout << infile << " failure\n";

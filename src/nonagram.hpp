@@ -60,32 +60,28 @@ class nonagram
 	#endif
 	
 	// Methods related to solving
-	static void throwIfEmpty(const std::deque<unsigned>& L);
-	void markInRange(line& lin,
+	[[nodiscard]] bool markInRange(line& lin,
 		unsigned start, unsigned end, cell_state value);
 	
-	void performSingleCellRules(cell_state value, unsigned lin, unsigned idx);
+	[[nodiscard]] bool performSingleCellRules(cell_state value, unsigned lin, unsigned idx);
 	
-	bool isComplete(const line& lin) const;
+	[[nodiscard]] bool isComplete(const line& lin) const;
 	
-	void removeIncompatible(line& lin);
-	void markConsistent(line& lin);
+	[[nodiscard]] bool removeIncompatible(line& lin);
+	[[nodiscard]] bool markConsistent(line& lin);
 	
-	void line_solve();
+	[[nodiscard]] bool line_solve();
 	
 	public:
-	
-	// Thrown when a puzzle is unsolvable
-	struct puzzle_error : std::exception {};
 	
 	// Reads in a nonagram puzzle from an input stream.
 	friend std::istream& operator>>(std::istream& stream, nonagram& CP);
 	
-	// Solves the puzzle, or throws a puzzle_error if unsolvable.
-	void solve();
+	// Solves the puzzle, or returns false if unsolvable.
+	[[nodiscard]] bool solve();
 	
-	// Returns true if the puzzle is solved. If solve() does not throw, this
-	// will return true.
+	// Returns true if the puzzle is solved. If solve() returned true, this
+	// will also return true.
 	bool isComplete() const;
 	
 	// Creates a bitmap of the solution to this puzzle.
