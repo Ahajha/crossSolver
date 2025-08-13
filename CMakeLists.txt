@@ -9,6 +9,8 @@ else ()
     add_compile_options(-Wall -Wextra -Wshadow -Wconversion -Wpedantic -Werror)
 endif()
 
+add_subdirectory(slitherlink)
+
 add_library(bmp STATIC)
 target_sources(bmp
 PUBLIC
