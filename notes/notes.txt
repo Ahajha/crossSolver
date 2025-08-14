@@ -1,0 +1,126 @@
+Potential optimization: Can we store possibilities just as a first and last possible position?
+
+Consider this first:
+
+? ? ? _ ? ? ?
+
+1 fill, 3 long.
+
+We have 2 possibilities... I realize there's no info to be gained here.
+
+Yes, we could learn that the middle has to be empty, but if it weren't, we wouldn't be in this
+sitation. The context of that empty space is part of the information!
+
+Let's think about what happens if a filled space falls within a possibility:
+
+Suppose now we have 7 spaces, with a 4-long somewhere in the middle.
+
+? ? ? ? ? ? ?, 1 fill, 4 long.
+
+We can immediately compute the first and last candidate positions:
+
+X X X X _ ? ?
+? ? _ X X X X
+
+Since they overlap, the overlap must be filled (this isn't new, we have this in the existing
+implementation).
+
+However, now consider that we place a filled space:
+
+? X ? ? ? ? ?
+
+We can see that our last and second-to-last positions would be invalidated, so update that field:
+
+X X X X _ ? ?
+_ X X X X _ ?
+
+We've gained info, and we don't need to store all the intermediate positions!
+
+Now suppose an empty space falls within:
+
+? _ ? ? ? ? ?
+
+This invalidates just the first possibility.
+
+? _ X X X X _
+? _ _ X X X X
+
+Once again, information is still gained.
+
+I think the information we learn here is that sometimes we get info, and sometimes we give it.
+The data format should reflect what we give and what we get.
+
+Maybe as a potential problem, consider the following:
+
+? ? ? _ ? X ? _ ? ? ?
+2 fills of 3
+
+Intuitively, we can see that the middle section has to be filled. However, I don't think the
+current or proposed format can detect this. Perhaps there is another way?
+
+_A_ possible way of solving this is to find the smallest possible fill this could belong to.
+In this case, we would see it has to be a min size of 3, and then there's only one way a 3
+can fit there. As described though, I think this would be a quite expensive check.
+
+Stars and bars about how blank space is separated?
+
+
+So the problem description we have:
+
+Given:
+    (inout) cells: The cells to fill. All are in one of 3 states: filled, empty, or unknown.
+    (in)    hints: List of fill lengths.
+    Using hints, assign values in cells such that all possible arrangement of the fills
+    is consistent with the fills. This must be maximal, that is,
+    if a cell can be assigned, it must be.
+
+
+Let's suppose the only info we keep is the furthest left and right that a fill can be
+(along with the obvious, such as the size of the fill, the cells, and their values)
+
+In the above case, we would have:
+
+? ? ? _ ? X ? _ ? ? ?
+
+We could determine the first fill can be between the following:
+X X X _ ? X ? _ ? ? ?
+? ? ? _ X X X _ ? ? ?
+
+Perhaps thinking in terms of fills is incorrect? The middle 3 _must_ be filled, but it doesn't
+particularly care by which fill.
+
+Maybe we have a "furthest left" and "furthest right" as our points of reference
+(maybe also the above, we'll see)
+
+We could see that these extremes must be:
+X X X _ X X X _ _ _ _
+_ _ _ _ X X X _ X X X
+
+It just so happens that there is overlap, but because in this specific case these are the only
+two candidates, then the middle gets filled. If the cells were all unknown, we would have the
+same extremes, but it would not imply anything.
+
+New, completely different idea: What if we stored information about the _fills_ in the _cells_,
+rather than the other way around? As a starting point, how about storing the min and max index
+fill that a cell can belong to. Let's try it with our example, given no cells first:
+
+The immediate problem we run into is how to represent possible empty space. I think the answer
+is to simply ignore it, since if we know it has to be filled or empty, then there's no extra
+info we need*. Note that having a range of 0 to 0 does NOT mean that it has to be filled, or belong
+to fill 0!
+
+* If it's filled, maybe there's some useful info as to which fill it belongs to.
+
+     ? ? ? ? ? ? ? ? ? ? ?
+Min: 0 0 0 0 0 0 0 1 1 1 1
+Max: 0 0 0 0 1 1 1 1 1 1 1
+
+We won't be able to get any info from this, so let's set those 3 cells and see what happens:
+
+     ? ? ? _ ? X ? _ ? ? ?
+Min: 0 0 0 _ 0 0 0 _ 1 1 1
+Max: 0 0 0 _ 1 1 1 _ 1 1 1
+
+This actually gets us on the right track - we can see that the filled cell must belong to either
+fill 0 or 1. Since we should be keeping info about those anyways, we could potentially then
+search to see how wide this space is, then fill by comparing that with the fills' sizes.
