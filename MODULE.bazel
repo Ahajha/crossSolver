@@ -1,6 +1,15 @@
 """Nonagram solver"""
 
 bazel_dep(name = "rules_cc", version = "0.2.0")
+bazel_dep(name = "hedron_compile_commands", dev_dependency = True)
+
+# Refresh compile commands with
+# bazelisk run @hedron_compile_commands//:refresh_all
+git_override(
+    module_name = "hedron_compile_commands",
+    remote = "https://github.com/hedronvision/bazel-compile-commands-extractor.git",
+    commit = "abb61a688167623088f8768cc9264798df6a9d10",
+)
 
 http_archive = use_repo_rule("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
