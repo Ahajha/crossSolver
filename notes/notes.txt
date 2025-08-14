@@ -1,5 +1,9 @@
 Potential optimization: Can we store possibilities just as a first and last possible position?
 
+I attempted this implementation, and strictly speaking it should work (almost all tests pass),
+but one gets stuck. I suspect what needs to happen is we need to perform the same rules but in
+different orders.
+
 Consider this first:
 
 ? ? ? _ ? ? ?
