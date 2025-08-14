@@ -1,4 +1,5 @@
 #include "bmp.hpp"
+#include <fstream>
 
 BMP_24::BMP_24(unsigned h, unsigned w, color_24 def) : width(w), height(h),
 	grid(w * h, def) {}

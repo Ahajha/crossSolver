@@ -1,7 +1,6 @@
 #pragma once
 
 #include <iostream>
-#include <exception>
 #include <vector>
 #include <optional>
 #include <deque>

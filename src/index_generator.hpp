@@ -6,7 +6,8 @@ of indexes, but without the overhead of dereferences and memory management.
 This can be achieved by just specifying an increment amount and an offset.
 */
 
-#include <ranges>
+#include <concepts>
+#include <compare>
 
 template<std::integral T = unsigned>
 class index_generator

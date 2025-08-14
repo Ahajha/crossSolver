@@ -1,6 +1,5 @@
 #include "nonagram.hpp"
 #include <numeric>
-#include <ranges>
 #include <algorithm>
 
 nonagram::line::fill::fill(unsigned fl, unsigned start, unsigned end)

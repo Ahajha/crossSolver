@@ -1,6 +1,6 @@
 #pragma once
 
-#include <fstream>
+#include <ostream>
 #include <vector>
 #include <cstdint>
 
