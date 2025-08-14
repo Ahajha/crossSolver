@@ -1,0 +1,24 @@
+---
+Language: Cpp
+IndentWidth: 4
+TabWidth: 4
+UseTab: AlignWithSpaces
+PointerAlignment: Left
+AllowShortFunctionsOnASingleLine: All
+AllowShortBlocksOnASingleLine: Always
+BreakBeforeBraces: Custom
+BraceWrapping:
+  AfterCaseLabel: true
+  AfterClass: true
+  AfterControlStatement: Always
+  AfterEnum: true
+  AfterFunction: true
+  AfterNamespace: true
+  AfterStruct: true
+  BeforeElse: true
+  BeforeLambdaBody: true
+  BeforeWhile: true
+AlwaysBreakAfterReturnType: None
+PenaltyReturnTypeOnItsOwnLine: 1000000
+ColumnLimit: 100
+AlwaysBreakTemplateDeclarations: true

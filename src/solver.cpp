@@ -18,10 +18,11 @@ column 2 clues
 column k clues
 */
 
-#include <string>
-#include <fstream>
-#include <filesystem>
 #include "nonagram.hpp"
+
+#include <filesystem>
+#include <fstream>
+#include <string>
 
 void parseArgs(int argc, char* argv[])
 {
@@ -36,36 +37,35 @@ int main(int argc, char* argv[])
 {
 	parseArgs(argc, argv);
 	const auto inFileName = argv[1];
-	
+
 	nonagram puzzle;
-	
+
 	std::ifstream ifs(inFileName);
-	
+
 	if (!ifs.is_open())
 	{
 		std::cerr << "Could not open file \"" << inFileName << "\" for reading.\n";
 		return 1;
 	}
-	
+
 	ifs >> puzzle;
-	
+
 	ifs.close();
-	
-    if (!puzzle.solve())
+
+	if (!puzzle.solve())
 	{
 		std::cerr << "No solution.\n";
 		return 1;
 	}
-	
+
 	// If the output file name is not given, generate one.
 	// by appending/replacing
 	// the file extention with ".bmp".
-	std::string outFileName = (argc == 3) ? argv[2] :
-		std::filesystem::path(inFileName).replace_extension(".bmp");
-	
+	std::string outFileName =
+		(argc == 3) ? argv[2] : std::filesystem::path(inFileName).replace_extension(".bmp");
+
 	// Make .bmp file
 	puzzle.bitmap().write(outFileName);
-	
-	std::cout << "Solution image written to file \""
-		<<  outFileName << "\"." << std::endl;
+
+	std::cout << "Solution image written to file \"" << outFileName << "\"." << std::endl;
 }
