@@ -52,8 +52,6 @@ class nonagram
 	unsigned lines_to_solve;
 
 	// Methods related to input
-	static void getList(std::istream& in, std::vector<unsigned>& L);
-
 	void evaluateHintList(index_generator<>&& refs, const std::vector<unsigned>& hintList,
 	                      unsigned idx, bool is_r);
 

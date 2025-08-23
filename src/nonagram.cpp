@@ -39,7 +39,7 @@ nonagram::line::line(index_generator<>&& refs, const std::vector<unsigned>& hint
 Returns one line of unsigned integers read from in.
 -------------------------------------------------*/
 
-void nonagram::getList(std::istream& in, std::vector<unsigned>& L)
+static void getList(std::istream& in, std::vector<unsigned>& L)
 {
 	unsigned temp;
 
@@ -483,7 +483,7 @@ std::istream& operator>>(std::istream& stream, nonagram& CP)
 	std::vector<unsigned> hintList;
 	for (unsigned i = 0; i < CP.numrows; ++i)
 	{
-		nonagram::getList(stream, hintList);
+		getList(stream, hintList);
 
 #ifdef CPUZZLE_DEBUG
 		std::cout << "    Row " << i << ": ";
@@ -496,7 +496,7 @@ std::istream& operator>>(std::istream& stream, nonagram& CP)
 
 	for (unsigned i = 0; i < CP.numcols; ++i)
 	{
-		nonagram::getList(stream, hintList);
+		getList(stream, hintList);
 
 #ifdef CPUZZLE_DEBUG
 		std::cout << "    Column " << i << ": ";
