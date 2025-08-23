@@ -17,7 +17,7 @@ void parseArgs(int argc, const char* argv[])
 	}
 }
 
-void solve(const stdfs::path infile, const stdfs::path outfile)
+void solve(const stdfs::path& infile, const stdfs::path& outfile)
 {
 	static std::mutex iomut;
 
@@ -79,7 +79,7 @@ int main(int argc, const char* argv[])
 				 "output (ms) "
 				 "total (s)   "
 				 "input file\n";
-	for (auto& infile : stdfs::directory_iterator(infolder))
+	for (const auto& infile : stdfs::directory_iterator(infolder))
 	{
 		if (infile.is_directory())
 			continue;
