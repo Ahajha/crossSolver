@@ -1,0 +1,19 @@
+name: Build and test
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  build-and-test:
+    name: Build and test
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+
+      - name: Run batch solver
+        shell: bash
+        run: bazel run batch_solver -- $(pwd)/puzzles $(pwd)/solutions
