@@ -6,3 +6,6 @@ build --cxxopt=-Wextra
 build --cxxopt=-Wpedantic
 build --cxxopt=-Wshadow
 build --cxxopt=-fno-exceptions
+build --cxxopt=-Wconversion
+
+build:debug --per_file_copt=src/nonagram.cpp@-DCPUZZLE_DEBUG=1
