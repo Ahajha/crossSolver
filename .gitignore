@@ -1,7 +1,4 @@
-bin/*
-obj/*
 perf.*
 solutions/*
-build
 
 bazel-*
