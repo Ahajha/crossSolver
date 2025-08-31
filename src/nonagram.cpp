@@ -21,9 +21,7 @@ nonagram::line::line(index_generator<>&& refs, const std::vector<unsigned>& hint
 {
 	fills.reserve(hintList.size());
 
-	unsigned sum = 0;
-	for (unsigned hint : hintList)
-		sum += hint;
+	const auto sum = std::accumulate(hintList.begin(), hintList.end(), 0U);
 
 	unsigned extraSpace = grid.size() - (sum + static_cast<unsigned>(hintList.size()) - 1);
 
