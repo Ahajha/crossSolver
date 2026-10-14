@@ -31,3 +31,13 @@ cc_library(
     strip_prefix = "CTPL-a93cc7caa0c27760e74bf8eb493e80bb27a781de",
     url = "https://github.com/Ahajha/CTPL/archive/a93cc7caa0c27760e74bf8eb493e80bb27a781de.tar.gz",
 )
+
+http_archive(
+    name = "esbmc",
+    build_file_content = """
+exports_files(["bin/esbmc", "include/esbmc.h"])
+""",
+    integrity = "sha256-2NowTdDfzmyfSIN58Dpy52i86FmMIkeMmA4XBCRzUvE=",
+    strip_prefix = "release",
+    url = "https://github.com/esbmc/esbmc/releases/download/v8.5/esbmc-linux.zip",
+)

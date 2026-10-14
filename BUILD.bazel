@@ -28,3 +28,32 @@ cc_binary(
     srcs = ["src/solver.cpp"],
     deps = [":nonagram"],
 )
+
+genrule(
+    name = "validate",
+    srcs = [
+        "src/bmp.cpp",
+        "src/nonagram.cpp",
+        "src/solver.cpp",
+        "src/bmp.hpp",
+        "src/index_generator.hpp",
+        "src/nonagram.hpp",
+        "@esbmc//:bin/esbmc",
+        "@esbmc//:include/esbmc.h",
+    ],
+    # minor todo: really this is a test
+    outs = ["success"],
+    cmd = """
+    $(location @esbmc//:bin/esbmc) \
+        --std=c++20 \
+        --color=always \
+        --no-standard-checks \
+        --no-library-assertions \
+        -I $(location @esbmc//:include/esbmc.h)/.. \
+        $(location src/bmp.cpp) \
+        $(location src/nonagram.cpp) \
+        $(location src/solver.cpp)
+    touch $(location success)
+""",
+    tags = ["manual"],
+)
