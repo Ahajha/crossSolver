@@ -1,6 +1,9 @@
 """Nonagram solver"""
 
-bazel_dep(name = "rules_cc", version = "0.2.0")
+bazel_dep(name = "rules_cc", version = "0.2.26")
+
+# For hedron_compile_commands. Not sure why I have to do this?
+bazel_dep(name = "rules_python", version = "2.0.0")
 
 http_archive = use_repo_rule("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
