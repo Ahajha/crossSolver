@@ -2,17 +2,17 @@
 
 bazel_dep(name = "rules_cc", version = "0.2.0")
 
-bazel_dep(name = "hedron_compile_commands", dev_dependency = True)
+http_archive = use_repo_rule("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
 # Refresh compile commands with
 # bazelisk run @hedron_compile_commands//:refresh_all
-git_override(
-    module_name = "hedron_compile_commands",
-    commit = "abb61a688167623088f8768cc9264798df6a9d10",
-    remote = "https://github.com/hedronvision/bazel-compile-commands-extractor.git",
+http_archive(
+    name = "hedron_compile_commands",
+    dev_dependency = True,
+    integrity = "sha256-ihYoI2iAkbxaGNXJu/+yq52VSS9FlAwr9iUIQknV/4k=",
+    strip_prefix = "bazel-compile-commands-extractor-e9ca1877fba7cebbb7630c6e1938293ee676d929",
+    url = "https://github.com/modular/bazel-compile-commands-extractor/archive/e9ca1877fba7cebbb7630c6e1938293ee676d929.tar.gz",
 )
-
-http_archive = use_repo_rule("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
 http_archive(
     name = "ctpl",
